@@ -12,6 +12,7 @@ import {
   ArrowRight,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { CircuitReveal } from "@/components/CircuitReveal";
 
 export const Route = createFileRoute("/")({
   component: Index,
