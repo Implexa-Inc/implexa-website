@@ -642,9 +642,10 @@ function Footer() {
 
 function Index() {
   return (
-    <div className="min-h-screen bg-[var(--background)]">
+    <div className="relative min-h-screen bg-[var(--background)]">
+      <CircuitReveal />
       <Nav />
-      <main>
+      <main className="relative z-10">
         <Hero />
         <ThreeAct />
         <SkillCardCenterpiece />
