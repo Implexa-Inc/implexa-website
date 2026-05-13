@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CircuitReveal } from "@/components/CircuitReveal";
+import implexaLogo from "@/assets/implexa-logo.png";
 
 export const Route = createFileRoute("/")({
   component: Index,
@@ -39,7 +40,11 @@ const fadeUp = {
 function Wordmark({ className = "" }: { className?: string }) {
   return (
     <a href="#top" className={`inline-flex items-center gap-2 ${className}`}>
-      <Flame className="size-5 text-flame" strokeWidth={2.2} />
+      <img
+        src={implexaLogo}
+        alt="Implexa"
+        className="size-7 rounded-md object-contain"
+      />
       <span className="text-[15px] font-semibold tracking-tight text-[var(--heading)]">
         Implexa
       </span>
