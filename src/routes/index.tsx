@@ -13,7 +13,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CircuitReveal } from "@/components/CircuitReveal";
-import implexaLogo from "@/assets/implexa-logo.png";
+
 
 export const Route = createFileRoute("/")({
   component: Index,
@@ -38,16 +38,46 @@ const fadeUp = {
 };
 
 function Wordmark({ className = "" }: { className?: string }) {
+  const letters = "Implexa".split("");
   return (
-    <a href="#top" className={`inline-flex items-center gap-2 ${className}`}>
-      <img
-        src={implexaLogo}
-        alt="Implexa"
-        className="size-7 rounded-md object-contain"
-      />
-      <span className="text-[15px] font-semibold tracking-tight text-[var(--heading)]">
+    <a
+      href="#top"
+      aria-label="Implexa"
+      className={`group inline-flex flex-col items-start leading-none ${className}`}
+    >
+      <span className="text-[18px] font-semibold tracking-tight text-[var(--heading)]">
         Implexa
       </span>
+      {/* circuit connecting the letters */}
+      <svg
+        aria-hidden
+        viewBox="0 0 84 8"
+        className="mt-[3px] h-[6px] w-[78px] overflow-visible"
+      >
+        <line
+          x1="2"
+          y1="4"
+          x2="82"
+          y2="4"
+          stroke="rgb(255 138 60 / 0.55)"
+          strokeWidth="1"
+          strokeLinecap="round"
+          className="transition-[stroke] duration-300 group-hover:stroke-[rgb(255_138_60_/_0.95)]"
+        />
+        {letters.map((_, i) => {
+          const x = 2 + (i * 80) / (letters.length - 1);
+          return (
+            <circle
+              key={i}
+              cx={x}
+              cy="4"
+              r="1.6"
+              fill="rgb(255 217 61)"
+              className="transition-transform duration-300 group-hover:[r:2.2] [filter:drop-shadow(0_0_3px_rgba(255,217,61,0.9))]"
+            />
+          );
+        })}
+      </svg>
     </a>
   );
 }
