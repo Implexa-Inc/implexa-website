@@ -43,34 +43,41 @@ function Wordmark({ className = "" }: { className?: string }) {
     <a
       href="#top"
       aria-label="Implexa"
-      className={`group inline-flex items-center ${className}`}
+      className={`group inline-flex flex-col items-start leading-none ${className}`}
     >
-      <span className="relative inline-flex items-end text-[18px] font-semibold tracking-tight text-[var(--heading)]">
-        {letters.map((ch, i) => (
-          <span key={i} className="relative inline-flex items-center">
-            <span className="relative z-10">{ch}</span>
-            {i < letters.length - 1 && (
-              <span
-                aria-hidden
-                className="relative mx-[3px] inline-block h-[1.5px] w-[6px] bg-flame/70 align-middle transition-all duration-300 group-hover:w-[10px] group-hover:bg-flame"
-              />
-            )}
-          </span>
-        ))}
-        <span
-          aria-hidden
-          className="pointer-events-none absolute -inset-x-1 top-1/2 -z-0 h-px -translate-y-1/2 bg-gradient-to-r from-transparent via-flame/30 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100"
-        />
-        {/* node dots above letter joins */}
-        <span aria-hidden className="absolute inset-x-0 -top-[3px] flex justify-between px-[3px]">
-          {letters.map((_, i) => (
-            <span
-              key={i}
-              className="size-[3px] rounded-full bg-ember shadow-[0_0_6px_rgba(255,217,61,0.8)] transition-transform duration-300 group-hover:scale-125"
-            />
-          ))}
-        </span>
+      <span className="text-[18px] font-semibold tracking-tight text-[var(--heading)]">
+        Implexa
       </span>
+      {/* circuit connecting the letters */}
+      <svg
+        aria-hidden
+        viewBox="0 0 84 8"
+        className="mt-[3px] h-[6px] w-[78px] overflow-visible"
+      >
+        <line
+          x1="2"
+          y1="4"
+          x2="82"
+          y2="4"
+          stroke="rgb(255 138 60 / 0.55)"
+          strokeWidth="1"
+          strokeLinecap="round"
+          className="transition-[stroke] duration-300 group-hover:stroke-[rgb(255_138_60_/_0.95)]"
+        />
+        {letters.map((_, i) => {
+          const x = 2 + (i * 80) / (letters.length - 1);
+          return (
+            <circle
+              key={i}
+              cx={x}
+              cy="4"
+              r="1.6"
+              fill="rgb(255 217 61)"
+              className="transition-transform duration-300 group-hover:[r:2.2] [filter:drop-shadow(0_0_3px_rgba(255,217,61,0.9))]"
+            />
+          );
+        })}
+      </svg>
     </a>
   );
 }
