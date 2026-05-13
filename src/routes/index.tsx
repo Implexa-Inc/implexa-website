@@ -44,13 +44,13 @@ function Wordmark({ className = "" }: { className?: string }) {
       aria-label="Implexa"
       className={`group relative inline-flex select-none items-center ${className}`}
     >
-      <span className="flex items-baseline text-[18px] font-semibold tracking-tight text-[var(--heading)]">
+      <span className="flex items-baseline text-[22px] font-semibold tracking-tight text-[var(--heading)]">
         {/* lowercase 'i' — emerald node replaces the tittle */}
         <span className="relative inline-block">
           <span className="font-semibold">ı</span>
           <span
             aria-hidden
-            className="absolute -top-[1px] left-1/2 size-[5px] -translate-x-1/2 rounded-full bg-emerald-400 ring-1 ring-[var(--background)] shadow-[0_0_8px_rgba(16,185,129,0.75)] transition-transform duration-300 group-hover:scale-125"
+            className="absolute -top-[1px] left-1/2 size-[6px] -translate-x-1/2 rounded-full bg-emerald-400 ring-1 ring-[var(--background)] shadow-[0_0_10px_rgba(16,185,129,0.75)] transition-transform duration-300 group-hover:scale-125"
           />
         </span>
         mple
@@ -59,7 +59,7 @@ function Wordmark({ className = "" }: { className?: string }) {
           <span>x</span>
           <span
             aria-hidden
-            className="absolute left-1/2 top-1/2 size-[5px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-flame ring-1 ring-[var(--background)] shadow-[0_0_8px_rgba(255,138,60,0.8)] transition-transform duration-300 group-hover:scale-125"
+            className="absolute left-1/2 top-1/2 size-[6px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-flame ring-1 ring-[var(--background)] shadow-[0_0_10px_rgba(255,138,60,0.8)] transition-transform duration-300 group-hover:scale-125"
           />
         </span>
         a
