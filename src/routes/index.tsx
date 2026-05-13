@@ -38,15 +38,38 @@ const fadeUp = {
 };
 
 function Wordmark({ className = "" }: { className?: string }) {
+  const letters = "Implexa".split("");
   return (
-    <a href="#top" className={`inline-flex items-center gap-2 ${className}`}>
-      <img
-        src={implexaLogo}
-        alt="Implexa"
-        className="size-7 rounded-md object-contain"
-      />
-      <span className="text-[15px] font-semibold tracking-tight text-[var(--heading)]">
-        Implexa
+    <a
+      href="#top"
+      aria-label="Implexa"
+      className={`group inline-flex items-center ${className}`}
+    >
+      <span className="relative inline-flex items-end text-[18px] font-semibold tracking-tight text-[var(--heading)]">
+        {letters.map((ch, i) => (
+          <span key={i} className="relative inline-flex items-center">
+            <span className="relative z-10">{ch}</span>
+            {i < letters.length - 1 && (
+              <span
+                aria-hidden
+                className="relative mx-[3px] inline-block h-[1.5px] w-[6px] bg-flame/70 align-middle transition-all duration-300 group-hover:w-[10px] group-hover:bg-flame"
+              />
+            )}
+          </span>
+        ))}
+        <span
+          aria-hidden
+          className="pointer-events-none absolute -inset-x-1 top-1/2 -z-0 h-px -translate-y-1/2 bg-gradient-to-r from-transparent via-flame/30 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+        />
+        {/* node dots above letter joins */}
+        <span aria-hidden className="absolute inset-x-0 -top-[3px] flex justify-between px-[3px]">
+          {letters.map((_, i) => (
+            <span
+              key={i}
+              className="size-[3px] rounded-full bg-ember shadow-[0_0_6px_rgba(255,217,61,0.8)] transition-transform duration-300 group-hover:scale-125"
+            />
+          ))}
+        </span>
       </span>
     </a>
   );
