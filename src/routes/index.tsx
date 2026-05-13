@@ -50,7 +50,7 @@ function Wordmark({ className = "" }: { className?: string }) {
           <span className="font-semibold">ı</span>
           <span
             aria-hidden
-            className="absolute -top-[5px] left-1/2 size-[5px] -translate-x-1/2 rounded-full bg-emerald-400 ring-1 ring-[var(--background)] shadow-[0_0_8px_rgba(16,185,129,0.75)] transition-transform duration-300 group-hover:scale-125"
+            className="absolute -top-[1px] left-1/2 size-[5px] -translate-x-1/2 rounded-full bg-emerald-400 ring-1 ring-[var(--background)] shadow-[0_0_8px_rgba(16,185,129,0.75)] transition-transform duration-300 group-hover:scale-125"
           />
         </span>
         mple
