@@ -59,7 +59,7 @@ function Wordmark({ className = "" }: { className?: string }) {
           <span>x</span>
           <span
             aria-hidden
-            className="absolute left-1/2 top-[42%] size-[6px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-flame shadow-[0_0_10px_rgba(255,138,60,0.8)] transition-transform duration-300 group-hover:scale-125"
+            className="absolute left-1/2 top-[50%] size-[6px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-flame shadow-[0_0_10px_rgba(255,138,60,0.8)] transition-transform duration-300 group-hover:scale-125"
           />
         </span>
         a
