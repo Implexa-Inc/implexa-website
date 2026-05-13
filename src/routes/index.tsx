@@ -38,46 +38,36 @@ const fadeUp = {
 };
 
 function Wordmark({ className = "" }: { className?: string }) {
-  const letters = "Implexa".split("");
   return (
     <a
       href="#top"
       aria-label="Implexa"
-      className={`group inline-flex flex-col items-start leading-none ${className}`}
+      className={`group relative inline-flex select-none items-center ${className}`}
     >
-      <span className="text-[18px] font-semibold tracking-tight text-[var(--heading)]">
-        Implexa
+      <span className="flex items-baseline text-[18px] font-semibold tracking-tight text-[var(--heading)]">
+        {/* lowercase 'i' — emerald node replaces the tittle */}
+        <span className="relative inline-block">
+          <span className="font-semibold">ı</span>
+          <span
+            aria-hidden
+            className="absolute -top-[5px] left-1/2 size-[5px] -translate-x-1/2 rounded-full bg-emerald-400 ring-1 ring-[var(--background)] shadow-[0_0_8px_rgba(16,185,129,0.75)] transition-transform duration-300 group-hover:scale-125"
+          />
+        </span>
+        mple
+        {/* 'x' — flame node at the crossing */}
+        <span className="relative inline-block">
+          <span>x</span>
+          <span
+            aria-hidden
+            className="absolute left-1/2 top-1/2 size-[5px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-flame ring-1 ring-[var(--background)] shadow-[0_0_8px_rgba(255,138,60,0.8)] transition-transform duration-300 group-hover:scale-125"
+          />
+        </span>
+        a
       </span>
-      {/* circuit connecting the letters */}
-      <svg
+      <span
         aria-hidden
-        viewBox="0 0 84 8"
-        className="mt-[3px] h-[6px] w-[78px] overflow-visible"
-      >
-        <line
-          x1="2"
-          y1="4"
-          x2="82"
-          y2="4"
-          stroke="rgb(255 138 60 / 0.55)"
-          strokeWidth="1"
-          strokeLinecap="round"
-          className="transition-[stroke] duration-300 group-hover:stroke-[rgb(255_138_60_/_0.95)]"
-        />
-        {letters.map((_, i) => {
-          const x = 2 + (i * 80) / (letters.length - 1);
-          return (
-            <circle
-              key={i}
-              cx={x}
-              cy="4"
-              r="1.6"
-              fill="rgb(255 217 61)"
-              className="transition-transform duration-300 group-hover:[r:2.2] [filter:drop-shadow(0_0_3px_rgba(255,217,61,0.9))]"
-            />
-          );
-        })}
-      </svg>
+        className="pointer-events-none absolute -bottom-1 left-0 right-0 h-px bg-gradient-to-r from-transparent via-emerald-500/30 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+      />
     </a>
   );
 }
