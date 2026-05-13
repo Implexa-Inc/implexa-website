@@ -90,9 +90,9 @@ export function CircuitReveal() {
 
       // Glow underlay
       wctx.lineCap = "round";
-      wctx.strokeStyle = "rgba(255, 138, 60, 0.35)";
+      wctx.strokeStyle = "rgba(16, 185, 129, 0.38)";
       wctx.lineWidth = 4;
-      wctx.shadowColor = "rgba(255, 138, 60, 0.7)";
+      wctx.shadowColor = "rgba(16, 185, 129, 0.75)";
       wctx.shadowBlur = 10;
       for (const e of edges) {
         wctx.beginPath();
@@ -103,7 +103,7 @@ export function CircuitReveal() {
 
       // Crisp core line
       wctx.shadowBlur = 0;
-      wctx.strokeStyle = "rgba(255, 180, 110, 0.95)";
+      wctx.strokeStyle = "rgba(110, 231, 183, 0.95)";
       wctx.lineWidth = 1.25;
       for (const e of edges) {
         wctx.beginPath();
@@ -113,8 +113,8 @@ export function CircuitReveal() {
       }
 
       // Nodes
-      wctx.fillStyle = "rgba(255, 217, 61, 1)";
-      wctx.shadowColor = "rgba(255, 138, 60, 0.9)";
+      wctx.fillStyle = "rgba(167, 243, 208, 1)";
+      wctx.shadowColor = "rgba(16, 185, 129, 0.95)";
       wctx.shadowBlur = 8;
       for (const n of nodes) {
         wctx.beginPath();
