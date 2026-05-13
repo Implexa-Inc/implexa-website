@@ -11,10 +11,8 @@ export function CircuitReveal() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
+    const canvas = canvasRef.current!;
+    const ctx = canvas.getContext("2d")!;
 
     let dpr = Math.min(window.devicePixelRatio || 1, 2);
     let w = 0;
