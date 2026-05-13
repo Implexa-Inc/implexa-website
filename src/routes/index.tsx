@@ -44,7 +44,7 @@ function Wordmark({ className = "" }: { className?: string }) {
       aria-label="Implexa"
       className={`group relative inline-flex select-none items-center ${className}`}
     >
-      <span className="flex items-baseline text-[18px] font-semibold tracking-tight text-[var(--heading)]">
+      <span className="flex items-baseline text-[22px] font-semibold tracking-tight text-[var(--heading)]">
         {/* lowercase 'i' — emerald node replaces the tittle */}
         <span className="relative inline-block">
           <span className="font-semibold">ı</span>
