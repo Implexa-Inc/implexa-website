@@ -13,7 +13,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CircuitReveal } from "@/components/CircuitReveal";
-import implexaLogo from "@/assets/implexa-logo.png";
+
 
 export const Route = createFileRoute("/")({
   component: Index,
