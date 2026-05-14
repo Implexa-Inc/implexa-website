@@ -863,7 +863,7 @@ function FinalCTA() {
           transition={{ ...fadeUp.transition, delay: 0.05 }}
           className="mt-5 text-lg text-muted-foreground"
         >
-          Free plan ships with 500 credits/month. No credit card.
+          Start free. No credit card. 5 skills/month — and unlimited everything else.
         </motion.p>
         <motion.div
           {...fadeUp}
@@ -877,10 +877,9 @@ function FinalCTA() {
             Get started <ArrowRight className="size-4" />
           </a>
           <div className="text-[13px] text-muted-foreground">
-            or{" "}
-            <span className="font-mono text-flame">
-              claude plugin install implexa
-            </span>
+            or run{" "}
+            <span className="font-mono text-flame">/implexa:record-skill</span>{" "}
+            inside Claude
           </div>
         </motion.div>
       </div>
