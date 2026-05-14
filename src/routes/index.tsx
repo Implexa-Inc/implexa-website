@@ -94,16 +94,16 @@ function Nav() {
         <Wordmark />
         <div className="flex items-center gap-1 sm:gap-3 text-sm">
           <a
+            href="#how-it-works"
+            className="hidden sm:inline-block px-3 py-2 text-muted-foreground hover:text-[var(--heading)] transition-colors"
+          >
+            How it works
+          </a>
+          <a
             href="#pricing"
             className="hidden sm:inline-block px-3 py-2 text-muted-foreground hover:text-[var(--heading)] transition-colors"
           >
             Pricing
-          </a>
-          <a
-            href="#docs"
-            className="hidden sm:inline-block px-3 py-2 text-muted-foreground hover:text-[var(--heading)] transition-colors"
-          >
-            Docs
           </a>
           <a
             href="https://app.implexa.ai"
