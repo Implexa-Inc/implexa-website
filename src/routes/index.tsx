@@ -22,11 +22,11 @@ export const Route = createFileRoute("/")({
   component: Index,
   head: () => ({
     meta: [
-      { title: "Implexa — Adopt Claude faster, together." },
+      { title: "Implexa — Stop teaching Claude the same workflow every time." },
       {
         name: "description",
         content:
-          "Implexa turns the workflows your team already runs in Claude into reusable, shareable, measurable skills. Capture once. Replay forever. Improve over time.",
+          "Implexa captures every workflow you run in Claude — across CLI, Desktop, and Cowork — and turns it into a reusable skill anyone can replay with their own tools.",
       },
     ],
     links: [{ rel: "canonical", href: "/" }],
