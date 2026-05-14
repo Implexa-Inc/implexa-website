@@ -124,7 +124,7 @@ function Nav() {
 }
 
 function CopyInstall() {
-  const cmd = "claude plugin install implexa";
+  const cmd = "/implexa:record-skill";
   return (
     <button
       onClick={() => {
@@ -137,11 +137,14 @@ function CopyInstall() {
           },
         });
       }}
-      className="group inline-flex items-center gap-3 rounded-md border border-divider bg-surface px-4 py-2.5 font-mono text-[13px] text-muted-foreground transition-colors hover:border-flame/50 hover:text-[var(--heading)]"
+      className="group inline-flex flex-col items-start gap-1 rounded-md border-l-[3px] border-l-flame border border-divider bg-surface px-4 py-3 font-mono text-[13px] text-muted-foreground transition-colors hover:border-flame/50 hover:text-[var(--heading)]"
     >
-      <span className="text-flame">$</span>
-      <span>{cmd}</span>
-      <Copy className="size-3.5 opacity-50 group-hover:opacity-100" />
+      <span className="text-[11px] text-muted-foreground/70"># In Claude Code, Desktop, or Cowork:</span>
+      <span className="inline-flex items-center gap-3">
+        <span><span className="text-flame">/implexa:</span>record-skill</span>
+        <span aria-hidden className="inline-block h-4 w-[7px] animate-pulse bg-flame/70" />
+        <Copy className="size-3.5 opacity-50 group-hover:opacity-100" />
+      </span>
     </button>
   );
 }
