@@ -931,7 +931,7 @@ function Footer() {
         </div>
       </div>
       <div className="border-t border-divider py-6 text-center text-xs text-muted-foreground">
-        Made with <span className="inline-block animate-pulse">❤️</span> at a small lab in San Francisco 🌉
+        Made with <span className="inline-block animate-pulse">❤️</span> in a small lab in San Francisco 🌉
       </div>
     </footer>
   );
