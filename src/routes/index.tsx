@@ -931,8 +931,7 @@ function Footer() {
         </div>
       </div>
       <div className="border-t border-divider py-6 text-center text-xs text-muted-foreground">
-        Made in San Francisco. Built on MCP. Open source plugin.{" "}
-        <span className="inline-block animate-pulse">🔥</span>
+        Made with <span className="inline-block animate-pulse">❤️</span> at a small lab in San Francisco 🌉
       </div>
     </footer>
   );
