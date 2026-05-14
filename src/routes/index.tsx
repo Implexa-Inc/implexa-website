@@ -241,17 +241,18 @@ function StoryCard({
 
 function ThreeAct() {
   return (
-    <section className="mx-auto max-w-[1180px] px-6 py-28">
-      <div className="mx-auto max-w-[720px] text-center">
+    <section id="how-it-works" className="mx-auto max-w-[1180px] px-6 py-28">
+      <div className="mx-auto max-w-[760px] text-center">
         <motion.h2 {...fadeUp} className="text-3xl sm:text-4xl font-semibold">
-          Record. Share. Improve.
+          Three actions, one compounding library.
         </motion.h2>
         <motion.p
           {...fadeUp}
           transition={{ ...fadeUp.transition, delay: 0.05 }}
           className="mt-4 text-lg text-muted-foreground"
         >
-          Three actions that compound into your team's collective intelligence.
+          Every recorded skill becomes part of your team's collective
+          intelligence — and optionally the world's.
         </motion.p>
       </div>
       <div className="mt-14 grid gap-5 md:grid-cols-3">
@@ -263,22 +264,22 @@ function ThreeAct() {
               <span className="absolute inset-0 inline-flex animate-ping rounded-full bg-flame/40" />
             </span>
           }
-          title="Demonstrate once."
-          body="Show Claude how you research a target account, write a status update, prep for a call, or close a ticket. Implexa captures every step — your tools, your decisions, your reasoning — and saves it as a structured skill anyone on your team can replay."
+          title="Demonstrate once. Replay forever."
+          body="Run your usual workflow with the tools you already have wired into Claude. Implexa records every prompt, response, and tool call — then asks 3-5 questions to extract decision points, output contract, and outcome signal. Saved as a structured skill anyone can invoke."
           cmd="/implexa:record-skill"
         />
         <StoryCard
           delay={0.08}
           icon={<Share2 className="size-5 text-ember" />}
-          title="One click to your team. One link to the world."
-          body="Domain-gated share links keep skills internal — only people with your work email can install. Or share publicly — PII removed, workflow + sample data become a resource the whole community can fork."
+          title="Team-only or global. Your call."
+          body="Domain-gated share links keep skills internal — only your @company.com email can install. Or go public: anyone in the world can install with one click. Public shares unlock the Founding Creator perk."
           cmd="/implexa:share-this"
         />
         <StoryCard
           delay={0.16}
           icon={<TrendingUp className="size-5 text-flame" />}
-          title="Tied to real outcomes."
-          body="When a saved skill closes a deal, books a meeting, ships a PR, or saves an hour — Implexa attributes the outcome back to the skill. You see which workflows are actually working, and the platform learns which patterns to suggest next."
+          title="Attribution baked in."
+          body="Every skill invocation is logged. When CRM, calendar, or ATS data shows an outcome — meeting booked, deal closed, role filled — Implexa attributes back. You see which skills actually drive revenue, not vibes."
           cmd="/implexa:skill-roi"
         />
       </div>
