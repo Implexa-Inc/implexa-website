@@ -159,7 +159,7 @@ function Hero() {
       <div className="mx-auto max-w-[820px] px-6 text-center">
         <motion.div {...fadeUp}>
           <span className="inline-flex items-center gap-2 rounded-full border border-divider bg-surface px-3 py-1 text-[11px] uppercase tracking-wider text-muted-foreground">
-            <span className="text-flame">⚡</span> for teams building with Claude
+            <span className="text-flame">⚡</span> for everyone who lives in Claude
           </span>
         </motion.div>
         <motion.h1
@@ -167,17 +167,18 @@ function Hero() {
           transition={{ ...fadeUp.transition, delay: 0.05 }}
           className="mt-8 text-[40px] sm:text-[64px] lg:text-[72px] font-bold tracking-tight"
         >
-          Adopt Claude{" "}
-          <span className="underline-flame">faster</span>, together.
+          Stop teaching Claude<br />
+          the <span className="underline-flame">same workflow</span><br />
+          every single time.
         </motion.h1>
         <motion.p
           {...fadeUp}
           transition={{ ...fadeUp.transition, delay: 0.1 }}
-          className="mx-auto mt-6 max-w-[640px] text-lg sm:text-2xl text-muted-foreground"
+          className="mx-auto mt-6 max-w-[680px] text-lg sm:text-2xl text-muted-foreground"
         >
-          Implexa turns the workflows your team already runs in Claude into
-          reusable, shareable, measurable skills. Capture once. Replay forever.
-          Improve over time.
+          Implexa captures every workflow you run in Claude — across CLI,
+          Desktop, and Cowork — and turns it into a reusable skill. Anyone you
+          share with can replay it with their tools, their data, their voice.
         </motion.p>
         <motion.div
           {...fadeUp}
