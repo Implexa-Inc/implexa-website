@@ -890,7 +890,7 @@ function FinalCTA() {
 function Footer() {
   return (
     <footer className="border-t border-divider bg-[var(--background)]">
-      <div className="mx-auto grid max-w-[1180px] gap-10 px-6 py-16 md:grid-cols-3">
+      <div className="mx-auto grid max-w-[1180px] gap-10 px-6 py-16 md:grid-cols-4">
         <div>
           <Wordmark />
           <p className="mt-4 max-w-[260px] text-sm text-muted-foreground">
@@ -919,9 +919,19 @@ function Footer() {
             <li><a href="#contact" className="hover:text-[var(--heading)]">Contact</a></li>
           </ul>
         </div>
+        <div>
+          <div className="text-xs uppercase tracking-wider text-muted-foreground/70">
+            Community
+          </div>
+          <ul className="mt-4 space-y-2 text-sm text-muted-foreground">
+            <li><a href="#trending" className="hover:text-[var(--heading)]"><span className="text-flame">🔥</span> Trending Globally</a></li>
+            <li><a href="#founding" className="hover:text-[var(--heading)]"><Medal className="inline size-3 text-ember" /> Founding Creators</a></li>
+            <li><a href="#discord" className="hover:text-[var(--heading)]">Discord</a></li>
+          </ul>
+        </div>
       </div>
       <div className="border-t border-divider py-6 text-center text-xs text-muted-foreground">
-        Made with love at a small lab in San Francisco.{" "}
+        Made in San Francisco. Built on MCP. Open source plugin.{" "}
         <span className="inline-block animate-pulse">🔥</span>
       </div>
     </footer>
@@ -937,8 +947,11 @@ function Index() {
         <Hero />
         <ThreeAct />
         <SkillCardCenterpiece />
-        <EnterpriseBand />
+        <TrendingGlobally />
+        <ThreeSurfaces />
         <MCPSection />
+        <FoundingCreator />
+        <PricingTease />
         <Testimonials />
         <FinalCTA />
       </main>
