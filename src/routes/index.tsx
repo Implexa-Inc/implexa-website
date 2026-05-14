@@ -10,6 +10,9 @@ import {
   Share2,
   TrendingUp,
   ArrowRight,
+  Trophy,
+  Crown,
+  Medal,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CircuitReveal } from "@/components/CircuitReveal";
