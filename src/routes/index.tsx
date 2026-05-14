@@ -577,16 +577,16 @@ function MCPSection() {
       <div className="mx-auto mt-12 grid max-w-[1000px] gap-8 md:grid-cols-3">
         {[
           {
-            t: "Bring your own tools.",
-            d: "Any MCP-compatible tool becomes part of your captured skills. No re-integration needed.",
+            t: "Captures workflows from any MCP-compatible tool.",
+            d: "If you can do it in your Claude session, you can record it as a skill. We don't gate-keep your tools.",
           },
           {
-            t: "We're adding more every week.",
-            d: "Sales, recruiting, CS, engineering, RevOps, finance — Implexa's tool catalog keeps expanding so your team gets richer skills automatically.",
+            t: "You stay in control of integrations.",
+            d: "New MCP server in your Claude? Skills using it work immediately. The skill library adapts to your stack, not vice versa.",
           },
           {
             t: "Open by default.",
-            d: "Skills are portable across MCP clients — Claude Code, Claude Desktop, Cursor, claude.ai. Your work isn't locked into one surface.",
+            d: "Skills are portable across MCP clients — Claude Code, Claude Desktop, Cowork. Your work isn't locked into one surface.",
           },
         ].map((b, i) => (
           <motion.div
@@ -598,6 +598,193 @@ function MCPSection() {
               {b.t}
             </div>
             <p className="mt-2 text-[14px] text-muted-foreground">{b.d}</p>
+          </motion.div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function FoundingCreator() {
+  return (
+    <section className="relative bg-surface border-y border-divider">
+      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-ember/40 to-transparent" />
+      <div className="mx-auto max-w-[1180px] px-6 py-28">
+        <div className="grid items-center gap-10 md:grid-cols-[auto_1fr]">
+          <motion.div
+            {...fadeUp}
+            className="relative mx-auto flex size-32 items-center justify-center rounded-2xl border border-ember/40 bg-[var(--background)]"
+            style={{
+              background:
+                "radial-gradient(circle at 30% 30%, rgba(255,217,61,0.18), transparent 65%), var(--background)",
+              boxShadow: "0 0 60px rgba(255,217,61,0.18)",
+            }}
+          >
+            <Trophy className="size-14 text-ember" />
+          </motion.div>
+          <div>
+            <motion.div
+              {...fadeUp}
+              className="inline-flex items-center gap-2 rounded-full border border-ember/40 bg-ember/10 px-3 py-1 text-[11px] uppercase tracking-wider text-ember"
+            >
+              <Crown className="size-3" /> Founding Creator program
+            </motion.div>
+            <motion.h2
+              {...fadeUp}
+              transition={{ ...fadeUp.transition, delay: 0.05 }}
+              className="mt-5 text-3xl sm:text-4xl font-semibold"
+            >
+              Publish one skill publicly. <span className="text-ember">Unlock everything.</span>
+            </motion.h2>
+            <motion.p
+              {...fadeUp}
+              transition={{ ...fadeUp.transition, delay: 0.1 }}
+              className="mt-4 max-w-[640px] text-[15px] text-muted-foreground"
+            >
+              For the first 1,000 people who publish a public skill, we're
+              permanently unlocking the Free plan ceiling. No credit card.
+            </motion.p>
+            <motion.ul
+              {...fadeUp}
+              transition={{ ...fadeUp.transition, delay: 0.15 }}
+              className="mt-6 grid gap-2 text-[14px] text-[var(--foreground)] sm:grid-cols-2"
+            >
+              {[
+                "Unlimited skill captures (no 5/month cap)",
+                "🏆 Founding Creator badge on your profile",
+                "One free Pro seat for life when Pro launches",
+                "First access to upcoming features",
+              ].map((it) => (
+                <li key={it} className="flex items-start gap-2">
+                  <span className="mt-[7px] inline-block size-1.5 rounded-full bg-ember" />
+                  <span>{it}</span>
+                </li>
+              ))}
+            </motion.ul>
+            <motion.div
+              {...fadeUp}
+              transition={{ ...fadeUp.transition, delay: 0.2 }}
+              className="mt-8"
+            >
+              <a
+                href="https://app.implexa.ai/signup"
+                className="inline-flex items-center gap-2 rounded-md bg-flame px-6 py-3 font-medium text-[var(--primary-foreground)] transition-all hover:glow-flame-lg"
+              >
+                Get started → become a Founding Creator <ArrowRight className="size-4" />
+              </a>
+            </motion.div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function PricingTease() {
+  const tiers = [
+    {
+      name: "Free",
+      price: "$0",
+      sub: "forever",
+      tagline: "For solo Claude users making their workflows reusable.",
+      features: [
+        "5 skills captured / month",
+        "Unlimited use of skills in your library",
+        "Fork all 30 base Playbooks (and growing)",
+        "Domain-gated team shares",
+      ],
+      cta: "Get started",
+      featured: false,
+    },
+    {
+      name: "Pro",
+      price: "$19",
+      sub: "/user/mo",
+      tagline: "For teams + power users who've outgrown the cap.",
+      features: [
+        "Unlimited skill captures",
+        "Unlimited team-shared skills",
+        "Skill ROI dashboard",
+        "Priority support",
+      ],
+      cta: "Join the waitlist",
+      featured: true,
+      footnote: "Founding Creators get a free Pro seat for life.",
+    },
+    {
+      name: "Enterprise",
+      price: "Custom",
+      sub: "talk to us",
+      tagline: "For orgs with security, compliance, or scale needs.",
+      features: [
+        "SSO + audit logs",
+        "On-prem MCP server (BYO key)",
+        "Custom contract terms + SLA",
+        "Dedicated success engineer",
+      ],
+      cta: "Talk to us →",
+      featured: false,
+    },
+  ];
+  return (
+    <section id="pricing" className="mx-auto max-w-[1180px] px-6 py-28">
+      <div className="mx-auto max-w-[760px] text-center">
+        <motion.h2 {...fadeUp} className="text-3xl sm:text-4xl font-semibold">
+          Free forever, or upgrade when your team scales.
+        </motion.h2>
+        <motion.p
+          {...fadeUp}
+          transition={{ ...fadeUp.transition, delay: 0.05 }}
+          className="mt-4 text-lg text-muted-foreground"
+        >
+          Capture-first pricing. The 5/month cap on Free is the only constraint —
+          using, forking, and sharing are unlimited.
+        </motion.p>
+      </div>
+      <div className="mt-14 grid gap-5 md:grid-cols-3">
+        {tiers.map((t, i) => (
+          <motion.div
+            key={t.name}
+            {...fadeUp}
+            transition={{ ...fadeUp.transition, delay: i * 0.06 }}
+            className={`relative flex flex-col rounded-2xl border bg-surface p-7 transition-colors ${
+              t.featured
+                ? "border-flame/60 shadow-[0_0_60px_rgba(255,138,60,0.12)]"
+                : "border-divider hover:border-flame/30"
+            }`}
+          >
+            {t.featured && (
+              <span className="absolute right-5 top-5 rounded-full bg-flame px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-[var(--primary-foreground)]">
+                Most popular
+              </span>
+            )}
+            <div className="text-lg font-semibold">{t.name}</div>
+            <div className="mt-3 flex items-baseline gap-2">
+              <span className="text-4xl font-bold text-[var(--heading)]">{t.price}</span>
+              <span className="text-sm text-muted-foreground">{t.sub}</span>
+            </div>
+            <p className="mt-3 text-[13px] text-muted-foreground">{t.tagline}</p>
+            <ul className="mt-6 space-y-2.5 text-[14px] text-[var(--foreground)]">
+              {t.features.map((f) => (
+                <li key={f} className="flex items-start gap-2">
+                  <span className="mt-[6px] inline-block size-1.5 rounded-full bg-flame" />
+                  <span>{f}</span>
+                </li>
+              ))}
+            </ul>
+            <a
+              href="https://app.implexa.ai/signup"
+              className={`mt-7 inline-flex items-center justify-center rounded-md px-4 py-2.5 text-sm font-medium transition-all ${
+                t.featured
+                  ? "bg-flame text-[var(--primary-foreground)] hover:glow-flame"
+                  : "border border-divider text-[var(--heading)] hover:bg-surface-2"
+              }`}
+            >
+              {t.cta}
+            </a>
+            {t.footnote && (
+              <p className="mt-3 text-center text-[12px] text-ember">{t.footnote}</p>
+            )}
           </motion.div>
         ))}
       </div>
