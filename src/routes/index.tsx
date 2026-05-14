@@ -477,18 +477,19 @@ function MCPSection() {
   ];
   return (
     <section className="mx-auto max-w-[1180px] px-6 py-28">
-      <div className="mx-auto max-w-[720px] text-center">
+      <div className="mx-auto max-w-[760px] text-center">
         <motion.h2 {...fadeUp} className="text-3xl sm:text-4xl font-semibold">
-          Connects to your entire AI tool universe.
+          We don't build integrations. <span className="text-flame">You bring them.</span>
         </motion.h2>
         <motion.p
           {...fadeUp}
           transition={{ ...fadeUp.transition, delay: 0.05 }}
           className="mt-4 text-lg text-muted-foreground"
         >
-          Implexa is built on MCP — the open standard for AI tool integration.
-          Every tool your team uses inside Claude becomes part of every
-          captured skill, automatically.
+          Implexa is a capture and discovery layer — not an integration product.
+          Whatever MCP tools you have wired into your Claude (Fiber AI,
+          Coresignal, Apollo, your custom servers, anything) — Implexa captures
+          the workflows you run with them.
         </motion.p>
       </div>
 
