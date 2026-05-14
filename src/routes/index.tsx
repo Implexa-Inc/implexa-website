@@ -337,65 +337,133 @@ AND `}<span className="text-ember">{`CloseDate`}</span>{` >= LAST_N_MONTHS:3
   );
 }
 
-function EnterpriseBand() {
-  const integrations = [
-    "Salesforce", "HubSpot", "Slack", "Google Calendar",
-    "Notion", "Bullhorn", "Microsoft 365", "Anthropic",
+function TrendingGlobally() {
+  const skills = [
+    { name: "Daily LinkedIn prospect discovery", slug: "/implexa:linkedin-prospects", uses: 234, by: "Devon" },
+    { name: "Account expansion play", slug: "/implexa:account-expansion", uses: 187, by: "Maya" },
+    { name: "Customer health check", slug: "/implexa:customer-health", uses: 156, by: "Jules" },
+    { name: "Pre-meeting prep brief", slug: "/implexa:meeting-prep", uses: 142, by: "Sarah" },
+    { name: "Cold outreach sequence", slug: "/implexa:cold-outreach", uses: 134, by: "Marcus" },
   ];
+  const rankColor = (i: number) =>
+    i === 0 ? "text-ember bg-ember/10 border-ember/30"
+    : i === 1 ? "text-[#C0C0C0] bg-white/5 border-white/15"
+    : i === 2 ? "text-flame bg-flame/10 border-flame/30"
+    : "text-muted-foreground bg-surface-2 border-divider";
   return (
     <section className="relative bg-surface border-y border-divider">
       <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-flame/40 to-transparent" />
       <div className="mx-auto max-w-[1180px] px-6 py-28">
-        <motion.h2
-          {...fadeUp}
-          className="mx-auto max-w-[820px] text-center text-3xl sm:text-4xl font-semibold"
-        >
-          Built for teams adopting Claude org-wide.
-        </motion.h2>
-        <div className="mt-14 grid gap-5 md:grid-cols-2">
-          <motion.div
+        <div className="mx-auto max-w-[760px] text-center">
+          <motion.h2 {...fadeUp} className="text-3xl sm:text-4xl font-semibold">
+            Skills your peers are publishing right now.
+          </motion.h2>
+          <motion.p
             {...fadeUp}
-            className="rounded-2xl border border-divider bg-[var(--background)] p-8"
+            transition={{ ...fadeUp.transition, delay: 0.05 }}
+            className="mt-4 text-lg text-muted-foreground"
           >
-            <h3 className="text-lg font-semibold">
-              Maximize Claude across functions
-            </h3>
-            <p className="mt-3 text-[15px] text-muted-foreground">
-              Every team builds the same workflows in private. Sales reps
-              reinvent prospect research. CS reinvents renewal prep. Recruiters
-              reinvent candidate matching. Implexa makes those workflows
-              portable so your whole org gets to the best version, faster.
-            </p>
-          </motion.div>
-          <motion.div
-            {...fadeUp}
-            transition={{ ...fadeUp.transition, delay: 0.08 }}
-            className="rounded-2xl border border-divider bg-[var(--background)] p-8"
-          >
-            <h3 className="text-lg font-semibold">
-              Attribution that proves the ROI
-            </h3>
-            <p className="mt-3 text-[15px] text-muted-foreground">
-              We connect to your CRM (Salesforce, HubSpot), your ATS (Bullhorn,
-              Workday), your calendar, and your data warehouse. When a skill
-              drives a real outcome, attribution is automatic. Your leadership
-              sees Claude's actual revenue contribution — not vibes.
-            </p>
-          </motion.div>
+            <span className="text-flame">🔥 Trending Globally</span> — the
+            community surface for cross-org skill discovery.
+          </motion.p>
         </div>
         <motion.div
           {...fadeUp}
-          className="mt-14 flex flex-wrap items-center justify-center gap-x-10 gap-y-4"
+          className="mx-auto mt-12 max-w-[820px] divide-y divide-divider rounded-2xl border border-divider bg-[var(--background)]"
         >
-          {integrations.map((name) => (
-            <span
-              key={name}
-              className="text-sm text-muted-foreground/70 hover:text-[var(--heading)] transition-colors cursor-default"
+          {skills.map((s, i) => (
+            <div
+              key={s.slug}
+              className="flex items-center gap-4 px-5 py-4 transition-colors hover:bg-surface"
             >
-              {name}
-            </span>
+              <span
+                className={`flex size-8 items-center justify-center rounded-full border font-mono text-[12px] font-semibold ${rankColor(i)}`}
+              >
+                {i + 1}
+              </span>
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-2">
+                  <span className="truncate text-[15px] font-medium text-[var(--heading)]">
+                    {s.name}
+                  </span>
+                  <span className="hidden sm:inline font-mono text-[11px] text-flame">{s.slug}</span>
+                </div>
+                <div className="mt-0.5 text-[12px] text-muted-foreground">
+                  Used <span className="text-[var(--foreground)]">{s.uses}×</span> this week · Shared by {s.by}
+                </div>
+              </div>
+              <button className="hidden sm:inline-flex items-center gap-1.5 rounded-md bg-flame/10 px-3 py-1.5 text-[12px] font-medium text-flame transition-colors hover:bg-flame hover:text-[var(--primary-foreground)]">
+                <Play className="size-3" /> Run in Claude
+              </button>
+            </div>
           ))}
         </motion.div>
+        <p className="mx-auto mt-6 max-w-[640px] text-center text-[13px] text-muted-foreground">
+          Every published skill stays attributed to its creator. Earn your spot
+          on the leaderboard.
+        </p>
+      </div>
+    </section>
+  );
+}
+
+function ThreeSurfaces() {
+  const cols = [
+    {
+      title: "Claude Code (CLI)",
+      sub: "Full capture — tool calls + every prompt + every response",
+      body: "Install the plugin via the marketplace in your terminal. Hooks fire natively. The deepest integration — for power users.",
+      code: "/plugin marketplace add github.com/Implexa-Inc/implexa-claude-plugin\n/plugin install implexa@implexa",
+      badge: "RECOMMENDED",
+    },
+    {
+      title: "Cowork (web)",
+      sub: "Plugin install via marketplace UI",
+      body: "Customize → Personal plugins → Add marketplace → install Implexa. Adds 30+ MCP tools to your Cowork sessions. Also auto-enables Desktop Chat.",
+      code: "Customize → Personal plugins\n→ Add marketplace → Implexa",
+    },
+    {
+      title: "Claude Desktop chat",
+      sub: "One-URL paste — 30 seconds",
+      body: "Click + → Connectors → Add connector. Paste the URL we generate for you. No marketplace, no install dance. Just MCP.",
+      code: "https://core.implexa.ai/api/v2/mcp\n  ?api_key=imp_live_…",
+    },
+  ];
+  return (
+    <section className="mx-auto max-w-[1180px] px-6 py-28">
+      <div className="mx-auto max-w-[760px] text-center">
+        <motion.h2 {...fadeUp} className="text-3xl sm:text-4xl font-semibold">
+          Works wherever you use Claude.
+        </motion.h2>
+        <motion.p
+          {...fadeUp}
+          transition={{ ...fadeUp.transition, delay: 0.05 }}
+          className="mt-4 text-lg text-muted-foreground"
+        >
+          Same skill recording, three install methods. Pick what fits.
+        </motion.p>
+      </div>
+      <div className="mt-14 grid gap-5 md:grid-cols-3">
+        {cols.map((c, i) => (
+          <motion.div
+            key={c.title}
+            {...fadeUp}
+            transition={{ ...fadeUp.transition, delay: i * 0.06 }}
+            className="relative flex flex-col rounded-2xl border border-divider bg-surface p-7 transition-colors hover:border-flame/40"
+          >
+            {c.badge && (
+              <span className="absolute right-5 top-5 rounded-full border border-flame/40 bg-flame/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-flame">
+                {c.badge}
+              </span>
+            )}
+            <h3 className="text-lg font-semibold">{c.title}</h3>
+            <div className="mt-1 text-[13px] text-flame">{c.sub}</div>
+            <p className="mt-4 text-[14px] text-muted-foreground">{c.body}</p>
+            <pre className="mt-5 overflow-x-auto rounded-md border border-divider border-l-[3px] border-l-flame bg-[var(--background)] px-3 py-3 font-mono text-[12px] leading-6 text-muted-foreground">
+{c.code}
+            </pre>
+          </motion.div>
+        ))}
       </div>
     </section>
   );
