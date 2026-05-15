@@ -451,9 +451,12 @@ function TrendingGlobally() {
                   <span>Used <span className="text-[var(--foreground)]">{s.uses}×</span> this week · Shared by {s.by}</span>
                 </div>
               </div>
-              <button className="hidden sm:inline-flex items-center gap-1.5 rounded-md bg-flame/10 px-3 py-1.5 text-[12px] font-medium text-flame transition-colors hover:bg-flame hover:text-[var(--primary-foreground)]">
+              <a
+                href="https://app.implexa.ai/signup"
+                className="hidden sm:inline-flex items-center gap-1.5 rounded-md bg-flame/10 px-3 py-1.5 text-[12px] font-medium text-flame transition-colors hover:bg-flame hover:text-[var(--primary-foreground)]"
+              >
                 <Play className="size-3" /> Run in Claude
-              </button>
+              </a>
             </div>
           ))}
         </motion.div>
