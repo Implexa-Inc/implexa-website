@@ -538,17 +538,14 @@ function MCPSection() {
     <section className="mx-auto max-w-[1180px] px-6 py-28">
       <div className="mx-auto max-w-[760px] text-center">
         <motion.h2 {...fadeUp} className="text-3xl sm:text-4xl font-semibold">
-          We don't build integrations. <span className="text-flame">You bring them.</span>
+          Works with whatever you've already <span className="text-flame">wired into Claude.</span>
         </motion.h2>
         <motion.p
           {...fadeUp}
           transition={{ ...fadeUp.transition, delay: 0.05 }}
           className="mt-4 text-lg text-muted-foreground"
         >
-          Implexa is a capture and discovery layer — not an integration product.
-          Whatever MCP tools you have wired into your Claude (Fiber AI,
-          Coresignal, Apollo, your custom servers, anything) — Implexa captures
-          the workflows you run with them.
+          Salesforce. HubSpot. Bullhorn. GitHub. Slack. Apollo. Your custom MCP server.
         </motion.p>
       </div>
 
@@ -637,7 +634,7 @@ function MCPSection() {
         {[
           {
             t: "Captures workflows from any MCP-compatible tool.",
-            d: "If you can do it in your Claude session, you can record it as a skill. We don't gate-keep your tools.",
+            d: "If your team can run it in Claude, Implexa can capture it as a skill. That's it.",
           },
           {
             t: "You stay in control of integrations.",
@@ -660,6 +657,9 @@ function MCPSection() {
           </motion.div>
         ))}
       </div>
+      <p className="mx-auto mt-12 max-w-[680px] text-center text-[15px] text-muted-foreground">
+        If your team can run it in Claude, Implexa can capture it as a skill. <span className="text-[var(--heading)]">That's it.</span>
+      </p>
     </section>
   );
 }
