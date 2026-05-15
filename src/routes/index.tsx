@@ -123,12 +123,17 @@ function Nav() {
   );
 }
 
-function CopyInstall() {
-  const cmd = "/implexa:record-skill";
+function TerminalBlock() {
+  const lines: Array<{ comment?: string; cmd?: string; trail?: string }> = [
+    { comment: "# Inside Claude Code, Desktop, or Cowork:" },
+    { cmd: "record-skill", trail: "← captures this session" },
+    { cmd: "run daily-prospecting", trail: "← replay a saved skill" },
+    { cmd: "share-this", trail: "← team or public" },
+  ];
   return (
-    <button
+    <div
       onClick={() => {
-        navigator.clipboard.writeText(cmd);
+        navigator.clipboard.writeText("/implexa:record-skill");
         toast("Copied!", {
           style: {
             background: "var(--surface-2)",
@@ -137,15 +142,32 @@ function CopyInstall() {
           },
         });
       }}
-      className="group inline-flex flex-col items-start gap-1 rounded-md border-l-[3px] border-l-flame border border-divider bg-surface px-4 py-3 font-mono text-[13px] text-muted-foreground transition-colors hover:border-flame/50 hover:text-[var(--heading)]"
+      className="group cursor-pointer rounded-md border-l-[3px] border-l-flame border border-divider bg-surface px-5 py-4 font-mono text-[13px] text-left transition-colors hover:border-flame/50"
     >
-      <span className="text-[11px] text-muted-foreground/70"># In Claude Code, Desktop, or Cowork:</span>
-      <span className="inline-flex items-center gap-3">
-        <span><span className="text-flame">/implexa:</span>record-skill</span>
-        <span aria-hidden className="inline-block h-4 w-[7px] animate-pulse bg-flame/70" />
-        <Copy className="size-3.5 opacity-50 group-hover:opacity-100" />
-      </span>
-    </button>
+      {lines.map((l, i) => (
+        <motion.div
+          key={i}
+          initial={{ opacity: 0, x: -6 }}
+          whileInView={{ opacity: 1, x: 0 }}
+          viewport={{ once: true }}
+          transition={{ delay: i * 0.4, duration: 0.35 }}
+          className="flex items-center gap-3 leading-7"
+        >
+          {l.comment ? (
+            <span className="text-muted-foreground/70">{l.comment}</span>
+          ) : (
+            <>
+              <span className="text-muted-foreground/60">$</span>
+              <span>
+                <span className="text-flame">/implexa:</span>
+                <span className="text-[var(--heading)]">{l.cmd}</span>
+              </span>
+              <span className="text-muted-foreground/60">{l.trail}</span>
+            </>
+          )}
+        </motion.div>
+      ))}
+    </div>
   );
 }
 
