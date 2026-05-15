@@ -198,7 +198,7 @@ function Hero() {
         <motion.p
           {...fadeUp}
           transition={{ ...fadeUp.transition, delay: 0.1 }}
-          className="mx-auto mt-8 max-w-[640px] text-[17px] sm:text-[19px] font-normal leading-relaxed"
+          className="mx-auto mt-12 max-w-[640px] text-[17px] sm:text-[19px] font-normal leading-relaxed"
           style={{ color: "var(--ink-200, #d4d4d8)" }}
         >
           Implexa watches your Claude sessions, converts them into shareable
