@@ -266,44 +266,79 @@ function StoryCard({
 function ThreeAct() {
   return (
     <section id="how-it-works" className="mx-auto max-w-[1180px] px-6 py-28">
-      <div className="mx-auto max-w-[760px] text-center">
-        <motion.h2 {...fadeUp} className="text-3xl sm:text-4xl font-semibold">
-          Three actions, one compounding library.
-        </motion.h2>
-        <motion.p
+function PromiseCard({
+  num,
+  numColor,
+  title,
+  body,
+  cmd,
+  delay,
+}: {
+  num: string;
+  numColor: string;
+  title: string;
+  body: string;
+  cmd: string;
+  delay: number;
+}) {
+  return (
+    <motion.div
+      {...fadeUp}
+      transition={{ ...fadeUp.transition, delay }}
+      className="group relative flex flex-col rounded-2xl border border-divider bg-surface p-7 transition-colors hover:border-flame/40"
+    >
+      <span
+        className={`mb-5 inline-flex size-9 items-center justify-center rounded-full border font-mono text-[13px] font-semibold ${numColor}`}
+      >
+        {num}
+      </span>
+      <h3 className="text-lg font-semibold leading-snug text-[var(--heading)]">{title}</h3>
+      <p className="mt-3 text-[15px] leading-relaxed text-muted-foreground">{body}</p>
+      <div className="mt-6 inline-block self-start rounded-md border border-divider bg-[var(--background)] px-3 py-1.5 font-mono text-[12px] text-flame">
+        {cmd}
+      </div>
+    </motion.div>
+  );
+}
+
+function ThreeAct() {
+  return (
+    <section id="how-it-works" className="mx-auto max-w-[1180px] px-6 py-28">
+      <div className="mx-auto max-w-[820px] text-center">
+        <motion.div {...fadeUp} className="text-[12px] font-semibold uppercase tracking-[0.18em] text-flame">
+          What you get
+        </motion.div>
+        <motion.h2
           {...fadeUp}
           transition={{ ...fadeUp.transition, delay: 0.05 }}
-          className="mt-4 text-lg text-muted-foreground"
+          className="mt-4 text-3xl sm:text-4xl font-semibold text-[var(--heading)]"
         >
-          Every recorded skill becomes part of your team's collective
-          intelligence — and optionally the world's.
-        </motion.p>
+          Three promises. Three commands. One compounding library.
+        </motion.h2>
       </div>
       <div className="mt-14 grid gap-5 md:grid-cols-3">
-        <StoryCard
+        <PromiseCard
           delay={0}
-          icon={
-            <span className="relative inline-flex">
-              <Circle className="size-5 fill-flame text-flame" />
-              <span className="absolute inset-0 inline-flex animate-ping rounded-full bg-flame/40" />
-            </span>
-          }
-          title="Demonstrate once. Replay forever."
-          body="Run your usual workflow with the tools you already have wired into Claude. Implexa records every prompt, response, and tool call — then asks 3-5 questions to extract decision points, output contract, and outcome signal. Saved as a structured skill anyone can invoke."
+          num="01"
+          numColor="text-emerald-400 bg-emerald-500/10 border-emerald-500/30"
+          title="Convert your Claude sessions into skills. Automatically."
+          body="Run your usual workflow. Implexa watches the session, captures every tool call and every prompt-response turn, then asks 3-5 quick questions to extract the decision points and outcome signal. The result: a structured skill anyone can re-invoke."
           cmd="/implexa:record-skill"
         />
-        <StoryCard
+        <PromiseCard
           delay={0.08}
-          icon={<Share2 className="size-5 text-ember" />}
-          title="Team-only or global. Your call."
-          body="Domain-gated share links keep skills internal — only your @company.com email can install. Or go public: anyone in the world can install with one click. Public shares unlock the Founding Creator perk."
+          num="02"
+          numColor="text-flame bg-flame/10 border-flame/30"
+          title="Replay with a single line. Share with your team or the world."
+          body="Saved skills become first-class slash commands inside Claude. Domain-gated team shares keep skills internal — only your @company.com can install. Public shares put your skill in front of every Claude user via Trending Globally."
           cmd="/implexa:share-this"
         />
-        <StoryCard
+        <PromiseCard
           delay={0.16}
-          icon={<TrendingUp className="size-5 text-flame" />}
-          title="Attribution baked in."
-          body="Every skill invocation is logged. When CRM, calendar, or ATS data shows an outcome — meeting booked, deal closed, role filled — Implexa attributes back. You see which skills actually drive revenue, not vibes."
+          num="03"
+          numColor="text-ember bg-ember/10 border-ember/30"
+          title="Measure outcomes. Improve what works."
+          body="Every invocation is logged with structured outputs. When your CRM, calendar, or ATS shows a meeting booked, a deal closed, or a role filled, Implexa attributes it back to the skill that drove it. You see what's working — not what feels productive."
           cmd="/implexa:skill-roi"
         />
       </div>
