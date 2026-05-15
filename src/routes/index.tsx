@@ -179,12 +179,20 @@ function Hero() {
     >
       <div className="absolute inset-0 -z-10 radial-firelight" />
       <div className="mx-auto max-w-[820px] px-6 text-center">
+        <motion.div
+          {...fadeUp}
+          className="mb-6 text-[11px] sm:text-[12px] font-semibold tracking-[0.22em] uppercase"
+          style={{ color: "#FF5722" }}
+        >
+          ⚡ For teams that live in Claude
+        </motion.div>
         <motion.h1
           {...fadeUp}
+          transition={{ ...fadeUp.transition, delay: 0.05 }}
           className="text-[40px] sm:text-[60px] lg:text-[72px] font-semibold tracking-tight leading-[1.05] text-[var(--heading)]"
         >
           Adopt Claude{" "}
-          <span className="text-[1.1em] font-bold">10×</span> faster across your team.
+          <span className="text-[1.1em] font-bold underline-flame">10×</span> faster across your team.
         </motion.h1>
         <motion.p
           {...fadeUp}
