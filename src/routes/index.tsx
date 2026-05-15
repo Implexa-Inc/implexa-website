@@ -189,10 +189,11 @@ function Hero() {
         <motion.h1
           {...fadeUp}
           transition={{ ...fadeUp.transition, delay: 0.05 }}
-          className="text-[40px] sm:text-[60px] lg:text-[72px] font-semibold tracking-tight leading-[1.05] text-[var(--heading)]"
+          className="text-[34px] sm:text-[52px] lg:text-[64px] font-semibold tracking-tight leading-[1.08] text-[var(--heading)]"
         >
-          Adopt Claude{" "}
-          <span className="text-[1.1em] font-bold underline-flame">10×</span> faster across your team.
+          Adopt Claude <span className="text-[1.1em] font-bold underline-flame">10×</span> faster
+          <br />
+          across your team.
         </motion.h1>
         <motion.p
           {...fadeUp}
