@@ -263,9 +263,6 @@ function StoryCard({
   );
 }
 
-function ThreeAct() {
-  return (
-    <section id="how-it-works" className="mx-auto max-w-[1180px] px-6 py-28">
 function PromiseCard({
   num,
   numColor,
