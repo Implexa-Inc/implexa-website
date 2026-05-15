@@ -184,16 +184,16 @@ function Hero() {
           className="mb-6 text-[11px] sm:text-[12px] font-semibold tracking-[0.22em] uppercase"
           style={{ color: "#FF5722" }}
         >
-          ⚡ For teams that live in Claude
+          ⚡ For teams that want to adopt Claude 10× faster
         </motion.div>
         <motion.h1
           {...fadeUp}
           transition={{ ...fadeUp.transition, delay: 0.05 }}
           className="text-[34px] sm:text-[52px] lg:text-[64px] font-semibold tracking-tight leading-[1.08] text-[var(--heading)]"
         >
-          Adopt Claude <span className="text-[1.1em] font-bold underline-flame">10×</span> faster
+          Convert your Claude work into workflows.
           <br />
-          across your team.
+          Automatically, <span className="underline-flame">across teams</span>!
         </motion.h1>
         <motion.p
           {...fadeUp}
