@@ -175,7 +175,7 @@ function Hero() {
   return (
     <section
       id="top"
-      className="relative isolate overflow-hidden pt-20 pb-12 sm:pt-28 sm:pb-16"
+      className="relative isolate overflow-hidden pt-28 pb-16 sm:pt-36 sm:pb-20"
     >
       <div className="absolute inset-0 -z-10 radial-firelight" />
       <div className="mx-auto max-w-[1100px] px-6 text-center">
