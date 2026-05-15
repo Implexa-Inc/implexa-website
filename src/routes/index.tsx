@@ -397,11 +397,11 @@ AND `}<span className="text-ember">{`CloseDate`}</span>{` >= LAST_N_MONTHS:3
 
 function TrendingGlobally() {
   const skills = [
-    { name: "Daily LinkedIn prospect discovery", slug: "/implexa:linkedin-prospects", uses: 234, by: "Devon" },
-    { name: "Account expansion play", slug: "/implexa:account-expansion", uses: 187, by: "Maya" },
-    { name: "Customer health check", slug: "/implexa:customer-health", uses: 156, by: "Jules" },
-    { name: "Pre-meeting prep brief", slug: "/implexa:meeting-prep", uses: 142, by: "Sarah" },
-    { name: "Cold outreach sequence", slug: "/implexa:cold-outreach", uses: 134, by: "Marcus" },
+    { name: "Daily LinkedIn prospect discovery", slug: "/implexa:linkedin-prospects", fn: "Sales", uses: 234, by: "Devon" },
+    { name: "PR review summary from GitHub", slug: "/implexa:pr-review-summary", fn: "Engineering", uses: 198, by: "Priya" },
+    { name: "Renewal risk brief", slug: "/implexa:renewal-risk", fn: "Customer Success", uses: 167, by: "Jules" },
+    { name: "Bug triage from Sentry alerts", slug: "/implexa:sentry-triage", fn: "Engineering", uses: 142, by: "Marcus" },
+    { name: "Performance review prep", slug: "/implexa:perf-review-prep", fn: "HR / People Ops", uses: 118, by: "Maya" },
   ];
   const rankColor = (i: number) =>
     i === 0 ? "text-ember bg-ember/10 border-ember/30"
@@ -446,8 +446,9 @@ function TrendingGlobally() {
                   </span>
                   <span className="hidden sm:inline font-mono text-[11px] text-flame">{s.slug}</span>
                 </div>
-                <div className="mt-0.5 text-[12px] text-muted-foreground">
-                  Used <span className="text-[var(--foreground)]">{s.uses}×</span> this week · Shared by {s.by}
+                <div className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[12px] text-muted-foreground">
+                  <span className="rounded border border-divider bg-surface-2 px-1.5 py-px font-mono text-[10px] uppercase tracking-wider text-[var(--ink-300,#a1a1aa)]">{s.fn}</span>
+                  <span>Used <span className="text-[var(--foreground)]">{s.uses}×</span> this week · Shared by {s.by}</span>
                 </div>
               </div>
               <button className="hidden sm:inline-flex items-center gap-1.5 rounded-md bg-flame/10 px-3 py-1.5 text-[12px] font-medium text-flame transition-colors hover:bg-flame hover:text-[var(--primary-foreground)]">
