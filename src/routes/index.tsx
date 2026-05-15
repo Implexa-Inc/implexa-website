@@ -191,7 +191,7 @@ function Hero() {
           transition={{ ...fadeUp.transition, delay: 0.05 }}
           className="text-[34px] sm:text-[52px] lg:text-[64px] font-semibold tracking-tight leading-[1.08] text-[var(--heading)]"
         >
-          Convert Claude "work" to workflows.
+          From Claude <span className="underline-flame">work</span> to workflows.
           <br />
           Automatically, across <span className="underline-flame">teams</span>!
         </motion.h1>
