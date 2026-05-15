@@ -181,7 +181,7 @@ function Hero() {
       <div className="mx-auto max-w-[1100px] px-6 text-center">
         <motion.div
           {...fadeUp}
-          className="mb-6 text-[11px] sm:text-[12px] font-semibold tracking-[0.22em] uppercase"
+          className="mb-10 text-[11px] sm:text-[12px] font-semibold tracking-[0.22em] uppercase"
           style={{ color: "#FF5722" }}
         >
           ⚡ For teams that want to adopt Claude 10× faster
