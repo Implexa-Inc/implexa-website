@@ -123,12 +123,17 @@ function Nav() {
   );
 }
 
-function CopyInstall() {
-  const cmd = "/implexa:record-skill";
+function TerminalBlock() {
+  const lines: Array<{ comment?: string; cmd?: string; trail?: string }> = [
+    { comment: "# Inside Claude Code, Desktop, or Cowork:" },
+    { cmd: "record-skill", trail: "← captures this session" },
+    { cmd: "run daily-prospecting", trail: "← replay a saved skill" },
+    { cmd: "share-this", trail: "← team or public" },
+  ];
   return (
-    <button
+    <div
       onClick={() => {
-        navigator.clipboard.writeText(cmd);
+        navigator.clipboard.writeText("/implexa:record-skill");
         toast("Copied!", {
           style: {
             background: "var(--surface-2)",
@@ -137,15 +142,32 @@ function CopyInstall() {
           },
         });
       }}
-      className="group inline-flex flex-col items-start gap-1 rounded-md border-l-[3px] border-l-flame border border-divider bg-surface px-4 py-3 font-mono text-[13px] text-muted-foreground transition-colors hover:border-flame/50 hover:text-[var(--heading)]"
+      className="group cursor-pointer rounded-md border-l-[3px] border-l-flame border border-divider bg-surface px-5 py-4 font-mono text-[13px] text-left transition-colors hover:border-flame/50"
     >
-      <span className="text-[11px] text-muted-foreground/70"># In Claude Code, Desktop, or Cowork:</span>
-      <span className="inline-flex items-center gap-3">
-        <span><span className="text-flame">/implexa:</span>record-skill</span>
-        <span aria-hidden className="inline-block h-4 w-[7px] animate-pulse bg-flame/70" />
-        <Copy className="size-3.5 opacity-50 group-hover:opacity-100" />
-      </span>
-    </button>
+      {lines.map((l, i) => (
+        <motion.div
+          key={i}
+          initial={{ opacity: 0, x: -6 }}
+          whileInView={{ opacity: 1, x: 0 }}
+          viewport={{ once: true }}
+          transition={{ delay: i * 0.4, duration: 0.35 }}
+          className="flex items-center gap-3 leading-7"
+        >
+          {l.comment ? (
+            <span className="text-muted-foreground/70">{l.comment}</span>
+          ) : (
+            <>
+              <span className="text-muted-foreground/60">$</span>
+              <span>
+                <span className="text-flame">/implexa:</span>
+                <span className="text-[var(--heading)]">{l.cmd}</span>
+              </span>
+              <span className="text-muted-foreground/60">{l.trail}</span>
+            </>
+          )}
+        </motion.div>
+      ))}
+    </div>
   );
 }
 
@@ -157,33 +179,35 @@ function Hero() {
     >
       <div className="absolute inset-0 -z-10 radial-firelight" />
       <div className="mx-auto max-w-[820px] px-6 text-center">
-        <motion.div {...fadeUp}>
-          <span className="inline-flex items-center gap-2 rounded-full border border-divider bg-surface px-3 py-1 text-[11px] uppercase tracking-wider text-muted-foreground">
-            <span className="text-flame">⚡</span> for everyone who lives in Claude
-          </span>
-        </motion.div>
         <motion.h1
           {...fadeUp}
-          transition={{ ...fadeUp.transition, delay: 0.05 }}
-          className="mt-8 text-[40px] sm:text-[64px] lg:text-[72px] font-bold tracking-tight"
+          className="text-[32px] sm:text-[44px] lg:text-[52px] font-semibold tracking-tight leading-[1.15] text-[var(--heading)]"
         >
-          Stop teaching Claude<br />
-          the <span className="underline-flame">same workflow</span><br />
-          every single time.
+          Convert your Claude sessions into deeply learned skills.
+          Automatically.
         </motion.h1>
         <motion.p
           {...fadeUp}
-          transition={{ ...fadeUp.transition, delay: 0.1 }}
-          className="mx-auto mt-6 max-w-[680px] text-lg sm:text-2xl text-muted-foreground"
+          transition={{ ...fadeUp.transition, delay: 0.08 }}
+          className="mt-8 text-[22px] sm:text-[28px] font-medium leading-snug text-[color:var(--ink-200,theme(colors.zinc.200))]"
+          style={{ color: "var(--ink-200, #d4d4d8)" }}
         >
-          Implexa captures every workflow you run in Claude — across CLI,
-          Desktop, and Cowork — and turns it into a reusable skill. Anyone you
-          share with can replay it with their tools, their data, their voice.
+          Run the workflows with a single line. Share with your team or
+          showcase it to the world.
         </motion.p>
+        <motion.p
+          {...fadeUp}
+          transition={{ ...fadeUp.transition, delay: 0.14 }}
+          className="mt-6 text-[18px] sm:text-[20px] font-normal leading-snug"
+          style={{ color: "var(--ink-300, #a1a1aa)" }}
+        >
+          Measure outcomes. Improve what works.
+        </motion.p>
+
         <motion.div
           {...fadeUp}
-          transition={{ ...fadeUp.transition, delay: 0.15 }}
-          className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-3"
+          transition={{ ...fadeUp.transition, delay: 0.22 }}
+          className="mt-14 flex flex-col sm:flex-row items-center justify-center gap-4"
         >
           <a
             href="https://app.implexa.ai/signup"
@@ -193,17 +217,17 @@ function Hero() {
           </a>
           <button
             onClick={() => toast("Demo player coming soon")}
-            className="inline-flex items-center justify-center gap-2 rounded-md border border-divider bg-transparent px-6 py-3 font-medium text-[var(--heading)] transition-colors hover:bg-surface"
+            className="inline-flex items-center justify-center gap-2 text-[var(--heading)] transition-colors hover:text-flame"
           >
-            <Play className="size-4 text-flame" /> Watch a 90-second demo
+            Watch a 90-second demo →
           </button>
         </motion.div>
         <motion.div
           {...fadeUp}
-          transition={{ ...fadeUp.transition, delay: 0.2 }}
-          className="mt-8 flex justify-center"
+          transition={{ ...fadeUp.transition, delay: 0.3 }}
+          className="mt-12 mx-auto max-w-[640px]"
         >
-          <CopyInstall />
+          <TerminalBlock />
         </motion.div>
       </div>
     </section>
@@ -239,47 +263,79 @@ function StoryCard({
   );
 }
 
+function PromiseCard({
+  num,
+  numColor,
+  title,
+  body,
+  cmd,
+  delay,
+}: {
+  num: string;
+  numColor: string;
+  title: string;
+  body: string;
+  cmd: string;
+  delay: number;
+}) {
+  return (
+    <motion.div
+      {...fadeUp}
+      transition={{ ...fadeUp.transition, delay }}
+      className="group relative flex flex-col rounded-2xl border border-divider bg-surface p-7 transition-colors hover:border-flame/40"
+    >
+      <span
+        className={`mb-5 inline-flex size-9 items-center justify-center rounded-full border font-mono text-[13px] font-semibold ${numColor}`}
+      >
+        {num}
+      </span>
+      <h3 className="text-lg font-semibold leading-snug text-[var(--heading)]">{title}</h3>
+      <p className="mt-3 text-[15px] leading-relaxed text-muted-foreground">{body}</p>
+      <div className="mt-6 inline-block self-start rounded-md border border-divider bg-[var(--background)] px-3 py-1.5 font-mono text-[12px] text-flame">
+        {cmd}
+      </div>
+    </motion.div>
+  );
+}
+
 function ThreeAct() {
   return (
     <section id="how-it-works" className="mx-auto max-w-[1180px] px-6 py-28">
-      <div className="mx-auto max-w-[760px] text-center">
-        <motion.h2 {...fadeUp} className="text-3xl sm:text-4xl font-semibold">
-          Three actions, one compounding library.
-        </motion.h2>
-        <motion.p
+      <div className="mx-auto max-w-[820px] text-center">
+        <motion.div {...fadeUp} className="text-[12px] font-semibold uppercase tracking-[0.18em] text-flame">
+          What you get
+        </motion.div>
+        <motion.h2
           {...fadeUp}
           transition={{ ...fadeUp.transition, delay: 0.05 }}
-          className="mt-4 text-lg text-muted-foreground"
+          className="mt-4 text-3xl sm:text-4xl font-semibold text-[var(--heading)]"
         >
-          Every recorded skill becomes part of your team's collective
-          intelligence — and optionally the world's.
-        </motion.p>
+          Three promises. Three commands. One compounding library.
+        </motion.h2>
       </div>
       <div className="mt-14 grid gap-5 md:grid-cols-3">
-        <StoryCard
+        <PromiseCard
           delay={0}
-          icon={
-            <span className="relative inline-flex">
-              <Circle className="size-5 fill-flame text-flame" />
-              <span className="absolute inset-0 inline-flex animate-ping rounded-full bg-flame/40" />
-            </span>
-          }
-          title="Demonstrate once. Replay forever."
-          body="Run your usual workflow with the tools you already have wired into Claude. Implexa records every prompt, response, and tool call — then asks 3-5 questions to extract decision points, output contract, and outcome signal. Saved as a structured skill anyone can invoke."
+          num="01"
+          numColor="text-emerald-400 bg-emerald-500/10 border-emerald-500/30"
+          title="Convert your Claude sessions into skills. Automatically."
+          body="Run your usual workflow. Implexa watches the session, captures every tool call and every prompt-response turn, then asks 3-5 quick questions to extract the decision points and outcome signal. The result: a structured skill anyone can re-invoke."
           cmd="/implexa:record-skill"
         />
-        <StoryCard
+        <PromiseCard
           delay={0.08}
-          icon={<Share2 className="size-5 text-ember" />}
-          title="Team-only or global. Your call."
-          body="Domain-gated share links keep skills internal — only your @company.com email can install. Or go public: anyone in the world can install with one click. Public shares unlock the Founding Creator perk."
+          num="02"
+          numColor="text-flame bg-flame/10 border-flame/30"
+          title="Replay with a single line. Share with your team or the world."
+          body="Saved skills become first-class slash commands inside Claude. Domain-gated team shares keep skills internal — only your @company.com can install. Public shares put your skill in front of every Claude user via Trending Globally."
           cmd="/implexa:share-this"
         />
-        <StoryCard
+        <PromiseCard
           delay={0.16}
-          icon={<TrendingUp className="size-5 text-flame" />}
-          title="Attribution baked in."
-          body="Every skill invocation is logged. When CRM, calendar, or ATS data shows an outcome — meeting booked, deal closed, role filled — Implexa attributes back. You see which skills actually drive revenue, not vibes."
+          num="03"
+          numColor="text-ember bg-ember/10 border-ember/30"
+          title="Measure outcomes. Improve what works."
+          body="Every invocation is logged with structured outputs. When your CRM, calendar, or ATS shows a meeting booked, a deal closed, or a role filled, Implexa attributes it back to the skill that drove it. You see what's working — not what feels productive."
           cmd="/implexa:skill-roi"
         />
       </div>
