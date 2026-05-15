@@ -175,13 +175,13 @@ function Hero() {
   return (
     <section
       id="top"
-      className="relative isolate overflow-hidden pt-20 pb-12 sm:pt-28 sm:pb-16"
+      className="relative isolate overflow-hidden pt-28 pb-16 sm:pt-36 sm:pb-20"
     >
       <div className="absolute inset-0 -z-10 radial-firelight" />
       <div className="mx-auto max-w-[1100px] px-6 text-center">
         <motion.div
           {...fadeUp}
-          className="mb-6 text-[11px] sm:text-[12px] font-semibold tracking-[0.22em] uppercase"
+          className="mb-10 text-[11px] sm:text-[12px] font-semibold tracking-[0.22em] uppercase"
           style={{ color: "#FF5722" }}
         >
           ⚡ For teams that want to adopt Claude 10× faster
@@ -198,7 +198,7 @@ function Hero() {
         <motion.p
           {...fadeUp}
           transition={{ ...fadeUp.transition, delay: 0.1 }}
-          className="mx-auto mt-8 max-w-[640px] text-[17px] sm:text-[19px] font-normal leading-relaxed"
+          className="mx-auto mt-12 max-w-[640px] text-[17px] sm:text-[19px] font-normal leading-relaxed"
           style={{ color: "var(--ink-200, #d4d4d8)" }}
         >
           Implexa watches your Claude sessions, converts them into shareable
