@@ -634,7 +634,7 @@ function MCPSection() {
         {[
           {
             t: "Captures workflows from any MCP-compatible tool.",
-            d: "If you can do it in your Claude session, you can record it as a skill. We don't gate-keep your tools.",
+            d: "If your team can run it in Claude, Implexa can capture it as a skill. That's it.",
           },
           {
             t: "You stay in control of integrations.",
@@ -657,6 +657,9 @@ function MCPSection() {
           </motion.div>
         ))}
       </div>
+      <p className="mx-auto mt-12 max-w-[680px] text-center text-[15px] text-muted-foreground">
+        If your team can run it in Claude, Implexa can capture it as a skill. <span className="text-[var(--heading)]">That's it.</span>
+      </p>
     </section>
   );
 }
