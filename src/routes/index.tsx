@@ -181,27 +181,20 @@ function Hero() {
       <div className="mx-auto max-w-[820px] px-6 text-center">
         <motion.h1
           {...fadeUp}
-          className="text-[32px] sm:text-[44px] lg:text-[52px] font-semibold tracking-tight leading-[1.15] text-[var(--heading)]"
+          className="text-[40px] sm:text-[60px] lg:text-[72px] font-semibold tracking-tight leading-[1.05] text-[var(--heading)]"
         >
-          Convert your Claude sessions into deeply learned skills.
-          Automatically.
+          Adopt Claude{" "}
+          <span className="text-[1.1em] font-bold">10×</span> faster across your team.
         </motion.h1>
         <motion.p
           {...fadeUp}
-          transition={{ ...fadeUp.transition, delay: 0.08 }}
-          className="mt-8 text-[22px] sm:text-[28px] font-medium leading-snug text-[color:var(--ink-200,theme(colors.zinc.200))]"
+          transition={{ ...fadeUp.transition, delay: 0.1 }}
+          className="mx-auto mt-8 max-w-[640px] text-[17px] sm:text-[19px] font-normal leading-relaxed"
           style={{ color: "var(--ink-200, #d4d4d8)" }}
         >
-          Run the workflows with a single line. Share with your team or
-          showcase it to the world.
-        </motion.p>
-        <motion.p
-          {...fadeUp}
-          transition={{ ...fadeUp.transition, delay: 0.14 }}
-          className="mt-6 text-[18px] sm:text-[20px] font-normal leading-snug"
-          style={{ color: "var(--ink-300, #a1a1aa)" }}
-        >
-          Measure outcomes. Improve what works.
+          Implexa watches your Claude sessions, converts them into shareable
+          skills, and tracks what's actually working — so the whole team gets
+          faster every time someone figures something out.
         </motion.p>
 
         <motion.div
