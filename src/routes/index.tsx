@@ -397,11 +397,11 @@ AND `}<span className="text-ember">{`CloseDate`}</span>{` >= LAST_N_MONTHS:3
 
 function TrendingGlobally() {
   const skills = [
-    { name: "Daily LinkedIn prospect discovery", slug: "/implexa:linkedin-prospects", uses: 234, by: "Devon" },
-    { name: "Account expansion play", slug: "/implexa:account-expansion", uses: 187, by: "Maya" },
-    { name: "Customer health check", slug: "/implexa:customer-health", uses: 156, by: "Jules" },
-    { name: "Pre-meeting prep brief", slug: "/implexa:meeting-prep", uses: 142, by: "Sarah" },
-    { name: "Cold outreach sequence", slug: "/implexa:cold-outreach", uses: 134, by: "Marcus" },
+    { name: "Daily LinkedIn prospect discovery", slug: "/implexa:linkedin-prospects", fn: "Sales", uses: 234, by: "Devon" },
+    { name: "PR review summary from GitHub", slug: "/implexa:pr-review-summary", fn: "Engineering", uses: 198, by: "Priya" },
+    { name: "Renewal risk brief", slug: "/implexa:renewal-risk", fn: "Customer Success", uses: 167, by: "Jules" },
+    { name: "Bug triage from Sentry alerts", slug: "/implexa:sentry-triage", fn: "Engineering", uses: 142, by: "Marcus" },
+    { name: "Performance review prep", slug: "/implexa:perf-review-prep", fn: "HR / People Ops", uses: 118, by: "Maya" },
   ];
   const rankColor = (i: number) =>
     i === 0 ? "text-ember bg-ember/10 border-ember/30"
