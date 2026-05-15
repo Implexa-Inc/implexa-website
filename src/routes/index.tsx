@@ -302,7 +302,7 @@ function PromiseCard({
 
 function ThreeAct() {
   return (
-    <section id="how-it-works" className="mx-auto max-w-[1180px] px-6 py-28">
+    <section id="how-it-works" className="mx-auto max-w-[1180px] px-6 pt-12 pb-28 sm:pt-16 sm:pb-28">
       <div className="mx-auto max-w-[820px] text-center">
         <motion.div {...fadeUp} className="text-[12px] font-semibold uppercase tracking-[0.18em] text-flame">
           What you get
