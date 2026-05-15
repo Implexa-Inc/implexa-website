@@ -179,11 +179,6 @@ function Hero() {
     >
       <div className="absolute inset-0 -z-10 radial-firelight" />
       <div className="mx-auto max-w-[820px] px-6 text-center">
-        <motion.div {...fadeUp}>
-          <span className="inline-flex items-center gap-2 rounded-full border border-divider bg-surface px-3 py-1 text-[11px] uppercase tracking-wider text-muted-foreground">
-            <span className="text-flame">⚡</span> for everyone who lives in Claude
-          </span>
-        </motion.div>
         <motion.h1
           {...fadeUp}
           className="text-[32px] sm:text-[44px] lg:text-[52px] font-semibold tracking-tight leading-[1.15] text-[var(--heading)]"
