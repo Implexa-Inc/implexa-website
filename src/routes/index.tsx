@@ -186,26 +186,33 @@ function Hero() {
         </motion.div>
         <motion.h1
           {...fadeUp}
-          transition={{ ...fadeUp.transition, delay: 0.05 }}
-          className="mt-8 text-[40px] sm:text-[64px] lg:text-[72px] font-bold tracking-tight"
+          className="text-[32px] sm:text-[44px] lg:text-[52px] font-semibold tracking-tight leading-[1.15] text-[var(--heading)]"
         >
-          Stop teaching Claude<br />
-          the <span className="underline-flame">same workflow</span><br />
-          every single time.
+          Convert your Claude sessions into deeply learned skills.
+          Automatically.
         </motion.h1>
         <motion.p
           {...fadeUp}
-          transition={{ ...fadeUp.transition, delay: 0.1 }}
-          className="mx-auto mt-6 max-w-[680px] text-lg sm:text-2xl text-muted-foreground"
+          transition={{ ...fadeUp.transition, delay: 0.08 }}
+          className="mt-8 text-[22px] sm:text-[28px] font-medium leading-snug text-[color:var(--ink-200,theme(colors.zinc.200))]"
+          style={{ color: "var(--ink-200, #d4d4d8)" }}
         >
-          Implexa captures every workflow you run in Claude — across CLI,
-          Desktop, and Cowork — and turns it into a reusable skill. Anyone you
-          share with can replay it with their tools, their data, their voice.
+          Run the workflows with a single line. Share with your team or
+          showcase it to the world.
         </motion.p>
+        <motion.p
+          {...fadeUp}
+          transition={{ ...fadeUp.transition, delay: 0.14 }}
+          className="mt-6 text-[18px] sm:text-[20px] font-normal leading-snug"
+          style={{ color: "var(--ink-300, #a1a1aa)" }}
+        >
+          Measure outcomes. Improve what works.
+        </motion.p>
+
         <motion.div
           {...fadeUp}
-          transition={{ ...fadeUp.transition, delay: 0.15 }}
-          className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-3"
+          transition={{ ...fadeUp.transition, delay: 0.22 }}
+          className="mt-14 flex flex-col sm:flex-row items-center justify-center gap-4"
         >
           <a
             href="https://app.implexa.ai/signup"
@@ -215,17 +222,17 @@ function Hero() {
           </a>
           <button
             onClick={() => toast("Demo player coming soon")}
-            className="inline-flex items-center justify-center gap-2 rounded-md border border-divider bg-transparent px-6 py-3 font-medium text-[var(--heading)] transition-colors hover:bg-surface"
+            className="inline-flex items-center justify-center gap-2 text-[var(--heading)] transition-colors hover:text-flame"
           >
-            <Play className="size-4 text-flame" /> Watch a 90-second demo
+            Watch a 90-second demo →
           </button>
         </motion.div>
         <motion.div
           {...fadeUp}
-          transition={{ ...fadeUp.transition, delay: 0.2 }}
-          className="mt-8 flex justify-center"
+          transition={{ ...fadeUp.transition, delay: 0.3 }}
+          className="mt-12 mx-auto max-w-[640px]"
         >
-          <CopyInstall />
+          <TerminalBlock />
         </motion.div>
       </div>
     </section>
