@@ -446,8 +446,9 @@ function TrendingGlobally() {
                   </span>
                   <span className="hidden sm:inline font-mono text-[11px] text-flame">{s.slug}</span>
                 </div>
-                <div className="mt-0.5 text-[12px] text-muted-foreground">
-                  Used <span className="text-[var(--foreground)]">{s.uses}×</span> this week · Shared by {s.by}
+                <div className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[12px] text-muted-foreground">
+                  <span className="rounded border border-divider bg-surface-2 px-1.5 py-px font-mono text-[10px] uppercase tracking-wider text-[var(--ink-300,#a1a1aa)]">{s.fn}</span>
+                  <span>Used <span className="text-[var(--foreground)]">{s.uses}×</span> this week · Shared by {s.by}</span>
                 </div>
               </div>
               <button className="hidden sm:inline-flex items-center gap-1.5 rounded-md bg-flame/10 px-3 py-1.5 text-[12px] font-medium text-flame transition-colors hover:bg-flame hover:text-[var(--primary-foreground)]">
