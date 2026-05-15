@@ -5,7 +5,7 @@
   <!-- wordmark: dotless i (using ı) so we can place our own emerald tittle -->
   <text x="40" y="125" class="wm" fill="#fafafa">ımplexa</text>
   <!-- emerald tittle above the i -->
-  <circle cx="61" cy="40" r="11" fill="#34d399"/>
+  <circle cx="55" cy="40" r="11" fill="#34d399"/>
   <!-- flame node centered on the x -->
-  <circle cx="346" cy="92" r="11" fill="#ff8a3c"/>
+  <circle cx="352" cy="92" r="11" fill="#ff8a3c"/>
 </svg>
