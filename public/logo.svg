@@ -7,5 +7,5 @@
   <!-- emerald tittle above the i -->
   <circle cx="54" cy="40" r="11" fill="#34d399"/>
   <!-- flame node centered on the x -->
-  <circle cx="351" cy="92" r="11" fill="#ff8a3c"/>
+  <circle cx="350" cy="92" r="11" fill="#ff8a3c"/>
 </svg>
