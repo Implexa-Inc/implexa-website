@@ -47,29 +47,10 @@ function Wordmark({ className = "" }: { className?: string }) {
       aria-label="Implexa"
       className={`group relative inline-flex select-none items-center ${className}`}
     >
-      <span className="flex items-baseline text-[22px] font-semibold tracking-tight text-[var(--heading)]">
-        {/* lowercase 'i' — emerald node replaces the tittle */}
-        <span className="relative inline-block">
-          <span className="font-semibold">ı</span>
-          <span
-            aria-hidden
-            className="absolute -top-[1px] left-1/2 size-[6px] -translate-x-1/2 rounded-full bg-emerald-400 ring-1 ring-[var(--background)] shadow-[0_0_10px_rgba(16,185,129,0.75)] transition-transform duration-300 group-hover:scale-125"
-          />
-        </span>
-        mple
-        {/* 'x' — flame node at the crossing */}
-        <span className="relative inline-block">
-          <span>x</span>
-          <span
-            aria-hidden
-            className="absolute left-1/2 top-[50%] size-[6px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-flame ring-1 ring-[var(--background)] shadow-[0_0_10px_rgba(255,138,60,0.8)] transition-transform duration-300 group-hover:scale-125"
-          />
-        </span>
-        a
-      </span>
-      <span
-        aria-hidden
-        className="pointer-events-none absolute -bottom-1 left-0 right-0 h-px bg-gradient-to-r from-transparent via-emerald-500/30 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+      <img
+        src="/logo.svg"
+        alt="Implexa"
+        className="h-7 w-auto transition-opacity duration-300 group-hover:opacity-90"
       />
     </a>
   );
