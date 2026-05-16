@@ -1060,7 +1060,7 @@ function Footer() {
             <li><a href="#about" className="hover:text-[var(--heading)]">About</a></li>
             <li><a href="#privacy" className="hover:text-[var(--heading)]">Privacy</a></li>
             <li><a href="#terms" className="hover:text-[var(--heading)]">Terms</a></li>
-            <li><a href="#contact" className="hover:text-[var(--heading)]">Contact</a></li>
+            <li><a href="mailto:founder@implexa.ai" className="hover:text-[var(--heading)]">Contact</a></li>
           </ul>
         </div>
         <div>
