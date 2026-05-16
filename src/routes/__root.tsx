@@ -81,8 +81,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:title", content: "Implexa — Adopt Claude faster, together." },
       { name: "twitter:description", content: "Implexa turns the workflows your team already runs in Claude into reusable, shareable, measurable skills. Capture once. Replay forever." },
-      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/596cc866-12da-428b-9845-e9c5ced45f0d/id-preview-bd5d6d5e--cd93d74f-1878-4449-8bec-290e323764b1.lovable.app-1778626887908.png" },
-      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/596cc866-12da-428b-9845-e9c5ced45f0d/id-preview-bd5d6d5e--cd93d74f-1878-4449-8bec-290e323764b1.lovable.app-1778626887908.png" },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/fbbb7d49-92e1-457d-987a-3adbe23211e7/id-preview-5aa52301--cd93d74f-1878-4449-8bec-290e323764b1.lovable.app-1778948436668.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/fbbb7d49-92e1-457d-987a-3adbe23211e7/id-preview-5aa52301--cd93d74f-1878-4449-8bec-290e323764b1.lovable.app-1778948436668.png" },
     ],
     links: [
       { rel: "icon", type: "image/svg+xml", href: "/favicon.svg" },
