@@ -215,13 +215,14 @@ function Hero() {
           className="mt-12 mx-auto max-w-[960px]"
         >
           <video
-            src="/implexa-trailer.mp4"
+            src="/api/trailer"
             autoPlay
             muted
             loop
             playsInline
             controls
             controlsList="nodownload"
+            preload="metadata"
             className="w-full rounded-lg border border-[var(--border)] shadow-2xl"
           />
         </motion.div>
