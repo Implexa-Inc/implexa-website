@@ -229,6 +229,8 @@ function Hero() {
             muted
             loop
             playsInline
+            controls
+            controlsList="nodownload"
             className="w-full rounded-lg border border-[var(--border)] shadow-2xl"
           />
         </motion.div>
