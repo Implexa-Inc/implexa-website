@@ -44,13 +44,11 @@ const CONTACT_EMAIL = "founder@implexa.ai";
 const CONTACT_MAILTO = `mailto:${CONTACT_EMAIL}?subject=Implexa%20inquiry`;
 
 function handleContactClick(event: MouseEvent<HTMLAnchorElement>) {
-  event.preventDefault();
+  event.currentTarget.blur();
 
-  void navigator.clipboard?.writeText(CONTACT_EMAIL).then(() => {
-    toast.success("Email copied", { description: CONTACT_EMAIL });
-  });
+  toast.info("Opening email app", { description: CONTACT_EMAIL });
 
-  window.location.href = CONTACT_MAILTO;
+  void navigator.clipboard?.writeText(CONTACT_EMAIL).catch(() => undefined);
 }
 
 function Wordmark({ className = "" }: { className?: string }) {
@@ -1073,7 +1071,7 @@ function Footer() {
             <li><a href="#about" className="hover:text-[var(--heading)]">About</a></li>
             <li><a href="#privacy" className="hover:text-[var(--heading)]">Privacy</a></li>
             <li><a href="#terms" className="hover:text-[var(--heading)]">Terms</a></li>
-            <li><a href={CONTACT_MAILTO} onClick={handleContactClick} className="hover:text-[var(--heading)]">Contact</a></li>
+            <li><a href={CONTACT_MAILTO} target="_top" onClick={handleContactClick} className="hover:text-[var(--heading)]">Contact</a></li>
           </ul>
         </div>
         <div>
