@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { type MouseEvent, useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 import {
@@ -16,7 +16,6 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CircuitReveal } from "@/components/CircuitReveal";
-
 
 export const Route = createFileRoute("/")({
   component: Index,
@@ -39,6 +38,17 @@ const fadeUp = {
   viewport: { once: true, margin: "-80px" },
   transition: { duration: 0.45, ease: [0.22, 1, 0.36, 1] as const },
 };
+
+const CONTACT_EMAIL = "founder@implexa.ai";
+const CONTACT_MAILTO = `mailto:${CONTACT_EMAIL}?subject=Implexa%20inquiry`;
+
+function handleContactClick(event: MouseEvent<HTMLAnchorElement>) {
+  event.currentTarget.blur();
+
+  toast.info("Opening email app", { description: CONTACT_EMAIL });
+
+  void navigator.clipboard?.writeText(CONTACT_EMAIL).catch(() => undefined);
+}
 
 function Wordmark({ className = "" }: { className?: string }) {
   return (
@@ -1060,7 +1070,7 @@ function Footer() {
             <li><a href="#about" className="hover:text-[var(--heading)]">About</a></li>
             <li><a href="#privacy" className="hover:text-[var(--heading)]">Privacy</a></li>
             <li><a href="#terms" className="hover:text-[var(--heading)]">Terms</a></li>
-            <li><a href="mailto:founder@implexa.ai" target="_blank" rel="noopener noreferrer" className="hover:text-[var(--heading)]">Contact</a></li>
+            <li><a href={CONTACT_MAILTO} target="_top" onClick={handleContactClick} className="hover:text-[var(--heading)]">Contact</a></li>
           </ul>
         </div>
         <div>
