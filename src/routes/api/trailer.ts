@@ -26,7 +26,7 @@ function buildResponse(bytes: Uint8Array, range: string | null): Response {
   if (cachedEtag) baseHeaders["ETag"] = cachedEtag;
 
   if (!range) {
-    return new Response(bytes, {
+    return new Response(bytes.buffer as ArrayBuffer, {
       status: 200,
       headers: { ...baseHeaders, "Content-Length": String(total) },
     });
@@ -34,7 +34,7 @@ function buildResponse(bytes: Uint8Array, range: string | null): Response {
 
   const match = /^bytes=(\d*)-(\d*)$/.exec(range.trim());
   if (!match) {
-    return new Response(bytes, {
+    return new Response(bytes.buffer as ArrayBuffer, {
       status: 200,
       headers: { ...baseHeaders, "Content-Length": String(total) },
     });
@@ -50,7 +50,7 @@ function buildResponse(bytes: Uint8Array, range: string | null): Response {
   }
 
   const slice = bytes.subarray(start, end + 1);
-  return new Response(slice, {
+  return new Response(slice.buffer.slice(slice.byteOffset, slice.byteOffset + slice.byteLength) as ArrayBuffer, {
     status: 206,
     headers: {
       ...baseHeaders,
