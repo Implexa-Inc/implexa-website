@@ -215,7 +215,7 @@ function Hero() {
           className="mt-12 mx-auto max-w-[960px]"
         >
           <video
-            src="/api/trailer"
+            src="/api/public/trailer"
             autoPlay
             muted
             loop
