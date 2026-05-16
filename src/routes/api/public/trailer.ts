@@ -60,7 +60,7 @@ function buildResponse(bytes: Uint8Array, range: string | null): Response {
   });
 }
 
-export const Route = createFileRoute("/api/trailer")({
+export const Route = createFileRoute("/api/public/trailer")({
   server: {
     handlers: {
       GET: async ({ request }) => {
