@@ -21,14 +21,29 @@ export const Route = createFileRoute("/")({
   component: Index,
   head: () => ({
     meta: [
-      { title: "Implexa — Stop teaching Claude the same workflow every time." },
+      { title: "Implexa — From Claude work to workflows" },
       {
         name: "description",
         content:
-          "Implexa captures every workflow you run in Claude — across CLI, Desktop, and Cowork — and turns it into a reusable skill anyone can replay with their own tools.",
+          "Implexa watches Claude sessions, converts them into shareable skills, and tracks what works so every team gets faster.",
       },
+      { property: "og:title", content: "Implexa — From Claude work to workflows" },
+      {
+        property: "og:description",
+        content:
+          "Implexa watches Claude sessions, converts them into shareable skills, and tracks what works so every team gets faster.",
+      },
+      { property: "og:url", content: "https://implexa.ai/" },
+      { property: "og:image", content: "https://implexa.ai/social-preview.png" },
+      { name: "twitter:title", content: "Implexa — From Claude work to workflows" },
+      {
+        name: "twitter:description",
+        content:
+          "Implexa watches Claude sessions, converts them into shareable skills, and tracks what works so every team gets faster.",
+      },
+      { name: "twitter:image", content: "https://implexa.ai/social-preview.png" },
     ],
-    links: [{ rel: "canonical", href: "/" }],
+    links: [{ rel: "canonical", href: "https://implexa.ai/" }],
   }),
 });
 
@@ -215,7 +230,7 @@ function Hero() {
           className="mt-12 mx-auto max-w-[960px]"
         >
           <video
-            src="/api/public/trailer"
+            src="/implexa-trailer.mp4"
             autoPlay
             muted
             loop
