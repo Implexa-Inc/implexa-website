@@ -751,7 +751,8 @@ function FoundingCreator() {
 }
 
 function PricingTease() {
-  const tiers = [
+  const [cycle, setCycle] = useState<"monthly" | "annual">("annual");
+  const sideTiers = [
     {
       name: "Free",
       price: "$0",
@@ -764,22 +765,6 @@ function PricingTease() {
         "Domain-gated team shares",
       ],
       cta: "Get started",
-      featured: false,
-    },
-    {
-      name: "Pro",
-      price: "$19",
-      sub: "/user/mo",
-      tagline: "For teams + power users who've outgrown the cap.",
-      features: [
-        "Unlimited skill captures",
-        "Unlimited team-shared skills",
-        "Skill ROI dashboard",
-        "Priority support",
-      ],
-      cta: "Join the waitlist",
-      featured: true,
-      footnote: "Founding Creators get a free Pro seat for life.",
     },
     {
       name: "Enterprise",
@@ -793,9 +778,16 @@ function PricingTease() {
         "Dedicated success engineer",
       ],
       cta: "Talk to us →",
-      featured: false,
     },
   ];
+  const proFeatures = [
+    "🚀 Unlimited skill captures (vs Free's 5/month)",
+    "📊 Skill ROI dashboard — see which skills drive outcomes",
+    "🏢 Team-wide shared skill library",
+    "⭐ Priority support + private Slack channel",
+    "Everything in Free, naturally",
+  ];
+  const isAnnual = cycle === "annual";
   return (
     <section id="pricing" className="mx-auto max-w-[1180px] px-6 py-28">
       <div className="mx-auto max-w-[760px] text-center">
@@ -812,51 +804,150 @@ function PricingTease() {
         </motion.p>
       </div>
       <div className="mt-14 grid gap-5 md:grid-cols-3">
-        {tiers.map((t, i) => (
-          <motion.div
-            key={t.name}
-            {...fadeUp}
-            transition={{ ...fadeUp.transition, delay: i * 0.06 }}
-            className={`relative flex flex-col rounded-2xl border bg-surface p-7 transition-colors ${
-              t.featured
-                ? "border-flame/60 shadow-[0_0_60px_rgba(255,138,60,0.12)]"
-                : "border-divider hover:border-flame/30"
-            }`}
+        {/* Free */}
+        <motion.div
+          {...fadeUp}
+          className="relative flex flex-col rounded-2xl border border-divider bg-surface p-7 transition-colors hover:border-flame/30"
+        >
+          <div className="text-lg font-semibold">{sideTiers[0].name}</div>
+          <div className="mt-3 flex items-baseline gap-2">
+            <span className="text-4xl font-bold text-[var(--heading)]">{sideTiers[0].price}</span>
+            <span className="text-sm text-muted-foreground">{sideTiers[0].sub}</span>
+          </div>
+          <p className="mt-3 text-[13px] text-muted-foreground">{sideTiers[0].tagline}</p>
+          <ul className="mt-6 space-y-2.5 text-[14px] text-[var(--foreground)]">
+            {sideTiers[0].features.map((f) => (
+              <li key={f} className="flex items-start gap-2">
+                <span className="mt-[6px] inline-block size-1.5 rounded-full bg-flame" />
+                <span>{f}</span>
+              </li>
+            ))}
+          </ul>
+          <a
+            href="https://app.implexa.ai/signup"
+            className="mt-7 inline-flex items-center justify-center rounded-md border border-divider px-4 py-2.5 text-sm font-medium text-[var(--heading)] transition-all hover:bg-surface-2"
           >
-            {t.featured && (
-              <span className="absolute right-5 top-5 rounded-full bg-flame px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-[var(--primary-foreground)]">
-                Most popular
-              </span>
-            )}
-            <div className="text-lg font-semibold">{t.name}</div>
-            <div className="mt-3 flex items-baseline gap-2">
-              <span className="text-4xl font-bold text-[var(--heading)]">{t.price}</span>
-              <span className="text-sm text-muted-foreground">{t.sub}</span>
-            </div>
-            <p className="mt-3 text-[13px] text-muted-foreground">{t.tagline}</p>
-            <ul className="mt-6 space-y-2.5 text-[14px] text-[var(--foreground)]">
-              {t.features.map((f) => (
-                <li key={f} className="flex items-start gap-2">
-                  <span className="mt-[6px] inline-block size-1.5 rounded-full bg-flame" />
-                  <span>{f}</span>
-                </li>
-              ))}
-            </ul>
-            <a
-              href="https://app.implexa.ai/signup"
-              className={`mt-7 inline-flex items-center justify-center rounded-md px-4 py-2.5 text-sm font-medium transition-all ${
-                t.featured
-                  ? "bg-flame text-[var(--primary-foreground)] hover:glow-flame"
-                  : "border border-divider text-[var(--heading)] hover:bg-surface-2"
+            {sideTiers[0].cta}
+          </a>
+        </motion.div>
+
+        {/* Pro — featured */}
+        <motion.div
+          {...fadeUp}
+          transition={{ ...fadeUp.transition, delay: 0.06 }}
+          className="relative flex flex-col rounded-2xl border-2 bg-surface p-7 transition-colors"
+          style={{
+            borderColor: "#FF5722",
+            boxShadow: "0 0 60px rgba(255, 87, 34, 0.15)",
+            backgroundColor: "#0A0805",
+          }}
+        >
+          <span
+            className="absolute right-5 top-5 rounded-full px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-white"
+            style={{ backgroundColor: "#FF5722" }}
+          >
+            Most popular
+          </span>
+          <div className="text-[26px] font-semibold text-[#F5F0E8]">Pro</div>
+
+          {/* Billing cycle toggle */}
+          <div className="mt-4 inline-flex w-fit items-center gap-1 rounded-full border border-divider bg-surface-2 p-1">
+            <button
+              type="button"
+              onClick={() => setCycle("monthly")}
+              className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
+                !isAnnual ? "text-[#0A0805]" : "text-muted-foreground hover:text-[var(--heading)]"
               }`}
+              style={!isAnnual ? { backgroundColor: "#FF5722" } : undefined}
             >
-              {t.cta}
-            </a>
-            {t.footnote && (
-              <p className="mt-3 text-center text-[12px] text-ember">{t.footnote}</p>
-            )}
-          </motion.div>
-        ))}
+              Monthly
+            </button>
+            <button
+              type="button"
+              onClick={() => setCycle("annual")}
+              className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium transition-colors ${
+                isAnnual ? "text-[#0A0805]" : "text-muted-foreground hover:text-[var(--heading)]"
+              }`}
+              style={isAnnual ? { backgroundColor: "#FF5722" } : undefined}
+            >
+              Annual
+              <span
+                className="rounded-sm px-1 py-[1px] text-[9px] font-semibold uppercase tracking-wide"
+                style={{
+                  backgroundColor: isAnnual ? "rgba(10,8,5,0.15)" : "rgba(52,211,153,0.12)",
+                  color: isAnnual ? "#0A0805" : "#34D399",
+                }}
+              >
+                2 months free
+              </span>
+            </button>
+          </div>
+
+          <div className="mt-4 flex items-baseline gap-2">
+            <span className="text-[52px] font-semibold leading-none tabular-nums text-[#F5F0E8]">
+              {isAnnual ? "$15.83" : "$19"}
+            </span>
+            <span className="text-sm text-muted-foreground">
+              {isAnnual ? "/user/mo" : "/user/month"}
+            </span>
+          </div>
+          {isAnnual && (
+            <p className="mt-2 text-[12px] text-muted-foreground">billed $190/year</p>
+          )}
+
+          <p className="mt-3 text-[14px] leading-relaxed text-[#D6CFC4] max-w-[34ch]">
+            For teams + power users who've outgrown the cap.
+          </p>
+
+          <ul className="mt-6 space-y-2 text-[14px] leading-snug text-[#E8E2D6]">
+            {proFeatures.map((f) => (
+              <li key={f} className="flex items-start gap-2">
+                <span className="mt-[2px] font-semibold" style={{ color: "#FF5722" }}>✓</span>
+                <span>{f}</span>
+              </li>
+            ))}
+          </ul>
+
+          <a
+            href={`https://app.implexa.ai/pricing?cycle=${cycle}`}
+            className="mt-7 inline-flex w-full items-center justify-center rounded-md px-6 py-3.5 text-sm font-medium transition-all hover:scale-[1.02] hover:brightness-95"
+            style={{ backgroundColor: "#FF5722", color: "#0A0805" }}
+          >
+            {isAnnual ? "Upgrade to Pro (Annual)" : "Upgrade to Pro (Monthly)"}
+          </a>
+
+          <p className="mt-3 text-center text-[12px] italic text-ember">
+            🏆 Founding Creators get Pro free for life — capture + share to unlock.
+          </p>
+        </motion.div>
+
+        {/* Enterprise */}
+        <motion.div
+          {...fadeUp}
+          transition={{ ...fadeUp.transition, delay: 0.12 }}
+          className="relative flex flex-col rounded-2xl border border-divider bg-surface p-7 transition-colors hover:border-flame/30"
+        >
+          <div className="text-lg font-semibold">{sideTiers[1].name}</div>
+          <div className="mt-3 flex items-baseline gap-2">
+            <span className="text-4xl font-bold text-[var(--heading)]">{sideTiers[1].price}</span>
+            <span className="text-sm text-muted-foreground">{sideTiers[1].sub}</span>
+          </div>
+          <p className="mt-3 text-[13px] text-muted-foreground">{sideTiers[1].tagline}</p>
+          <ul className="mt-6 space-y-2.5 text-[14px] text-[var(--foreground)]">
+            {sideTiers[1].features.map((f) => (
+              <li key={f} className="flex items-start gap-2">
+                <span className="mt-[6px] inline-block size-1.5 rounded-full bg-flame" />
+                <span>{f}</span>
+              </li>
+            ))}
+          </ul>
+          <a
+            href="https://app.implexa.ai/signup"
+            className="mt-7 inline-flex items-center justify-center rounded-md border border-divider px-4 py-2.5 text-sm font-medium text-[var(--heading)] transition-all hover:bg-surface-2"
+          >
+            {sideTiers[1].cta}
+          </a>
+        </motion.div>
       </div>
     </section>
   );
