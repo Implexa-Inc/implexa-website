@@ -217,16 +217,24 @@ function Hero() {
           >
             Get started — free <ArrowRight className="size-4" />
           </a>
-          <button
-            onClick={() => toast("Demo player coming soon")}
-            className="inline-flex items-center justify-center gap-2 text-[var(--heading)] transition-colors hover:text-flame"
-          >
-            Watch a 90-second demo →
-          </button>
         </motion.div>
         <motion.div
           {...fadeUp}
           transition={{ ...fadeUp.transition, delay: 0.3 }}
+          className="mt-12 mx-auto max-w-[960px]"
+        >
+          <video
+            src="/implexa-trailer.mp4"
+            autoPlay
+            muted
+            loop
+            playsInline
+            className="w-full rounded-lg border border-[var(--border)] shadow-2xl"
+          />
+        </motion.div>
+        <motion.div
+          {...fadeUp}
+          transition={{ ...fadeUp.transition, delay: 0.4 }}
           className="mt-12 mx-auto max-w-[640px]"
         >
           <TerminalBlock />
