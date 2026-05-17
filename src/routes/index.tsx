@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import {
   Flame,
   Copy,
+  Check,
   Play,
   Circle,
   Share2,
