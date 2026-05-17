@@ -99,7 +99,7 @@ function Index() {
           </a>
           <div className="hidden md:flex items-center gap-6 text-sm text-ink-300">
             <a href="https://app.implexa.ai/skills" className="hover:text-ink-50">Skills</a>
-            <a href="/pricing" className="hover:text-ink-50">Pricing</a>
+            <a href="#pricing" className="hover:text-ink-50">Pricing</a>
             <a href="https://github.com/Implexa-Inc/implexa-claude-plugin" className="hover:text-ink-50">GitHub</a>
             <a href="https://app.implexa.ai/login" className="hover:text-ink-50">Sign in</a>
             <a
@@ -410,7 +410,7 @@ function Index() {
       </section>
 
       {/* PRICING TEASER */}
-      <section className="py-20 px-6 border-t border-ink-800 bg-ink-900/30">
+      <section id="pricing" className="py-20 px-6 border-t border-ink-800 bg-ink-900/30 scroll-mt-20">
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-12">
             <p className="text-xs uppercase tracking-wider text-brand-500 font-bold mb-2">Pricing</p>
@@ -492,7 +492,7 @@ function Index() {
               <h4 className="text-xs uppercase tracking-wider text-ink-400 font-bold mb-3">Product</h4>
               <ul className="space-y-2 text-sm text-ink-300">
                 <li><a href="https://app.implexa.ai/skills" className="hover:text-ink-50">Public skills</a></li>
-                <li><a href="/pricing" className="hover:text-ink-50">Pricing</a></li>
+                <li><a href="#pricing" className="hover:text-ink-50">Pricing</a></li>
                 <li><a href="https://app.implexa.ai/install" className="hover:text-ink-50">Install</a></li>
               </ul>
             </div>
@@ -507,7 +507,7 @@ function Index() {
             <div>
               <h4 className="text-xs uppercase tracking-wider text-ink-400 font-bold mb-3">Company</h4>
               <ul className="space-y-2 text-sm text-ink-300">
-                <li><a href="mailto:hello@implexa.ai" className="hover:text-ink-50">Contact</a></li>
+                <li><a href="/contact" className="hover:text-ink-50">Contact</a></li>
                 <li><a href="/privacy" className="hover:text-ink-50">Privacy</a></li>
                 <li><a href="/terms" className="hover:text-ink-50">Terms</a></li>
               </ul>
@@ -516,7 +516,7 @@ function Index() {
 
           <div className="border-t border-ink-800 pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
             <code className="text-xs font-mono text-ink-500">{INSTALL_CMD}</code>
-            <p className="text-xs text-ink-500">© 2026 Implexa Inc. MIT-licensed plugin.</p>
+            <p className="text-xs text-ink-500">© 2026 Implexa Inc.</p>
           </div>
         </div>
       </footer>
