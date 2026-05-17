@@ -127,7 +127,7 @@ export function CircuitReveal() {
     <canvas
       ref={canvasRef}
       aria-hidden
-      className="pointer-events-none fixed inset-0 z-0"
+      className="pointer-events-none fixed inset-0 -z-10"
     />
   );
 }
