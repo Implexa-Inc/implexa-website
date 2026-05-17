@@ -88,14 +88,14 @@ function Index() {
   );
 
   return (
-    <div className="bg-ink-950 text-ink-200 antialiased min-h-screen">
+    <div className="text-ink-200 antialiased min-h-screen relative">
+      <CircuitReveal />
+      <div className="relative z-10">
       {/* NAV */}
       <nav className="border-b border-ink-800 sticky top-0 z-40 backdrop-blur-md bg-ink-950/70">
         <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
-          <a href="/" className="flex items-center gap-2">
-            <span className="text-xl font-bold tracking-tight text-ink-50">
-              implex<span className="text-brand-500">a</span>
-            </span>
+          <a href="/" className="flex items-center gap-2 group">
+            <img src="/logo.svg" alt="Implexa" className="h-7 w-auto transition-opacity duration-300 group-hover:opacity-90" />
           </a>
           <div className="hidden md:flex items-center gap-6 text-sm text-ink-300">
             <a href="https://app.implexa.ai/skills" className="hover:text-ink-50">Skills</a>
