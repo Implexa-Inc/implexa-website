@@ -150,7 +150,7 @@ function Index() {
             Free forever. No credit card. <a href="https://github.com/Implexa-Inc/implexa-claude-plugin" className="text-brand-500 hover:underline">MIT-licensed plugin</a> · hosted service.
           </p>
 
-          <div className="mt-10 max-w-5xl mx-auto">
+          <div className="mt-10 max-w-3xl mx-auto">
             <video
               src="https://assets.implexa.ai/implexa_trailer_v11_4k.mp4"
               autoPlay
@@ -160,6 +160,7 @@ function Index() {
               controls
               controlsList="nodownload"
               className="w-full rounded-lg border border-ink-700 shadow-2xl"
+              style={{ imageRendering: "auto" }}
             />
           </div>
 
