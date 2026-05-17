@@ -7,6 +7,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { CircuitReveal } from "@/components/CircuitReveal";
 
 export const Route = createFileRoute("/")({
   component: Index,
