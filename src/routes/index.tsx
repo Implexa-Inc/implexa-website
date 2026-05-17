@@ -152,9 +152,8 @@ function Index() {
 
           <div className="mt-10 max-w-3xl mx-auto">
             <video
-              src="https://assets.implexa.ai/implexa_trailer_v11_4k.mp4"
-              width={3840}
-              height={2160}
+              width={1920}
+              height={1080}
               autoPlay
               muted
               loop
@@ -162,7 +161,10 @@ function Index() {
               controls
               controlsList="nodownload"
               className="w-full h-auto rounded-lg border border-ink-700 shadow-2xl"
-            />
+            >
+              <source src="/videos/implexa-demo-720p.mp4" type="video/mp4" media="(max-width: 768px)" />
+              <source src="/videos/implexa-demo-1080p.mp4" type="video/mp4" />
+            </video>
           </div>
 
           <div className="mt-12 flex flex-wrap items-center justify-center gap-x-8 gap-y-3 text-xs text-ink-400">
