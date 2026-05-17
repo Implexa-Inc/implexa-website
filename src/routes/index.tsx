@@ -150,6 +150,19 @@ function Index() {
             Free forever. No credit card. Open source plugin · <a href="https://github.com/Implexa-Inc/implexa-claude-plugin" className="text-brand-500 hover:underline">MIT licensed</a>.
           </p>
 
+          <div className="mt-10 max-w-3xl mx-auto">
+            <video
+              src="/implexa-trailer.mp4"
+              autoPlay
+              muted
+              loop
+              playsInline
+              controls
+              controlsList="nodownload"
+              className="w-full rounded-lg border border-ink-700 shadow-2xl"
+            />
+          </div>
+
           <div className="mt-12 flex flex-wrap items-center justify-center gap-x-8 gap-y-3 text-xs text-ink-400">
             <span><strong className="text-ink-200">42</strong> public skills shared</span>
             <span className="text-ink-700">·</span>
