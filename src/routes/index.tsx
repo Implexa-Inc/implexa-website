@@ -492,7 +492,7 @@ function Index() {
               <h4 className="text-xs uppercase tracking-wider text-ink-400 font-bold mb-3">Product</h4>
               <ul className="space-y-2 text-sm text-ink-300">
                 <li><a href="https://app.implexa.ai/skills" className="hover:text-ink-50">Public skills</a></li>
-                <li><a href="/pricing" className="hover:text-ink-50">Pricing</a></li>
+                <li><a href="#pricing" className="hover:text-ink-50">Pricing</a></li>
                 <li><a href="https://app.implexa.ai/install" className="hover:text-ink-50">Install</a></li>
               </ul>
             </div>
