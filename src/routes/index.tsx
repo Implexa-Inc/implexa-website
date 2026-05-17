@@ -177,6 +177,41 @@ function TerminalBlock() {
   );
 }
 
+function InstallCommand() {
+  const cmd = "curl -fsSL https://core.implexa.ai/install.sh | bash";
+  const [copied, setCopied] = useState(false);
+  return (
+    <div className="w-full max-w-[640px] rounded-md border border-divider bg-surface flex items-stretch overflow-hidden font-mono text-[13px] sm:text-[14px] text-left">
+      <div className="flex items-center gap-1.5 px-3 sm:px-4 border-r border-divider text-muted-foreground select-none">
+        curl <span className="opacity-60">▾</span>
+      </div>
+      <code className="flex-1 px-3 sm:px-4 py-3 overflow-x-auto whitespace-nowrap text-[var(--heading)]">
+        <span className="text-flame">curl</span> -fsSL https://core.implexa.ai/install.sh | <span className="text-flame">bash</span>
+      </code>
+      <button
+        type="button"
+        aria-label="Copy install command"
+        onClick={() => {
+          navigator.clipboard.writeText(cmd);
+          setCopied(true);
+          toast("Copied!", {
+            style: {
+              background: "var(--surface-2)",
+              color: "var(--ember)",
+              border: "1px solid var(--divider)",
+            },
+          });
+          setTimeout(() => setCopied(false), 1500);
+        }}
+        className="px-3 sm:px-4 border-l border-divider text-muted-foreground hover:text-[var(--heading)] hover:bg-surface-2 transition-colors"
+      >
+        <Copy className="size-4" />
+        <span className="sr-only">{copied ? "Copied" : "Copy"}</span>
+      </button>
+    </div>
+  );
+}
+
 function Hero() {
   return (
     <section
@@ -215,14 +250,12 @@ function Hero() {
         <motion.div
           {...fadeUp}
           transition={{ ...fadeUp.transition, delay: 0.22 }}
-          className="mt-14 flex flex-col sm:flex-row items-center justify-center gap-4"
+          className="mt-14 flex flex-col items-center justify-center gap-3"
         >
-          <a
-            href="https://app.implexa.ai/signup"
-            className="inline-flex items-center justify-center gap-2 rounded-md bg-flame px-6 py-3 font-medium text-[var(--primary-foreground)] transition-all hover:glow-flame-lg"
-          >
-            Get started — free <ArrowRight className="size-4" />
-          </a>
+          <InstallCommand />
+          <p className="text-[12px] text-muted-foreground">
+            Open source · MIT licensed
+          </p>
         </motion.div>
         <motion.div
           {...fadeUp}
