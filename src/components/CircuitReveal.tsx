@@ -79,9 +79,10 @@ export function CircuitReveal() {
         const d2 = dx * dx + dy * dy;
         if (d2 > r2) continue;
 
-        const falloff = 1 - Math.sqrt(d2) / REVEAL_R;
+        const linear = 1 - Math.sqrt(d2) / REVEAL_R;
+        // Steeper edge falloff so the circle fades softly at the rim
+        const falloff = linear * linear * linear;
 
-        // Subtle grey / white squares only — no flicker
         const a =
           tile.seed < 0.7
             ? 0.02 + falloff * 0.08
