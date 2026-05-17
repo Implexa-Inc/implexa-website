@@ -147,7 +147,7 @@ function Index() {
           </div>
 
           <p className="text-xs text-ink-400 mt-6">
-            Free forever. No credit card. Open source plugin · <a href="https://github.com/Implexa-Inc/implexa-claude-plugin" className="text-brand-500 hover:underline">MIT licensed</a>.
+            Free forever. No credit card. Open source <a href="https://github.com/Implexa-Inc/implexa-claude-plugin" className="text-brand-500 hover:underline">MIT-licensed plugin</a> · hosted service.
           </p>
 
           <div className="mt-10 max-w-3xl mx-auto">
@@ -516,7 +516,7 @@ function Index() {
 
           <div className="border-t border-ink-800 pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
             <code className="text-xs font-mono text-ink-500">{INSTALL_CMD}</code>
-            <p className="text-xs text-ink-500">© 2026 Implexa Inc.</p>
+            <p className="text-xs text-ink-500">© 2026 Implexa Inc. MIT-licensed plugin · hosted service.</p>
           </div>
         </div>
       </footer>
