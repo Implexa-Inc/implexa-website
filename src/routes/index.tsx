@@ -126,7 +126,7 @@ function Index() {
           </h1>
 
           <p className="text-xl text-ink-300 leading-relaxed max-w-2xl mx-auto mb-10">
-            One demo. Six-component skill. Portable across Claude Code, Cowork, and Chat. Your team's best workflow becomes everyone's reusable skill.
+            Implexa lets you save any Claude workflow once and re-run it like a slash command forever. Your team's best AI work becomes everyone's reusable command — no more rebuilding prompts, no more retraining new hires.
           </p>
 
           <div className="bg-ink-900 border border-ink-700 rounded-xl p-6 shadow-glow max-w-2xl mx-auto">
