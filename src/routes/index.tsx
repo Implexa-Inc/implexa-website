@@ -514,6 +514,7 @@ function Index() {
         name={modal?.name ?? ""}
         onClose={() => setModal(null)}
       />
+      </div>
     </div>
   );
 }
