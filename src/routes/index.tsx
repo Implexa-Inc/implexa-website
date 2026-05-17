@@ -152,19 +152,17 @@ function Index() {
 
           <div className="mt-10 max-w-3xl mx-auto">
             <video
-              width={1920}
-              height={1080}
               autoPlay
-              muted
               loop
+              muted
               playsInline
               controls
               controlsList="nodownload"
+              width={1920}
+              height={1080}
               className="w-full h-auto rounded-lg border border-ink-700 shadow-2xl"
-            >
-              <source src="/videos/implexa-demo-720p.mp4" type="video/mp4" media="(max-width: 768px)" />
-              <source src="/videos/implexa-demo-1080p.mp4" type="video/mp4" />
-            </video>
+              src="/videos/implexa-demo.mp4"
+            />
           </div>
 
           <div className="mt-12 flex flex-wrap items-center justify-center gap-x-8 gap-y-3 text-xs text-ink-400">
