@@ -160,7 +160,6 @@ function Index() {
               controls
               controlsList="nodownload"
               className="w-full rounded-lg border border-ink-700 shadow-2xl"
-              style={{ imageRendering: "crisp-edges" }}
             />
           </div>
 
