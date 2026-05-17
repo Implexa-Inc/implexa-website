@@ -83,11 +83,19 @@ export function CircuitReveal() {
         // Steeper edge falloff so the circle fades softly at the rim
         const falloff = linear * linear * linear;
 
-        const a =
-          tile.seed < 0.7
-            ? 0.02 + falloff * 0.08
-            : 0.03 + falloff * 0.14;
-        const shade = tile.seed < 0.7 ? 160 : 220;
+        let a: number;
+        let shade: number;
+        if (tile.seed < 0.45) {
+          // "off" tiles — near background color, almost invisible
+          shade = 20;
+          a = 0.25 + falloff * 0.45;
+        } else if (tile.seed < 0.85) {
+          shade = 160;
+          a = 0.02 + falloff * 0.08;
+        } else {
+          shade = 220;
+          a = 0.03 + falloff * 0.14;
+        }
         ctx.fillStyle = `rgba(${shade}, ${shade}, ${shade}, ${a})`;
         ctx.fillRect(tile.x, tile.y, SIZE, SIZE);
       }
