@@ -88,9 +88,9 @@ function Index() {
   );
 
   return (
-    <div className="text-ink-200 antialiased min-h-screen relative">
+    <div className="text-ink-200 antialiased min-h-screen relative isolate">
       <CircuitReveal />
-      <div className="relative z-10">
+      <div>
       {/* NAV */}
       <nav className="border-b border-ink-800 sticky top-0 z-40 backdrop-blur-md bg-ink-950/70">
         <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
@@ -150,7 +150,7 @@ function Index() {
             Free forever. No credit card. <a href="https://github.com/Implexa-Inc/implexa-claude-plugin" className="text-brand-500 hover:underline">MIT-licensed plugin</a> · hosted service.
           </p>
 
-          <div className="mt-10 max-w-3xl mx-auto" style={{ isolation: "isolate" }}>
+          <div className="mt-10 max-w-3xl mx-auto">
             <video
               src="https://assets.implexa.ai/implexa_trailer_v11_4k.mp4"
               width={3840}
