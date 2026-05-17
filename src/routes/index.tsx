@@ -516,7 +516,7 @@ function Index() {
 
           <div className="border-t border-ink-800 pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
             <code className="text-xs font-mono text-ink-500">{INSTALL_CMD}</code>
-            <p className="text-xs text-ink-500">© 2026 Implexa Inc.</p>
+            <p className="text-xs text-ink-500">© 2026 Implexa Inc. MIT-licensed plugin · hosted service.</p>
           </div>
         </div>
       </footer>
