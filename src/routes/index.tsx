@@ -507,7 +507,7 @@ function Index() {
             <div>
               <h4 className="text-xs uppercase tracking-wider text-ink-400 font-bold mb-3">Company</h4>
               <ul className="space-y-2 text-sm text-ink-300">
-                <li><a href="mailto:hello@implexa.ai" className="hover:text-ink-50">Contact</a></li>
+                <li><a href="/contact" className="hover:text-ink-50">Contact</a></li>
                 <li><a href="/privacy" className="hover:text-ink-50">Privacy</a></li>
                 <li><a href="/terms" className="hover:text-ink-50">Terms</a></li>
               </ul>
