@@ -84,8 +84,8 @@ export function CircuitReveal() {
         // Subtle grey / white squares only — no flicker
         const a =
           tile.seed < 0.7
-            ? 0.05 + falloff * 0.18
-            : 0.08 + falloff * 0.28;
+            ? 0.02 + falloff * 0.08
+            : 0.03 + falloff * 0.14;
         const shade = tile.seed < 0.7 ? 160 : 220;
         ctx.fillStyle = `rgba(${shade}, ${shade}, ${shade}, ${a})`;
         ctx.fillRect(tile.x, tile.y, SIZE, SIZE);
