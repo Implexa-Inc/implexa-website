@@ -158,11 +158,12 @@ function Index() {
               playsInline
               controls
               controlsList="nodownload"
-              width={1920}
-              height={1080}
-              className="w-full h-auto rounded-lg border border-ink-700 shadow-2xl"
-              src="/videos/implexa-demo.mp4"
-            />
+              preload="metadata"
+              poster="/videos/implexa-demo-poster.jpg"
+              className="block w-full h-auto aspect-video rounded-lg border border-ink-700 shadow-2xl bg-ink-950"
+            >
+              <source src="/videos/implexa-demo.mp4" type="video/mp4" />
+            </video>
           </div>
 
           <div className="mt-12 flex flex-wrap items-center justify-center gap-x-8 gap-y-3 text-xs text-ink-400">
