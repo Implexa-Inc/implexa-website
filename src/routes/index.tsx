@@ -215,14 +215,12 @@ function Hero() {
         <motion.div
           {...fadeUp}
           transition={{ ...fadeUp.transition, delay: 0.22 }}
-          className="mt-14 flex flex-col sm:flex-row items-center justify-center gap-4"
+          className="mt-14 flex flex-col items-center justify-center gap-3"
         >
-          <a
-            href="https://app.implexa.ai/signup"
-            className="inline-flex items-center justify-center gap-2 rounded-md bg-flame px-6 py-3 font-medium text-[var(--primary-foreground)] transition-all hover:glow-flame-lg"
-          >
-            Get started — free <ArrowRight className="size-4" />
-          </a>
+          <InstallCommand />
+          <p className="text-[12px] text-muted-foreground">
+            Open source · MIT licensed
+          </p>
         </motion.div>
         <motion.div
           {...fadeUp}
