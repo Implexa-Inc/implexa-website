@@ -79,8 +79,11 @@ export function CircuitReveal() {
         const d2 = dx * dx + dy * dy;
         if (d2 > r2) continue;
 
-        const linear = 1 - Math.sqrt(d2) / REVEAL_R;
-        // Steeper edge falloff so the circle fades softly at the rim
+        const dist = Math.sqrt(d2) / REVEAL_R; // 0 center → 1 rim
+        // Per-tile threshold creates an irregular, organic rim
+        const threshold = 0.55 + tile.seed * 0.55; // 0.55–1.10
+        if (dist > threshold) continue;
+        const linear = 1 - dist / threshold;
         const falloff = linear * linear * linear;
 
         let a: number;
