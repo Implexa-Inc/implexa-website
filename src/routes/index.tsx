@@ -99,7 +99,7 @@ function Index() {
           </a>
           <div className="hidden md:flex items-center gap-6 text-sm text-ink-300">
             <a href="https://app.implexa.ai/skills" className="hover:text-ink-50">Skills</a>
-            <a href="/pricing" className="hover:text-ink-50">Pricing</a>
+            <a href="#pricing" className="hover:text-ink-50">Pricing</a>
             <a href="https://github.com/Implexa-Inc/implexa-claude-plugin" className="hover:text-ink-50">GitHub</a>
             <a href="https://app.implexa.ai/login" className="hover:text-ink-50">Sign in</a>
             <a
