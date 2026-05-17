@@ -152,7 +152,7 @@ function Index() {
 
           <div className="mt-10 max-w-3xl mx-auto">
             <video
-              src="/api/public/trailer"
+              src="/implexa-trailer.mp4"
               autoPlay
               muted
               loop
