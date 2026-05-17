@@ -253,9 +253,7 @@ function Hero() {
           className="mt-14 flex flex-col items-center justify-center gap-3"
         >
           <InstallCommand />
-          <p className="text-[12px] text-muted-foreground">
-            Open source · MIT licensed
-          </p>
+
         </motion.div>
         <motion.div
           {...fadeUp}

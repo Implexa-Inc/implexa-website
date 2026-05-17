@@ -78,40 +78,26 @@ export function CircuitReveal() {
         const dx = tile.x - mouse.x;
         const dy = tile.y - mouse.y;
         const d2 = dx * dx + dy * dy;
-
-        // Base: very faint grey square (always visible)
-        const baseAlpha = 0.04 + tile.seed * 0.02;
-        ctx.fillStyle = `rgba(230, 230, 230, ${baseAlpha})`;
-        ctx.fillRect(tile.x, tile.y, SIZE, SIZE);
-
         if (d2 > r2) continue;
 
-        // Falloff 0..1
         const falloff = 1 - Math.sqrt(d2) / REVEAL_R;
-        // Some tiles "off" (skip lighting) so the grid feels alive
-        const onChance = tile.seed * 0.85 + 0.15;
-        if (Math.random() > onChance * 0.6 + 0.4) {
-          // occasional skipped frame for flicker
-        }
-
-        // Flicker factor
         const flick = 0.55 + 0.45 * Math.sin(time * (1 + tile.seed * 2) + tile.flicker);
         const intensity = falloff * flick;
 
-        // Color: ~70% green, ~25% white, ~5% bright ember-white
+        // Grey / white / near-black tones only
         let color: string;
-        if (tile.seed < 0.7) {
-          // green developer terminal
-          const a = 0.15 + intensity * 0.75;
-          color = `rgba(74, 222, 128, ${a})`;
-        } else if (tile.seed < 0.95) {
-          // white
-          const a = 0.1 + intensity * 0.6;
-          color = `rgba(245, 245, 245, ${a})`;
+        if (tile.seed < 0.55) {
+          // mid grey
+          const a = 0.08 + intensity * 0.35;
+          color = `rgba(160, 160, 160, ${a})`;
+        } else if (tile.seed < 0.85) {
+          // soft white
+          const a = 0.06 + intensity * 0.5;
+          color = `rgba(230, 230, 230, ${a})`;
         } else {
-          // muted grey highlight
-          const a = 0.1 + intensity * 0.45;
-          color = `rgba(180, 180, 180, ${a})`;
+          // near-black highlight (subtle "off" pixel)
+          const a = 0.15 + intensity * 0.4;
+          color = `rgba(20, 20, 20, ${a})`;
         }
         ctx.fillStyle = color;
         ctx.fillRect(tile.x, tile.y, SIZE, SIZE);
