@@ -410,7 +410,7 @@ function Index() {
       </section>
 
       {/* PRICING TEASER */}
-      <section className="py-20 px-6 border-t border-ink-800 bg-ink-900/30">
+      <section id="pricing" className="py-20 px-6 border-t border-ink-800 bg-ink-900/30 scroll-mt-20">
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-12">
             <p className="text-xs uppercase tracking-wider text-brand-500 font-bold mb-2">Pricing</p>
