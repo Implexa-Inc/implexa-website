@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import {
   Flame,
   Copy,
+  Check,
   Play,
   Circle,
   Share2,
@@ -182,8 +183,8 @@ function InstallCommand() {
   const [copied, setCopied] = useState(false);
   return (
     <div className="w-full max-w-[640px] rounded-md border border-divider bg-surface flex items-stretch overflow-hidden font-mono text-[13px] sm:text-[14px] text-left">
-      <div className="flex items-center gap-1.5 px-3 sm:px-4 border-r border-divider text-muted-foreground select-none">
-        curl <span className="opacity-60">▾</span>
+      <div className="flex items-center px-3 sm:px-4 border-r border-divider text-muted-foreground select-none">
+        curl
       </div>
       <code className="flex-1 px-3 sm:px-4 py-3 overflow-x-auto whitespace-nowrap text-[var(--heading)]">
         <span className="text-flame">curl</span> -fsSL https://core.implexa.ai/install.sh | <span className="text-flame">bash</span>
@@ -205,7 +206,7 @@ function InstallCommand() {
         }}
         className="px-3 sm:px-4 border-l border-divider text-muted-foreground hover:text-[var(--heading)] hover:bg-surface-2 transition-colors"
       >
-        <Copy className="size-4" />
+        {copied ? <Check className="size-4 text-flame" /> : <Copy className="size-4" />}
         <span className="sr-only">{copied ? "Copied" : "Copy"}</span>
       </button>
     </div>
