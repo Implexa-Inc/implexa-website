@@ -72,7 +72,6 @@ export function CircuitReveal() {
       ctx.clearRect(0, 0, w, h);
 
       const r2 = REVEAL_R * REVEAL_R;
-      const time = t * 0.003;
 
       for (const tile of tiles) {
         const dx = tile.x - mouse.x;
@@ -81,25 +80,14 @@ export function CircuitReveal() {
         if (d2 > r2) continue;
 
         const falloff = 1 - Math.sqrt(d2) / REVEAL_R;
-        const flick = 0.55 + 0.45 * Math.sin(time * (1 + tile.seed * 2) + tile.flicker);
-        const intensity = falloff * flick;
 
-        // Grey / white / near-black tones only
-        let color: string;
-        if (tile.seed < 0.55) {
-          // mid grey
-          const a = 0.08 + intensity * 0.35;
-          color = `rgba(160, 160, 160, ${a})`;
-        } else if (tile.seed < 0.85) {
-          // soft white
-          const a = 0.06 + intensity * 0.5;
-          color = `rgba(230, 230, 230, ${a})`;
-        } else {
-          // near-black highlight (subtle "off" pixel)
-          const a = 0.15 + intensity * 0.4;
-          color = `rgba(20, 20, 20, ${a})`;
-        }
-        ctx.fillStyle = color;
+        // Subtle grey / white squares only — no flicker
+        const a =
+          tile.seed < 0.7
+            ? 0.05 + falloff * 0.18
+            : 0.08 + falloff * 0.28;
+        const shade = tile.seed < 0.7 ? 160 : 220;
+        ctx.fillStyle = `rgba(${shade}, ${shade}, ${shade}, ${a})`;
         ctx.fillRect(tile.x, tile.y, SIZE, SIZE);
       }
 
