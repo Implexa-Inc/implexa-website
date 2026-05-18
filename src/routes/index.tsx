@@ -100,6 +100,28 @@ function Index() {
           <div className="hidden md:flex items-center gap-6 text-sm text-ink-300">
             <a href="https://app.implexa.ai/skills" className="hover:text-ink-50">Skills</a>
             <a href="#pricing" className="hover:text-ink-50">Pricing</a>
+            <div className="relative group">
+              <button className="hover:text-ink-50 flex items-center gap-1">
+                Resources
+                <svg className="w-3 h-3" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M3 4.5L6 7.5L9 4.5" /></svg>
+              </button>
+              <div className="absolute right-0 top-full pt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-150 z-50">
+                <div className="bg-ink-900 border border-ink-800 rounded-lg shadow-xl py-2 min-w-[260px]">
+                  <a href="/claude-skills" className="block px-4 py-2 hover:bg-ink-800 hover:text-ink-50">
+                    <div className="text-sm text-ink-100">What Are Claude Skills?</div>
+                    <div className="text-xs text-ink-400 mt-0.5">The pillar guide</div>
+                  </a>
+                  <a href="/blog/how-to-create-a-claude-skill" className="block px-4 py-2 hover:bg-ink-800 hover:text-ink-50">
+                    <div className="text-sm text-ink-100">How to Create a Claude Skill</div>
+                    <div className="text-xs text-ink-400 mt-0.5">Step-by-step tutorial</div>
+                  </a>
+                  <a href="/blog/what-are-claude-skills" className="block px-4 py-2 hover:bg-ink-800 hover:text-ink-50">
+                    <div className="text-sm text-ink-100">Claude Skills Explained</div>
+                    <div className="text-xs text-ink-400 mt-0.5">5-minute explainer</div>
+                  </a>
+                </div>
+              </div>
+            </div>
             <a href="https://github.com/Implexa-Inc/implexa-claude-plugin" className="hover:text-ink-50">GitHub</a>
             <a href="https://app.implexa.ai/login" className="hover:text-ink-50">Sign in</a>
             <a
@@ -556,9 +578,11 @@ function Index() {
             <div>
               <h4 className="text-xs uppercase tracking-wider text-ink-400 font-bold mb-3">Resources</h4>
               <ul className="space-y-2 text-sm text-ink-300">
+                <li><a href="/claude-skills" className="hover:text-ink-50">What Are Claude Skills?</a></li>
+                <li><a href="/blog/how-to-create-a-claude-skill" className="hover:text-ink-50">How to Create a Claude Skill</a></li>
+                <li><a href="/blog/what-are-claude-skills" className="hover:text-ink-50">Claude Skills Explained</a></li>
                 <li><a href="https://github.com/Implexa-Inc/implexa-claude-plugin" className="hover:text-ink-50">GitHub</a></li>
                 <li><a href="https://github.com/Implexa-Inc/implexa-claude-plugin#readme" target="_blank" rel="noopener noreferrer" className="hover:text-ink-50">Docs</a></li>
-                <li><a href="https://github.com/Implexa-Inc/implexa-claude-plugin/releases" target="_blank" rel="noopener noreferrer" className="hover:text-ink-50">Changelog</a></li>
               </ul>
             </div>
             <div>
