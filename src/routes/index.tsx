@@ -276,10 +276,10 @@ function Index() {
           <div className="text-center mb-10">
             <p className="text-xs uppercase tracking-wider text-brand-500 font-bold mb-2">Install</p>
             <h2 className="text-4xl font-bold tracking-tight text-ink-50 mb-3">
-              The killer install — one paste, you're done.
+              Install Implexa in 30 seconds.
             </h2>
             <p className="text-lg text-ink-300 max-w-2xl mx-auto">
-              Mirror of what shows up after you sign in. Same command. Same experience.
+              Same command we hand you after signup. Works on macOS, Linux, and WSL.
             </p>
           </div>
 
