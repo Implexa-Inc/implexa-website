@@ -578,9 +578,11 @@ function Index() {
             <div>
               <h4 className="text-xs uppercase tracking-wider text-ink-400 font-bold mb-3">Resources</h4>
               <ul className="space-y-2 text-sm text-ink-300">
+                <li><a href="/claude-skills" className="hover:text-ink-50">What Are Claude Skills?</a></li>
+                <li><a href="/blog/how-to-create-a-claude-skill" className="hover:text-ink-50">How to Create a Claude Skill</a></li>
+                <li><a href="/blog/what-are-claude-skills" className="hover:text-ink-50">Claude Skills Explained</a></li>
                 <li><a href="https://github.com/Implexa-Inc/implexa-claude-plugin" className="hover:text-ink-50">GitHub</a></li>
                 <li><a href="https://github.com/Implexa-Inc/implexa-claude-plugin#readme" target="_blank" rel="noopener noreferrer" className="hover:text-ink-50">Docs</a></li>
-                <li><a href="https://github.com/Implexa-Inc/implexa-claude-plugin/releases" target="_blank" rel="noopener noreferrer" className="hover:text-ink-50">Changelog</a></li>
               </ul>
             </div>
             <div>
