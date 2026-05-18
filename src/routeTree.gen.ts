@@ -10,11 +10,19 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as ContactRouteImport } from './routes/contact'
+import { Route as ClaudeSkillsRouteImport } from './routes/claude-skills'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as BlogWhatAreClaudeSkillsRouteImport } from './routes/blog.what-are-claude-skills'
+import { Route as BlogHowToCreateAClaudeSkillRouteImport } from './routes/blog.how-to-create-a-claude-skill'
 
 const ContactRoute = ContactRouteImport.update({
   id: '/contact',
   path: '/contact',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ClaudeSkillsRoute = ClaudeSkillsRouteImport.update({
+  id: '/claude-skills',
+  path: '/claude-skills',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -22,31 +30,70 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const BlogWhatAreClaudeSkillsRoute = BlogWhatAreClaudeSkillsRouteImport.update({
+  id: '/blog/what-are-claude-skills',
+  path: '/blog/what-are-claude-skills',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BlogHowToCreateAClaudeSkillRoute =
+  BlogHowToCreateAClaudeSkillRouteImport.update({
+    id: '/blog/how-to-create-a-claude-skill',
+    path: '/blog/how-to-create-a-claude-skill',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/claude-skills': typeof ClaudeSkillsRoute
   '/contact': typeof ContactRoute
+  '/blog/how-to-create-a-claude-skill': typeof BlogHowToCreateAClaudeSkillRoute
+  '/blog/what-are-claude-skills': typeof BlogWhatAreClaudeSkillsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/claude-skills': typeof ClaudeSkillsRoute
   '/contact': typeof ContactRoute
+  '/blog/how-to-create-a-claude-skill': typeof BlogHowToCreateAClaudeSkillRoute
+  '/blog/what-are-claude-skills': typeof BlogWhatAreClaudeSkillsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/claude-skills': typeof ClaudeSkillsRoute
   '/contact': typeof ContactRoute
+  '/blog/how-to-create-a-claude-skill': typeof BlogHowToCreateAClaudeSkillRoute
+  '/blog/what-are-claude-skills': typeof BlogWhatAreClaudeSkillsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/contact'
+  fullPaths:
+    | '/'
+    | '/claude-skills'
+    | '/contact'
+    | '/blog/how-to-create-a-claude-skill'
+    | '/blog/what-are-claude-skills'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/contact'
-  id: '__root__' | '/' | '/contact'
+  to:
+    | '/'
+    | '/claude-skills'
+    | '/contact'
+    | '/blog/how-to-create-a-claude-skill'
+    | '/blog/what-are-claude-skills'
+  id:
+    | '__root__'
+    | '/'
+    | '/claude-skills'
+    | '/contact'
+    | '/blog/how-to-create-a-claude-skill'
+    | '/blog/what-are-claude-skills'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  ClaudeSkillsRoute: typeof ClaudeSkillsRoute
   ContactRoute: typeof ContactRoute
+  BlogHowToCreateAClaudeSkillRoute: typeof BlogHowToCreateAClaudeSkillRoute
+  BlogWhatAreClaudeSkillsRoute: typeof BlogWhatAreClaudeSkillsRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -58,6 +105,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ContactRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/claude-skills': {
+      id: '/claude-skills'
+      path: '/claude-skills'
+      fullPath: '/claude-skills'
+      preLoaderRoute: typeof ClaudeSkillsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -65,12 +119,29 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/blog/what-are-claude-skills': {
+      id: '/blog/what-are-claude-skills'
+      path: '/blog/what-are-claude-skills'
+      fullPath: '/blog/what-are-claude-skills'
+      preLoaderRoute: typeof BlogWhatAreClaudeSkillsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/blog/how-to-create-a-claude-skill': {
+      id: '/blog/how-to-create-a-claude-skill'
+      path: '/blog/how-to-create-a-claude-skill'
+      fullPath: '/blog/how-to-create-a-claude-skill'
+      preLoaderRoute: typeof BlogHowToCreateAClaudeSkillRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  ClaudeSkillsRoute: ClaudeSkillsRoute,
   ContactRoute: ContactRoute,
+  BlogHowToCreateAClaudeSkillRoute: BlogHowToCreateAClaudeSkillRoute,
+  BlogWhatAreClaudeSkillsRoute: BlogWhatAreClaudeSkillsRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
