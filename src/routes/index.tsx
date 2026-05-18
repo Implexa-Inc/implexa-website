@@ -412,6 +412,60 @@ function Index() {
         </div>
       </section>
 
+      {/* VS SKILL-CREATOR */}
+      <section className="py-20 px-6 border-t border-ink-800">
+        <div className="max-w-5xl mx-auto">
+          <div className="text-center mb-12">
+            <p className="text-xs uppercase tracking-wider text-brand-500 font-bold mb-2">Why not just write the skill?</p>
+            <h2 className="text-4xl font-bold tracking-tight text-ink-50 mb-3">
+              Captured, not authored.
+            </h2>
+            <p className="text-lg text-ink-300 max-w-2xl mx-auto leading-relaxed">
+              A great workflow isn't a sequence of tool calls — it's a sequence of <strong className="text-ink-100">judgment calls</strong>. The why behind each filter. The edge case you handle silently. The signal that tells you it worked.
+              <br /><br />
+              Skill-creator and other prompt editors capture the visible half (what you describe). Implexa captures both halves — the demonstration captures the tool sequence, the post-demo interview maps the <strong className="text-brand-500">decision trace</strong> behind it.
+            </p>
+          </div>
+
+          <div className="bg-ink-900 border border-ink-700 rounded-xl overflow-hidden mb-10">
+            <div className="grid grid-cols-3 gap-0 text-xs uppercase tracking-wider font-bold text-ink-400 border-b border-ink-700">
+              <div className="p-4"></div>
+              <div className="p-4 text-center border-l border-ink-700">Prompt-editor approach</div>
+              <div className="p-4 text-center border-l border-ink-700 text-brand-500">Implexa Skill Graph</div>
+            </div>
+            <div className="divide-y divide-ink-800">
+              {[
+                ["Origin of the skill", "You describe; Claude imagines", "You demonstrate; we capture the real tool calls"],
+                ["Decision trace", "Not captured — only the prompt text", "Mapped via post-demo interview: why this filter, what's the edge case, what's the signal"],
+                ["Format", "Free-form markdown prompt", "6-component contract: intent + inputs + procedure + decision points + output contract + outcome signal"],
+                ["Validation", "Hope the imagined tool chain works", "Already ran once during capture — proven"],
+                ["Iteration", "Hand-edit markdown when you want to add a step", "Re-record into existing skill; new demo merges into existing decision trace"],
+                ["Distribution", "Copy/paste between machines", "One share link → recipient clicks → in their library"],
+                ["Tool awareness", "None — skill is just text", "Required-tool manifest auto-captured; install hints surface when a teammate forks"],
+                ["Measurement", "None — skills can't be A/B tested", "Outcomes attribute back to skills (deal closed → which skill drove it) within 30 days"],
+                ["Built for", "Solo power users", "Teams where one person's expertise should compound"],
+              ].map(([label, left, right]) => (
+                <div key={label} className="grid grid-cols-3 gap-0 items-center">
+                  <div className="p-4 text-sm font-semibold text-ink-100">{label}</div>
+                  <div className="p-4 text-sm text-ink-300 border-l border-ink-700">{left}</div>
+                  <div className="p-4 text-sm text-ink-200 border-l border-ink-700">{right}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="bg-gradient-to-r from-brand-500/10 via-ink-900 to-brand-500/5 border border-brand-500/40 rounded-xl p-6 md:p-8">
+            <p className="text-xs uppercase tracking-wider text-brand-500 font-bold mb-3">The decision trace</p>
+            <p className="text-lg text-ink-200 leading-relaxed mb-3">
+              When a senior teammate handles an account differently than a junior, the difference isn't usually <em>which</em> tools they call — it's <em>when</em> they decide to pivot, <em>what</em> signals tell them to stop, <em>how</em> they frame the output.
+            </p>
+            <p className="text-lg text-ink-200 leading-relaxed">
+              That's the decision trace. It's the part of expertise that lives in someone's head, never gets written down, and walks out the door when they leave. Implexa is the first AI skill system designed to capture it — through demonstration, not description. The 6-component contract is just the file format. The real product is the <strong className="text-brand-500">decision trace becoming portable</strong>.
+            </p>
+          </div>
+        </div>
+      </section>
+
       {/* PRICING TEASER */}
       <section id="pricing" className="py-20 px-6 border-t border-ink-800 bg-ink-900/30 scroll-mt-20">
         <div className="max-w-5xl mx-auto">
