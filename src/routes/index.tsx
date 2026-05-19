@@ -139,16 +139,16 @@ function Index() {
         <div className="max-w-3xl mx-auto text-center">
           <div className="inline-flex items-center gap-2 text-xs uppercase tracking-wider font-bold rounded-full px-3 py-1 bg-brand-500/15 text-brand-500 mb-6">
             <span className="w-1.5 h-1.5 rounded-full bg-brand-500 pulse-dot"></span>
-            Skill Graph for Claude
+            The Skill Graph for AI Work
           </div>
 
           <h1 className="text-5xl md:text-6xl font-bold tracking-tight text-ink-50 leading-[1.05] mb-6">
-            Record any Claude workflow once.<br />
-            <span className="text-brand-500">Run it forever.</span>
+            Demonstrate any workflow once.<br />
+            <span className="text-brand-500">Run it anywhere SKILL.md runs.</span>
           </h1>
 
           <p className="text-xl text-ink-300 leading-relaxed max-w-2xl mx-auto mb-10">
-            Implexa lets you save any Claude workflow once and re-run it like a slash command forever. Your team's best AI work becomes everyone's reusable command — no more rebuilding prompts, no more retraining new hires.
+            Implexa captures decision traces — not just trajectories — via a post-demo interview. Share with your team. Measure what actually worked. Built on the <a href="https://agentskills.io" className="text-brand-500 hover:underline">agentskills.io</a> open standard — runs in Claude Code today, with one-click export to Cursor, Gemini CLI, Hermes & 30+ more agents coming next.
           </p>
 
           <div className="bg-ink-900 border border-ink-700 rounded-xl p-6 shadow-glow max-w-2xl mx-auto">
@@ -169,7 +169,7 @@ function Index() {
           </div>
 
           <p className="text-xs text-ink-400 mt-6">
-            Free forever. No credit card. <a href="https://github.com/Implexa-Inc/implexa-claude-plugin" className="text-brand-500 hover:underline">MIT-licensed plugin</a> · hosted service.
+            Free forever. No credit card. <a href="https://github.com/Implexa-Inc/implexa-claude-plugin" className="text-brand-500 hover:underline">MIT-licensed plugin</a> · hosted service · built on the <a href="https://agentskills.io" className="text-brand-500 hover:underline">agentskills.io</a> open standard.
           </p>
 
           <div className="mt-10 max-w-3xl mx-auto">
