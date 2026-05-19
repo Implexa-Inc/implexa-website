@@ -9,12 +9,18 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as ContactRouteImport } from './routes/contact'
 import { Route as ClaudeSkillsRouteImport } from './routes/claude-skills'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as BlogWhatAreClaudeSkillsRouteImport } from './routes/blog.what-are-claude-skills'
 import { Route as BlogHowToCreateAClaudeSkillRouteImport } from './routes/blog.how-to-create-a-claude-skill'
 
+const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
+  id: '/sitemap.xml',
+  path: '/sitemap.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ContactRoute = ContactRouteImport.update({
   id: '/contact',
   path: '/contact',
@@ -46,6 +52,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/claude-skills': typeof ClaudeSkillsRoute
   '/contact': typeof ContactRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/blog/how-to-create-a-claude-skill': typeof BlogHowToCreateAClaudeSkillRoute
   '/blog/what-are-claude-skills': typeof BlogWhatAreClaudeSkillsRoute
 }
@@ -53,6 +60,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/claude-skills': typeof ClaudeSkillsRoute
   '/contact': typeof ContactRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/blog/how-to-create-a-claude-skill': typeof BlogHowToCreateAClaudeSkillRoute
   '/blog/what-are-claude-skills': typeof BlogWhatAreClaudeSkillsRoute
 }
@@ -61,6 +69,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/claude-skills': typeof ClaudeSkillsRoute
   '/contact': typeof ContactRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/blog/how-to-create-a-claude-skill': typeof BlogHowToCreateAClaudeSkillRoute
   '/blog/what-are-claude-skills': typeof BlogWhatAreClaudeSkillsRoute
 }
@@ -70,6 +79,7 @@ export interface FileRouteTypes {
     | '/'
     | '/claude-skills'
     | '/contact'
+    | '/sitemap.xml'
     | '/blog/how-to-create-a-claude-skill'
     | '/blog/what-are-claude-skills'
   fileRoutesByTo: FileRoutesByTo
@@ -77,6 +87,7 @@ export interface FileRouteTypes {
     | '/'
     | '/claude-skills'
     | '/contact'
+    | '/sitemap.xml'
     | '/blog/how-to-create-a-claude-skill'
     | '/blog/what-are-claude-skills'
   id:
@@ -84,6 +95,7 @@ export interface FileRouteTypes {
     | '/'
     | '/claude-skills'
     | '/contact'
+    | '/sitemap.xml'
     | '/blog/how-to-create-a-claude-skill'
     | '/blog/what-are-claude-skills'
   fileRoutesById: FileRoutesById
@@ -92,12 +104,20 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   ClaudeSkillsRoute: typeof ClaudeSkillsRoute
   ContactRoute: typeof ContactRoute
+  SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   BlogHowToCreateAClaudeSkillRoute: typeof BlogHowToCreateAClaudeSkillRoute
   BlogWhatAreClaudeSkillsRoute: typeof BlogWhatAreClaudeSkillsRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/sitemap.xml': {
+      id: '/sitemap.xml'
+      path: '/sitemap.xml'
+      fullPath: '/sitemap.xml'
+      preLoaderRoute: typeof SitemapDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/contact': {
       id: '/contact'
       path: '/contact'
@@ -140,19 +160,10 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ClaudeSkillsRoute: ClaudeSkillsRoute,
   ContactRoute: ContactRoute,
+  SitemapDotxmlRoute: SitemapDotxmlRoute,
   BlogHowToCreateAClaudeSkillRoute: BlogHowToCreateAClaudeSkillRoute,
   BlogWhatAreClaudeSkillsRoute: BlogWhatAreClaudeSkillsRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
