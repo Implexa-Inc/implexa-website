@@ -13,19 +13,19 @@ export const Route = createFileRoute("/")({
   component: Index,
   head: () => ({
     meta: [
-      { title: "Implexa — Record any Claude workflow once. Run it forever." },
+      { title: "Implexa — Demonstrate any workflow once. Capture decision traces. Run anywhere SKILL.md runs." },
       {
         name: "description",
         content:
-          "One demo, six-component skill. Portable across Claude Code (CLI + Desktop), Cowork, and Chat. Skill Graph for AI agents. Free forever, unlimited runs.",
+          "Implexa is the team layer for the Agent Skills ecosystem. Demonstrate any workflow once. Capture decision traces. Share with your team. Measure what worked. Built on the agentskills.io open standard — runs in Claude Code today, with one-click export to Cursor, Gemini CLI, Hermes & 30+ more agents coming next.",
       },
       {
         property: "og:title",
-        content: "Implexa — Record any Claude workflow once. Run it forever.",
+        content: "Implexa — Demonstrate any workflow once. Capture decision traces. Run anywhere SKILL.md runs.",
       },
       {
         property: "og:description",
-        content: "curl -fsSL https://core.implexa.ai/install.sh | bash",
+        content: "The team layer for the Agent Skills ecosystem. Capture decision traces — not just trajectories. Built on the agentskills.io open standard.",
       },
     ],
   }),
