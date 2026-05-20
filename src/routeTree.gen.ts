@@ -13,6 +13,7 @@ import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as ContactRouteImport } from './routes/contact'
 import { Route as ClaudeSkillsRouteImport } from './routes/claude-skills'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ResourcesWhatIsASkillGraphRouteImport } from './routes/resources.what-is-a-skill-graph'
 import { Route as BlogWhatAreClaudeSkillsRouteImport } from './routes/blog.what-are-claude-skills'
 import { Route as BlogHowToCreateAClaudeSkillRouteImport } from './routes/blog.how-to-create-a-claude-skill'
 
@@ -36,6 +37,12 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ResourcesWhatIsASkillGraphRoute =
+  ResourcesWhatIsASkillGraphRouteImport.update({
+    id: '/resources/what-is-a-skill-graph',
+    path: '/resources/what-is-a-skill-graph',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const BlogWhatAreClaudeSkillsRoute = BlogWhatAreClaudeSkillsRouteImport.update({
   id: '/blog/what-are-claude-skills',
   path: '/blog/what-are-claude-skills',
@@ -55,6 +62,7 @@ export interface FileRoutesByFullPath {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/blog/how-to-create-a-claude-skill': typeof BlogHowToCreateAClaudeSkillRoute
   '/blog/what-are-claude-skills': typeof BlogWhatAreClaudeSkillsRoute
+  '/resources/what-is-a-skill-graph': typeof ResourcesWhatIsASkillGraphRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -63,6 +71,7 @@ export interface FileRoutesByTo {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/blog/how-to-create-a-claude-skill': typeof BlogHowToCreateAClaudeSkillRoute
   '/blog/what-are-claude-skills': typeof BlogWhatAreClaudeSkillsRoute
+  '/resources/what-is-a-skill-graph': typeof ResourcesWhatIsASkillGraphRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -72,6 +81,7 @@ export interface FileRoutesById {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/blog/how-to-create-a-claude-skill': typeof BlogHowToCreateAClaudeSkillRoute
   '/blog/what-are-claude-skills': typeof BlogWhatAreClaudeSkillsRoute
+  '/resources/what-is-a-skill-graph': typeof ResourcesWhatIsASkillGraphRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -82,6 +92,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/blog/how-to-create-a-claude-skill'
     | '/blog/what-are-claude-skills'
+    | '/resources/what-is-a-skill-graph'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -90,6 +101,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/blog/how-to-create-a-claude-skill'
     | '/blog/what-are-claude-skills'
+    | '/resources/what-is-a-skill-graph'
   id:
     | '__root__'
     | '/'
@@ -98,6 +110,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/blog/how-to-create-a-claude-skill'
     | '/blog/what-are-claude-skills'
+    | '/resources/what-is-a-skill-graph'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -107,6 +120,7 @@ export interface RootRouteChildren {
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   BlogHowToCreateAClaudeSkillRoute: typeof BlogHowToCreateAClaudeSkillRoute
   BlogWhatAreClaudeSkillsRoute: typeof BlogWhatAreClaudeSkillsRoute
+  ResourcesWhatIsASkillGraphRoute: typeof ResourcesWhatIsASkillGraphRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -139,6 +153,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/resources/what-is-a-skill-graph': {
+      id: '/resources/what-is-a-skill-graph'
+      path: '/resources/what-is-a-skill-graph'
+      fullPath: '/resources/what-is-a-skill-graph'
+      preLoaderRoute: typeof ResourcesWhatIsASkillGraphRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/blog/what-are-claude-skills': {
       id: '/blog/what-are-claude-skills'
       path: '/blog/what-are-claude-skills'
@@ -163,17 +184,8 @@ const rootRouteChildren: RootRouteChildren = {
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   BlogHowToCreateAClaudeSkillRoute: BlogHowToCreateAClaudeSkillRoute,
   BlogWhatAreClaudeSkillsRoute: BlogWhatAreClaudeSkillsRoute,
+  ResourcesWhatIsASkillGraphRoute: ResourcesWhatIsASkillGraphRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

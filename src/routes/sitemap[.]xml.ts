@@ -18,6 +18,7 @@ export const Route = createFileRoute("/sitemap.xml")({
           { path: "/claude-skills", changefreq: "weekly", priority: "0.9" },
           { path: "/blog/how-to-create-a-claude-skill", changefreq: "monthly", priority: "0.8" },
           { path: "/blog/what-are-claude-skills", changefreq: "monthly", priority: "0.8" },
+          { path: "/resources/what-is-a-skill-graph", changefreq: "monthly", priority: "0.8" },
           { path: "/contact", changefreq: "monthly", priority: "0.5" },
         ];
 
