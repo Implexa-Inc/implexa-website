@@ -10,7 +10,7 @@ const jsonLd = {
       headline: "What Is a Skill Graph?",
       description:
         "A skill graph is a structured map of reusable workflows or capabilities, plus the relationships between them, that can be composed, shared, attributed, and improved over time.",
-      author: { "@type": "Person", name: "Rabi Gupta", url: "https://implexa.ai" },
+      author: { "@type": "Organization", name: "Implexa Team", url: "https://implexa.ai" },
       datePublished: "2026-05-20",
       publisher: {
         "@type": "Organization",
