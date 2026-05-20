@@ -143,7 +143,7 @@ function Index() {
           </div>
 
           <h1 className="text-5xl md:text-6xl font-bold tracking-tight text-ink-50 leading-[1.05] mb-6">
-            Demonstrate any workflow once.<br />
+            Do AI work once.<br />
             <span className="text-brand-500">Run it anywhere SKILL.md runs.</span>
           </h1>
 
