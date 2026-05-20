@@ -119,6 +119,10 @@ function Index() {
                     <div className="text-sm text-ink-100">Claude Skills Explained</div>
                     <div className="text-xs text-ink-400 mt-0.5">5-minute explainer</div>
                   </a>
+                  <a href="/resources/what-is-a-skill-graph" className="block px-4 py-2 hover:bg-ink-800 hover:text-ink-50">
+                    <div className="text-sm text-ink-100">What Is a Skill Graph?</div>
+                    <div className="text-xs text-ink-400 mt-0.5">Definition &amp; examples</div>
+                  </a>
                 </div>
               </div>
             </div>
@@ -581,6 +585,7 @@ function Index() {
                 <li><a href="/claude-skills" className="hover:text-ink-50">What Are Claude Skills?</a></li>
                 <li><a href="/blog/how-to-create-a-claude-skill" className="hover:text-ink-50">How to Create a Claude Skill</a></li>
                 <li><a href="/blog/what-are-claude-skills" className="hover:text-ink-50">Claude Skills Explained</a></li>
+                <li><a href="/resources/what-is-a-skill-graph" className="hover:text-ink-50">What Is a Skill Graph?</a></li>
                 <li><a href="https://github.com/Implexa-Inc/implexa-claude-plugin" className="hover:text-ink-50">GitHub</a></li>
                 <li><a href="https://github.com/Implexa-Inc/implexa-claude-plugin#readme" target="_blank" rel="noopener noreferrer" className="hover:text-ink-50">Docs</a></li>
               </ul>
