@@ -8,6 +8,12 @@ export type SkillCard = {
   description: string;
   author: string;
   tag: string;
+  // Optional SkillScore display value, surfaced as a subtle badge on the
+  // card when present. Populated by callers that have access to scored
+  // data (e.g. trending lists hydrated from list_skill_scores); left
+  // undefined for search-result cards driven by recommend_skills_for_context
+  // until the recommender is extended to join skill_scores in one shot.
+  score?: number | null;
 };
 
 export const TRENDING: SkillCard[] = [

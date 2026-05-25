@@ -9,6 +9,8 @@ import { Separator } from "@/components/ui/separator";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { RunInClaudeButton } from "@/components/run-in-claude-button";
+import { SkillScorePanel } from "@/components/skill-score-panel";
+import { fetchSkillScore } from "@/lib/skill-score";
 
 type RouteParams = { source: string; slug: string };
 
@@ -105,7 +107,12 @@ export default async function SkillDetailPage(props: {
   params: Promise<RouteParams>;
 }) {
   const { source, slug } = await props.params;
-  const skill = await fetchAggregatedSkill(source, slug);
+  // Fetch skill + score in parallel; the score query is independent of the
+  // skill row and a slow score fetch shouldn't block first paint.
+  const [skill, score] = await Promise.all([
+    fetchAggregatedSkill(source, slug),
+    fetchSkillScore(source, slug),
+  ]);
 
   // If the backend doesn't recognize this (source, slug), render 404 so we
   // don't pollute Google with placeholder pages for skills we don't have.
@@ -124,9 +131,63 @@ export default async function SkillDetailPage(props: {
   const stars =
     typeof skill.star_count === "number" ? skill.star_count : null;
 
+  // JSON-LD Review schema. THE AEO weapon — answer engines pick up Review
+  // + AggregateRating natively and cite "implexa scored X 8.7/10" in their
+  // responses. Only emit when we have a real score; an empty Review would
+  // be a thin-content signal Google penalizes.
+  const hasScore =
+    score?.scored === true &&
+    typeof score.display_score === "number" &&
+    !Number.isNaN(score.display_score);
+
+  const reviewJsonLd = hasScore
+    ? {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "Review",
+            "itemReviewed": {
+              "@type": "SoftwareApplication",
+              "name": title,
+              "applicationCategory": "AI Agent Skill",
+              "operatingSystem": "Cross-platform",
+            },
+            "author": { "@type": "Organization", "name": "Implexa" },
+            "datePublished":
+              score?.tier_1?.at ?? score?.updated_at ?? undefined,
+            "reviewBody": score?.tier_1?.summary ?? "",
+            "reviewRating": {
+              "@type": "Rating",
+              "ratingValue": score?.display_score,
+              "bestRating": 10,
+              "worstRating": 0,
+            },
+          },
+          {
+            "@type": "AggregateRating",
+            "itemReviewed": {
+              "@type": "SoftwareApplication",
+              "name": title,
+              "applicationCategory": "AI Agent Skill",
+            },
+            "ratingValue": score?.display_score,
+            "bestRating": 10,
+            "worstRating": 0,
+            "ratingCount": 1,
+            "reviewCount": 1,
+          },
+        ],
+      }
+    : null;
 
   return (
     <>
+      {reviewJsonLd ? (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(reviewJsonLd) }}
+        />
+      ) : null}
       <SiteHeader />
       <main className="flex-1 mx-auto w-full max-w-4xl px-4 sm:px-6 py-12">
         <Link
@@ -209,6 +270,8 @@ export default async function SkillDetailPage(props: {
         </div>
 
         <Separator className="bg-zinc-900 mb-10" />
+
+        {score && score.scored ? <SkillScorePanel score={score} /> : null}
 
         {content && content.length > 100 ? (
           <div className="prose prose-invert max-w-none">
