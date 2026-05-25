@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { TrendingUp, Sparkles, Download } from "lucide-react";
+import { Sparkles, Download } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
@@ -94,46 +94,106 @@ export default async function HomePage() {
       <SiteHeader />
       <main className="flex-1">
         {/* hero */}
-        <section className="mx-auto max-w-3xl px-4 sm:px-6 pt-20 pb-16 text-center">
-          <div className="inline-flex items-center justify-center mb-8">
-            <span className="text-4xl sm:text-5xl font-semibold tracking-tight text-white">
-              implexa
-            </span>
+        <section className="mx-auto max-w-4xl px-4 sm:px-6 pt-24 pb-12 text-center">
+          {/* tagline pill */}
+          <div className="inline-flex items-center gap-2 mb-8 px-3 py-1 rounded-full border border-zinc-800 bg-zinc-950 text-xs text-zinc-400">
+            <span className="size-1.5 rounded-full bg-emerald-500 animate-pulse" aria-hidden="true" />
+            11,478 skills indexed across 5 vendors
           </div>
-          <div className="mb-6">
+
+          {/* headline */}
+          <h1 className="text-4xl sm:text-6xl font-semibold tracking-tight text-white leading-[1.05] mb-6">
+            the cross-vendor skill graph
+            <br />
+            <span className="text-zinc-400">for AI work.</span>
+          </h1>
+
+          {/* subhead */}
+          <p className="text-lg sm:text-xl text-zinc-400 max-w-2xl mx-auto leading-relaxed mb-10">
+            implexa runs alongside claude code, codex, and cursor. mid-task, the
+            right skill surfaces. one tap to apply. nothing to download in
+            advance.
+          </p>
+
+          {/* search bar */}
+          <div className="mb-5">
             <SearchBar />
           </div>
-          <div className="flex flex-wrap items-center justify-center gap-3 mb-10">
-            <Link
-              href="#trending"
-              className={buttonVariants({
-                variant: "ghost",
-                size: "sm",
-                className:
-                  "text-zinc-400 hover:text-white hover:bg-zinc-900 h-9 px-3",
-              })}
-            >
-              <TrendingUp className="size-3.5 mr-1.5" aria-hidden="true" />
-              browse trending
-            </Link>
+
+          {/* example queries — reduce blank-page friction */}
+          <div className="flex flex-wrap items-center justify-center gap-2 mb-12 text-sm">
+            <span className="text-zinc-500">try:</span>
+            {[
+              "cold outreach email",
+              "hubspot integration",
+              "debug python types",
+              "next.js codemod",
+            ].map((q) => (
+              <Link
+                key={q}
+                href={`/search?q=${encodeURIComponent(q)}`}
+                className="px-2.5 py-1 rounded-full border border-zinc-800 text-zinc-300 hover:border-zinc-600 hover:bg-zinc-950 hover:text-white transition-colors"
+              >
+                {q}
+              </Link>
+            ))}
+          </div>
+
+          {/* demo cue: the wedge moment in a terminal mock */}
+          <div className="max-w-2xl mx-auto text-left bg-zinc-950 border border-zinc-900 rounded-lg overflow-hidden shadow-2xl">
+            <div className="flex items-center gap-2 px-4 py-2.5 border-b border-zinc-900 bg-zinc-900/50">
+              <div className="flex gap-1.5">
+                <div className="size-2.5 rounded-full bg-zinc-700" />
+                <div className="size-2.5 rounded-full bg-zinc-700" />
+                <div className="size-2.5 rounded-full bg-zinc-700" />
+              </div>
+              <span className="text-xs text-zinc-500 ml-2 font-mono">
+                claude code
+              </span>
+            </div>
+            <div className="p-5 font-mono text-sm leading-relaxed">
+              <div className="text-zinc-300">
+                <span className="text-zinc-600">{">"}</span>{" "}
+                <span className="text-white">
+                  implexa, find me a skill for cold outreach
+                </span>
+              </div>
+              <div className="mt-3 text-zinc-400">
+                <span className="text-emerald-400">💡</span>{" "}
+                try{" "}
+                <span className="text-white">draft-outreach</span>{" "}
+                <span className="text-zinc-500">(smithery)</span>
+              </div>
+              <div className="text-zinc-500 ml-6 mt-0.5">
+                drafts personalized cold emails with prospect research
+              </div>
+              <div className="mt-3 text-zinc-300">
+                <span className="text-zinc-600">{">"}</span>{" "}
+                <span className="text-white">yes apply</span>
+              </div>
+              <div className="mt-2 text-zinc-500 italic">
+                running draft-outreach inline...
+              </div>
+            </div>
+          </div>
+
+          {/* install cta */}
+          <div className="mt-12">
             <Link
               href="/install"
               className={buttonVariants({
-                variant: "ghost",
-                size: "sm",
+                size: "lg",
                 className:
-                  "text-zinc-400 hover:text-white hover:bg-zinc-900 h-9 px-3",
+                  "bg-white text-black hover:bg-zinc-200 h-12 px-6 text-base inline-flex items-center gap-2",
               })}
             >
-              <Download className="size-3.5 mr-1.5" aria-hidden="true" />
-              install plugin
+              <Download className="size-4" aria-hidden="true" />
+              install in 30 seconds
             </Link>
+            <p className="text-sm text-zinc-500 mt-3">
+              one curl command. works in claude code, codex, and cursor.
+            </p>
           </div>
-          <p className="text-lg sm:text-xl text-zinc-400 max-w-xl mx-auto leading-relaxed">
-            implexa watches you work and hands you{" "}
-            <span className="text-white">the right skill at the right time</span>
-            .
-          </p>
         </section>
 
         <Separator className="bg-zinc-900 mx-auto max-w-6xl" />
