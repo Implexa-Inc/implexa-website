@@ -222,12 +222,35 @@ export default async function SkillDetailPage(props: {
 
         <Separator className="bg-zinc-900 mb-10" />
 
-        <div className="prose prose-invert max-w-none">
-          <h2 className="text-lg font-semibold text-white mb-3">SKILL.md</h2>
-          <pre className="bg-zinc-950 border border-zinc-900 rounded-lg p-4 text-xs text-zinc-300 overflow-auto whitespace-pre-wrap font-mono leading-relaxed">
-            {content || "skill content not available yet."}
-          </pre>
-        </div>
+        {content && content.length > 100 ? (
+          <div className="prose prose-invert max-w-none">
+            <h2 className="text-lg font-semibold text-white mb-3">SKILL.md</h2>
+            <pre className="bg-zinc-950 border border-zinc-900 rounded-lg p-4 text-xs text-zinc-300 overflow-auto whitespace-pre-wrap font-mono leading-relaxed">
+              {content}
+            </pre>
+          </div>
+        ) : (
+          <div className="rounded-lg border border-zinc-900 bg-zinc-950 p-6">
+            <h2 className="text-base font-semibold text-white mb-2">
+              full SKILL.md lives at the source
+            </h2>
+            <p className="text-sm text-zinc-400 mb-4">
+              we&apos;ve indexed the metadata for this skill but the body is
+              fetched on demand. click &quot;view source&quot; above to read
+              the canonical SKILL.md on {source}, or &quot;run inline in
+              claude&quot; to apply it without leaving your session.
+            </p>
+            <Link
+              href={sourceUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-sm text-white hover:underline inline-flex items-center gap-1"
+            >
+              read on {source}
+              <ExternalLink className="size-3" aria-hidden="true" />
+            </Link>
+          </div>
+        )}
 
         <div className="mt-10 text-sm text-zinc-500">
           <p>
