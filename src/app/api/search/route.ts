@@ -52,8 +52,17 @@ export async function GET(req: NextRequest) {
           name: "recommend_skills_for_context",
           // The tool's Zod schema requires `messages` as an array of strings
           // (representing recent user prompts, oldest first). We pass the
-          // single search query as the only message. top_n caps results.
-          arguments: { messages: [q], top_n: 12, min_score: 0.20 },
+          // single search query as the only message. topN caps results.
+          // skipGates=true puts the recommender in explicit-search mode:
+          // bypasses the relative-gap gate + Haiku-negation filter so the
+          // search bar returns ranked top-N results, not the high-precision
+          // single-shot the ambient hook needs.
+          arguments: {
+            messages: [q],
+            topN: 12,
+            minScore: 0.18,
+            skipGates: true,
+          },
         },
       }),
       // keep this snappy; the search box is interactive.
