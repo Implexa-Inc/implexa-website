@@ -13,6 +13,12 @@ export function SiteHeader() {
         </Link>
         <nav className="flex items-center gap-1 text-sm">
           <Link
+            href="/resources"
+            className="px-3 py-1.5 text-zinc-400 hover:text-white transition-colors"
+          >
+            resources
+          </Link>
+          <Link
             href="/install"
             className="px-3 py-1.5 text-zinc-400 hover:text-white transition-colors"
           >

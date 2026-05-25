@@ -1,13 +1,14 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { ArrowLeft, ExternalLink, Play, GitFork, Star } from "lucide-react";
+import { ArrowLeft, ExternalLink, GitFork, Star } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
+import { RunInClaudeButton } from "@/components/run-in-claude-button";
 
 type RouteParams = { source: string; slug: string };
 
@@ -123,9 +124,6 @@ export default async function SkillDetailPage(props: {
   const stars =
     typeof skill.star_count === "number" ? skill.star_count : null;
 
-  const deeplink = `claude://implexa/apply?slug=${encodeURIComponent(
-    slug,
-  )}&source=${encodeURIComponent(source)}`;
 
   return (
     <>
@@ -163,18 +161,8 @@ export default async function SkillDetailPage(props: {
           <p className="text-lg text-zinc-400 max-w-2xl mb-8">{description}</p>
         ) : null}
 
-        <div className="flex flex-wrap gap-3 mb-10">
-          <Link
-            href={deeplink}
-            className={buttonVariants({
-              size: "lg",
-              className:
-                "bg-white text-black hover:bg-zinc-200 h-12 px-6 text-base",
-            })}
-          >
-            <Play className="size-4 mr-2" aria-hidden="true" />
-            run inline in claude
-          </Link>
+        <div className="flex flex-wrap items-start gap-4 mb-10">
+          <RunInClaudeButton slug={slug} source={source} />
           <Link
             href={sourceUrl}
             target="_blank"

@@ -8,6 +8,9 @@ export function SiteFooter() {
           implexa, google + wikipedia for SKILL.md
         </div>
         <nav className="flex flex-wrap gap-x-6 gap-y-2 text-sm text-zinc-400">
+          <Link href="/resources" className="hover:text-white transition-colors">
+            resources
+          </Link>
           <Link href="/install" className="hover:text-white transition-colors">
             install
           </Link>

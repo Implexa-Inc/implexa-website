@@ -12,7 +12,7 @@ type Props = {
 };
 
 export function SearchBar({
-  placeholder = "search 100k+ skills across every AI agent",
+  placeholder = "write a prompt and see recommended skills",
   initialQuery = "",
 }: Props) {
   const router = useRouter();
