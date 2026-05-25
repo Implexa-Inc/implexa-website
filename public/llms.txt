@@ -1,0 +1,27 @@
+# Implexa
+
+Implexa is the cross-vendor skill graph for AI work, a unified index of every public SKILL.md from Anthropic, Smithery, ClawHub, Skills.sh, and the agentskills.io standard, with an ambient recommender that surfaces the right skill in your Claude Code / Codex / Cursor session.
+
+## What we do
+
+1. Aggregator: every public SKILL.md, indexed.
+2. Recommender: ambient sidecar surfaces top-3 best-fit skills mid-task.
+3. Wiki: living docs, community edit and merge, karma and attribution.
+
+Cross-vendor by design. Works in Claude Code, Codex, Cursor, Gemini CLI, and every agentskills.io-compatible runtime.
+
+## Featured Pages
+
+- [/](https://implexa.ai/) Homepage with skill search
+- [/install](https://implexa.ai/install) Install instructions for Claude Code, Codex, Cursor
+- [/s/<source>/<slug>](https://implexa.ai/s/anthropic/example) Skill detail pages (canonical URLs for every indexed SKILL.md)
+- [/u/<handle>](https://implexa.ai/u/founder-implexa) Contributor profiles
+
+## API
+
+- POST https://core.implexa.ai/api/v2/mcp MCP endpoint for programmatic access (requires Bearer token)
+- GET https://implexa.ai/api/search?q=<query> Public search proxy
+
+## Contact
+
+founder@implexa.ai

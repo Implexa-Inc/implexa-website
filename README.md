@@ -1,36 +1,64 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# implexa-website
 
-## Getting Started
+the public surface of implexa. google + wikipedia for SKILL.md, cross-vendor.
 
-First, run the development server:
+## stack
+
+- next 16 (app router)
+- typescript strict
+- tailwind v4 + shadcn-ui
+- lucide-react icons
+- @vercel/analytics
+- deployed to vercel (auto-deploy on push to main)
+
+## routes
+
+| path | what |
+|---|---|
+| `/` | homepage. search bar + trending + categories + freshly improved |
+| `/search?q=...` | search results (placeholder until /api/search is wired) |
+| `/s/[source]/[slug]` | canonical skill detail page. SEO workhorse. |
+| `/u/[handle]` | contributor profile (P3 stub) |
+| `/install` | install instructions for claude code / codex / cursor |
+| `/api/search` | server route proxying to backend MCP recommend_skills_for_context |
+
+## local dev
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+# http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## env
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+set on vercel:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| var | what | default |
+|---|---|---|
+| `IMPLEXA_API_URL` | backend root | `https://core.implexa.ai` |
+| `IMPLEXA_PUBLIC_SEARCH_TOKEN` | bearer token for the public-search MCP role | empty (returns placeholder) |
 
-## Learn More
+## phases (per VISION.md website evolution map)
 
-To learn more about Next.js, take a look at the following resources:
+- **phase 1 (this commit)**: foundation, route skeleton, placeholder content, SEO meta.
+- **phase 2**: wire /api/search to the live aggregated_skills index. real skill detail pages with SKILL.md body streaming.
+- **phase 3**: sitemap.xml, structured data on skill detail pages.
+- **phase 4 (post-P3 backend)**: install counts, run counts, last-run timestamps on every skill.
+- **phase 5 (post-P3.1+P3.2 backend)**: revision history, contributor profiles, fork counts, "improve this skill" button.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## voice rules
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- lowercase, tech-bro X cadence, punchy
+- never em-dashes (commas, colons, parens, hyphens)
+- never corporate hedging
+- "implexa watches you work" not "implexa is a platform that..."
 
-## Deploy on Vercel
+## per-repo git identity
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```bash
+git config user.name "founder-implexa"
+git config user.email "founder@implexa.ai"
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+global git config is the revenoid identity. never touch it.
