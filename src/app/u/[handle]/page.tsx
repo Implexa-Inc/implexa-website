@@ -16,6 +16,11 @@ export async function generateMetadata(props: {
   return {
     title: `@${handle}`,
     description: `contributor profile for @${handle} on implexa. karma, authored skills, accepted contributions.`,
+    alternates: { canonical: `/u/${handle}` },
+    // Until the wiki layer ships real data (P3.2), keep contributor stubs
+    // out of Google. They're empty placeholders and would dilute the
+    // index. Flip robots back to index:true once the data lands.
+    robots: { index: false, follow: true },
   };
 }
 

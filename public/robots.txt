@@ -1,4 +1,0 @@
-User-agent: *
-Allow: /
-
-Sitemap: https://implexa.ai/sitemap.xml
