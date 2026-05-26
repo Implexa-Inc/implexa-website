@@ -126,9 +126,9 @@ export default async function ScoresPage(props: {
   const ldJson = jsonLdGraph(
     scoresPageSchema(
       scores.slice(0, 10).map((s) => ({
-        position: offset + scores.indexOf(s) + 1,
-        name: s.name ?? s.slug,
-        url: absoluteUrl(`/s/${s.source}/${s.slug}`),
+        source: s.source,
+        slug: s.slug,
+        name: s.name ?? undefined,
         score: s.display_score,
       })),
     ),
