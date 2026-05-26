@@ -178,8 +178,8 @@ export default async function HomePage() {
           {/* subhead */}
           <p className="text-lg sm:text-xl text-zinc-400 max-w-2xl mx-auto leading-relaxed mb-8">
             implexa indexes, scores, enriches, and recommends skills as you
-            work in Claude. no installs. no restarts. no remembering when to
-            use which. ever.
+            work in Claude Code and Codex. no installs. no restarts. no
+            remembering when to use which. ever.
           </p>
 
           {/* live skill counter — animates up on mount + drifts upward */}
@@ -187,8 +187,9 @@ export default async function HomePage() {
             <CountUpPill target={skillCount} />
           </div>
 
-          {/* one-line install + copy. signup is bundled into the script. */}
-          <CopyableInstall command="curl -fsSL core.implexa.ai/install.sh | bash" />
+          {/* one-line install + copy. platform toggle picks claude code vs
+              codex script. signup is bundled into either install flow. */}
+          <CopyableInstall />
 
           {/* terminal demo — claude-orange chrome, social-media example */}
           <div className="max-w-2xl mx-auto text-left bg-zinc-950 border border-zinc-900 rounded-lg overflow-hidden shadow-2xl mt-12">
@@ -404,7 +405,7 @@ export default async function HomePage() {
             </h2>
             <p className="text-lg text-zinc-400 max-w-2xl mx-auto leading-relaxed">
               four commands, learned in 30 seconds. they live inside your
-              claude code session.
+              claude code or codex session.
             </p>
           </div>
 
@@ -422,9 +423,9 @@ export default async function HomePage() {
                 ask mid-task, get a skill
               </h3>
               <p className="text-sm text-zinc-400 leading-relaxed mb-3">
-                drop a question into your existing claude code session.
-                implexa pulls the best-fit skills from the cross-vendor
-                index.
+                drop a question into your existing claude code or codex
+                session. implexa pulls the best-fit skills from the
+                cross-vendor index.
               </p>
               <div className="space-y-1.5 text-xs">
                 <div>
@@ -565,7 +566,8 @@ export default async function HomePage() {
                 {skillCount.toLocaleString()}+ skills, applied on demand
               </h3>
               <p className="text-sm text-zinc-400 leading-relaxed">
-                search the full cross-vendor index from inside claude code.
+                search the full cross-vendor index from inside claude code
+                or codex.
                 use any skill without installing it. implexa watches your work
                 and surfaces the right one mid-task.
               </p>
@@ -577,8 +579,8 @@ export default async function HomePage() {
             <div className="grid gap-5 sm:grid-cols-2">
               {[
                 {
-                  title: "search inside claude code",
-                  body: "one plugin, one index, one set of commands. lives next to claude code without taking it over.",
+                  title: "search inside claude code or codex",
+                  body: "one plugin, one index, one set of commands. lives next to claude code or codex without taking either over.",
                   color: "emerald" as const,
                 },
                 {
