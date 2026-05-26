@@ -393,7 +393,7 @@ export default async function HomePage() {
           <div className="text-center mb-14">
             <div className="inline-flex items-center gap-2 mb-4 px-3 py-1 rounded-full border border-amber-900/40 bg-amber-500/5 text-xs text-amber-400">
               <span className="size-1.5 rounded-full bg-amber-400" aria-hidden="true" />
-              the wedge
+              features
             </div>
             <h2 className="text-3xl sm:text-4xl font-semibold tracking-tight text-white mb-4">
               what the implexa plugin gives you
