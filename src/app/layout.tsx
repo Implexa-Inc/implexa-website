@@ -10,6 +10,7 @@ import {
   TWITTER_HANDLE,
 } from "@/lib/site";
 import { jsonLdGraph, organizationSchema, websiteSchema } from "@/lib/jsonld";
+import { MouseGridSpotlight } from "@/components/mouse-grid-spotlight";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -32,8 +33,8 @@ export const metadata: Metadata = {
     "SKILL.md",
     "agentskills.io",
     "claude code skills",
-    "codex skills",
-    "cursor skills",
+    "claude code plugins",
+    "claude skill marketplace",
     "AI agent skills",
     "skill graph",
   ],
@@ -92,7 +93,11 @@ export default function RootLayout({
       lang="en"
       className={`dark ${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col bg-black text-zinc-100">
+      <body className="min-h-full flex flex-col bg-black text-zinc-100 relative">
+        {/* Magic-wand background: faint dot grid + amber spotlight that
+            follows the cursor. Lives behind all content via -z-10. Adds
+            the visual differentiator from skills.sh / vercel-style layouts. */}
+        <MouseGridSpotlight />
         {children}
         <Analytics />
         <script

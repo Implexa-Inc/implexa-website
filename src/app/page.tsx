@@ -16,6 +16,8 @@ import { SearchBar } from "@/components/search-bar";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { SkillCard } from "@/components/skill-card";
+import { CountUpPill } from "@/components/count-up-pill";
+import { CopyableInstall } from "@/components/copyable-install";
 import type { SkillCard as SkillCardData } from "@/lib/placeholder-data";
 import { CATEGORIES } from "@/lib/placeholder-data";
 
@@ -161,64 +163,46 @@ export default async function HomePage() {
       <main className="flex-1">
 
         {/* ─────────────────────────────────────────────────────────────
-            section 1 — plugin-first hero. no search bar, no chips.
-            the wedge is the plugin; the catalog lives below.
+            section 1 — claude-first hero. headline + subhead + live
+            count chip + one-line install command + terminal demo with
+            the claude-orange chrome.
             ───────────────────────────────────────────────────────────── */}
         <section className="mx-auto max-w-4xl px-4 sm:px-6 pt-24 pb-16 text-center">
           {/* headline */}
           <h1 className="text-4xl sm:text-6xl font-semibold tracking-tight text-white leading-[1.05] mb-6">
-            stop downloading skills.
+            Search and execute skills
             <br />
-            <span className="text-zinc-400">
-              implexa runs them inline as you work.
-            </span>
+            <span className="text-zinc-400">within Claude.</span>
           </h1>
 
           {/* subhead */}
-          <p className="text-lg sm:text-xl text-zinc-400 max-w-2xl mx-auto leading-relaxed mb-10">
+          <p className="text-lg sm:text-xl text-zinc-400 max-w-2xl mx-auto leading-relaxed mb-8">
             implexa indexes, scores, enriches, and recommends skills as you
-            work in claude, codex, cursor, gemini. no installs. no restarts.
-            no remembering when to use which. ever.
+            work in Claude. no installs. no restarts. no remembering when to
+            use which. ever.
           </p>
 
-          {/* primary CTAs: install + signup */}
-          <div className="flex flex-wrap items-center justify-center gap-3 mb-6">
-            <Link
-              href="/install"
-              className={buttonVariants({
-                size: "lg",
-                className:
-                  "bg-white text-black hover:bg-zinc-200 h-12 px-6 text-base inline-flex items-center gap-2",
-              })}
-            >
-              <Download className="size-4" aria-hidden="true" />
-              install the plugin
-            </Link>
-            <Link
-              href="https://app.implexa.ai/signup"
-              className={buttonVariants({
-                variant: "outline",
-                size: "lg",
-                className:
-                  "border-zinc-700 text-zinc-300 hover:bg-zinc-950 hover:text-white h-12 px-6 text-base",
-              })}
-            >
-              sign up free
-            </Link>
+          {/* live skill counter — animates up on mount + drifts upward */}
+          <div className="mb-8">
+            <CountUpPill target={skillCount} />
           </div>
-          <p className="text-sm text-zinc-500 mb-12">
-            one curl command. works in claude code, codex, cursor, gemini cli.
-          </p>
 
-          {/* terminal demo — what the wedge looks like in practice */}
-          <div className="max-w-2xl mx-auto text-left bg-zinc-950 border border-zinc-900 rounded-lg overflow-hidden shadow-2xl">
-            <div className="flex items-center gap-2 px-4 py-2.5 border-b border-zinc-900 bg-zinc-900/50">
+          {/* one-line install + copy. signup is bundled into the script. */}
+          <CopyableInstall command="curl -fsSL core.implexa.ai/install.sh | bash" />
+
+          {/* terminal demo — claude-orange chrome, social-media example */}
+          <div className="max-w-2xl mx-auto text-left bg-zinc-950 border border-zinc-900 rounded-lg overflow-hidden shadow-2xl mt-12">
+            {/* claude-orange title bar for visual familiarity */}
+            <div
+              className="flex items-center gap-2 px-4 py-2.5 border-b border-zinc-900"
+              style={{ backgroundColor: "#cc785c" }}
+            >
               <div className="flex gap-1.5">
-                <div className="size-2.5 rounded-full bg-zinc-700" />
-                <div className="size-2.5 rounded-full bg-zinc-700" />
-                <div className="size-2.5 rounded-full bg-zinc-700" />
+                <div className="size-2.5 rounded-full bg-black/30" />
+                <div className="size-2.5 rounded-full bg-black/30" />
+                <div className="size-2.5 rounded-full bg-black/30" />
               </div>
-              <span className="text-xs text-zinc-500 ml-2 font-mono">
+              <span className="text-xs text-white/90 ml-2 font-mono">
                 claude code
               </span>
             </div>
@@ -226,24 +210,26 @@ export default async function HomePage() {
               <div className="text-zinc-300">
                 <span className="text-zinc-600">{">"}</span>{" "}
                 <span className="text-white">
-                  implexa: recommend a skill for cold outreach
+                  Implexa, help me automate my social media campaigns...
                 </span>
               </div>
               <div className="mt-3 text-zinc-400">
                 <span className="text-emerald-400">💡</span>{" "}
-                try{" "}
-                <span className="text-white">draft-outreach</span>{" "}
+                Implexa: try{" "}
+                <span className="text-white">
+                  social-media-daily-for-enterprises
+                </span>{" "}
                 <span className="text-zinc-500">(smithery · 9.2/10)</span>
               </div>
               <div className="text-zinc-500 ml-6 mt-0.5">
-                drafts personalized cold emails with prospect research
+                drafts + schedules a week of cross-channel posts from one brief
               </div>
               <div className="mt-3 text-zinc-300">
                 <span className="text-zinc-600">{">"}</span>{" "}
-                <span className="text-white">implexa: run draft-outreach</span>
+                <span className="text-white">Implexa: run it</span>
               </div>
               <div className="mt-2 text-emerald-400 italic">
-                ✓ running draft-outreach inline...
+                ✓ running social-media-daily-for-enterprises inline...
               </div>
             </div>
           </div>
@@ -413,8 +399,8 @@ export default async function HomePage() {
               what the implexa plugin gives you
             </h2>
             <p className="text-lg text-zinc-400 max-w-2xl mx-auto leading-relaxed">
-              four commands, learned in 30 seconds. they live inside whatever
-              ai workspace you&apos;re already using.
+              four commands, learned in 30 seconds. they live inside your
+              claude code session.
             </p>
           </div>
 
@@ -432,9 +418,9 @@ export default async function HomePage() {
                 ask mid-task, get a skill
               </h3>
               <p className="text-sm text-zinc-400 leading-relaxed mb-3">
-                drop a question into your existing claude/codex/cursor/gemini
-                session. implexa pulls the best-fit skills from the cross-vendor
-                graph.
+                drop a question into your existing claude code session.
+                implexa pulls the best-fit skills from the cross-vendor
+                index.
               </p>
               <div className="space-y-1.5 text-xs">
                 <div>
@@ -575,7 +561,7 @@ export default async function HomePage() {
                 {skillCount.toLocaleString()}+ skills, applied on demand
               </h3>
               <p className="text-sm text-zinc-400 leading-relaxed">
-                search the full cross-vendor graph from inside any ai workspace.
+                search the full cross-vendor index from inside claude code.
                 use any skill without installing it. implexa watches your work
                 and surfaces the right one mid-task.
               </p>
@@ -587,8 +573,8 @@ export default async function HomePage() {
             <div className="grid gap-5 sm:grid-cols-2">
               {[
                 {
-                  title: "search any ai workspace",
-                  body: "claude, codex, cursor, gemini cli. one plugin, one index, one set of commands.",
+                  title: "search inside claude code",
+                  body: "one plugin, one index, one set of commands. lives next to claude code without taking it over.",
                   color: "emerald" as const,
                 },
                 {
