@@ -87,13 +87,54 @@ async function fetchHomeSkills(seed: string, count: number): Promise<SkillCardDa
   }
 }
 
+// Live count of indexed skills. Server-renders into the hero pill so the
+// number reflects reality, not a stale hardcoded value. Falls back to a
+// known-good fallback if backend is unreachable.
+async function fetchSkillCount(): Promise<number> {
+  if (!TOKEN) return 19000;
+  try {
+    const upstream = await fetch(`${BACKEND}/api/v2/mcp`, {
+      method: "POST",
+      headers: {
+        accept: "application/json, text/event-stream",
+        "content-type": "application/json",
+        authorization: `Bearer ${TOKEN}`,
+      },
+      body: JSON.stringify({
+        jsonrpc: "2.0",
+        id: 1,
+        method: "tools/call",
+        params: {
+          name: "list_aggregated_skills",
+          arguments: { limit: 1, offset: 0 },
+        },
+      }),
+      signal: AbortSignal.timeout(8000),
+      // Cache for 1 hour at the edge. Indexed count grows slowly.
+      next: { revalidate: 3600 },
+    });
+    if (!upstream.ok) return 19000;
+    const text = await upstream.text();
+    const dataLine = text.split("\n").find((ln) => ln.startsWith("data: "));
+    const jsonStr = dataLine ? dataLine.slice(6) : text;
+    const body: { result?: { content?: Array<{ text?: string }> } } =
+      JSON.parse(jsonStr);
+    const raw = body?.result?.content?.[0]?.text ?? "{}";
+    const parsed: { total?: number; total_count?: number } = JSON.parse(raw);
+    return parsed.total ?? parsed.total_count ?? 19000;
+  } catch {
+    return 19000;
+  }
+}
+
 export default async function HomePage() {
-  // Two parallel queries — different seeds so the two sections show diverse
-  // results. If either fails, we render that section empty rather than fall
-  // back to broken placeholders.
-  const [trending, fresh] = await Promise.all([
+  // Parallel fetches: trending + fresh skills + live count for the pill.
+  // If any fails, that section renders empty rather than falling back to
+  // broken placeholders.
+  const [trending, fresh, skillCount] = await Promise.all([
     fetchHomeSkills("automate productivity workflow", 6),
     fetchHomeSkills("integration api connector", 6),
+    fetchSkillCount(),
   ]);
 
   return (
@@ -102,24 +143,20 @@ export default async function HomePage() {
       <main className="flex-1">
         {/* hero */}
         <section className="mx-auto max-w-4xl px-4 sm:px-6 pt-24 pb-12 text-center">
-          {/* tagline pill */}
-          <div className="inline-flex items-center gap-2 mb-8 px-3 py-1 rounded-full border border-zinc-800 bg-zinc-950 text-xs text-zinc-400">
-            <span className="size-1.5 rounded-full bg-emerald-500 animate-pulse" aria-hidden="true" />
-            11,478 skills indexed across 5 vendors
-          </div>
-
           {/* headline */}
           <h1 className="text-4xl sm:text-6xl font-semibold tracking-tight text-white leading-[1.05] mb-6">
-            the cross-vendor skill graph
+            stop downloading skills.
             <br />
-            <span className="text-zinc-400">for AI work.</span>
+            <span className="text-zinc-400">
+              implexa runs them inline as you work.
+            </span>
           </h1>
 
           {/* subhead */}
           <p className="text-lg sm:text-xl text-zinc-400 max-w-2xl mx-auto leading-relaxed mb-10">
-            implexa runs alongside claude code, codex, and cursor. mid-task, the
-            right skill surfaces. one tap to apply. nothing to download in
-            advance.
+            implexa indexes, scores, enriches, and recommends skills as you
+            work in claude, codex, cursor, gemini. no installs. no restarts.
+            no remembering when to use which. ever.
           </p>
 
           {/* search bar */}
@@ -127,8 +164,8 @@ export default async function HomePage() {
             <SearchBar />
           </div>
 
-          {/* example queries — reduce blank-page friction */}
-          <div className="flex flex-wrap items-center justify-center gap-2 mb-12 text-sm">
+          {/* example queries to reduce blank-page friction */}
+          <div className="flex flex-wrap items-center justify-center gap-2 mb-6 text-sm">
             <span className="text-zinc-500">try:</span>
             {[
               "cold outreach email",
@@ -144,6 +181,15 @@ export default async function HomePage() {
                 {q}
               </Link>
             ))}
+          </div>
+
+          {/* live count pill — moved below search per founder feedback */}
+          <div className="inline-flex items-center gap-2 mb-12 px-3 py-1 rounded-full border border-zinc-800 bg-zinc-950 text-xs text-zinc-400">
+            <span
+              className="size-1.5 rounded-full bg-emerald-500 animate-pulse"
+              aria-hidden="true"
+            />
+            {skillCount.toLocaleString()} skills indexed across 5 vendors
           </div>
 
           {/* demo cue: the wedge moment in a terminal mock */}
@@ -184,23 +230,6 @@ export default async function HomePage() {
             </div>
           </div>
 
-          {/* install cta */}
-          <div className="mt-12">
-            <Link
-              href="/install"
-              className={buttonVariants({
-                size: "lg",
-                className:
-                  "bg-white text-black hover:bg-zinc-200 h-12 px-6 text-base inline-flex items-center gap-2",
-              })}
-            >
-              <Download className="size-4" aria-hidden="true" />
-              install in 30 seconds
-            </Link>
-            <p className="text-sm text-zinc-500 mt-3">
-              one curl command. works in claude code, codex, and cursor.
-            </p>
-          </div>
         </section>
 
         <Separator className="bg-zinc-900 mx-auto max-w-6xl" />
@@ -280,25 +309,103 @@ export default async function HomePage() {
           )}
         </section>
 
-        {/* closing pitch */}
-        <section className="mx-auto max-w-3xl px-4 sm:px-6 py-20 text-center">
-          <h2 className="text-2xl sm:text-3xl font-semibold text-white mb-4">
-            stop downloading skills you&apos;ll never use
-          </h2>
-          <p className="text-zinc-400 max-w-xl mx-auto mb-8">
-            implexa runs alongside your claude code, codex, or cursor session.
-            mid-task, the right skill surfaces. one tap to install and run.
+        <Separator className="bg-zinc-900 mx-auto max-w-6xl" />
+
+        {/* plugin section: the key thing */}
+        <section className="mx-auto max-w-5xl px-4 sm:px-6 py-20">
+          <div className="text-center mb-12">
+            <div className="inline-flex items-center gap-2 mb-4 px-3 py-1 rounded-full border border-amber-900/40 bg-amber-500/5 text-xs text-amber-400">
+              <span className="size-1.5 rounded-full bg-amber-400" aria-hidden="true" />
+              the wedge
+            </div>
+            <h2 className="text-3xl sm:text-4xl font-semibold tracking-tight text-white mb-4">
+              the plugin is where it gets magical
+            </h2>
+            <p className="text-lg text-zinc-400 max-w-2xl mx-auto leading-relaxed">
+              without the plugin, implexa is a really good skill search
+              engine. with it, every claude code, codex, cursor, and gemini
+              session has implexa watching, recommending, and applying skills
+              inline.
+            </p>
+          </div>
+
+          {/* 3-step how it works */}
+          <div className="grid gap-4 sm:grid-cols-3 mb-12">
+            <div className="rounded-lg border border-zinc-800 bg-zinc-950 p-5">
+              <div className="text-xs text-zinc-500 mb-2 font-mono">step 1</div>
+              <h3 className="text-base font-medium text-white mb-1.5">
+                browse the catalog
+              </h3>
+              <p className="text-sm text-zinc-400 leading-relaxed">
+                search {skillCount.toLocaleString()}+ skills on implexa.ai
+                without installing anything. always free.
+              </p>
+            </div>
+            <div className="rounded-lg border border-emerald-900/40 bg-emerald-500/5 p-5">
+              <div className="text-xs text-emerald-400 mb-2 font-mono">step 2</div>
+              <h3 className="text-base font-medium text-white mb-1.5">
+                install the plugin (30s)
+              </h3>
+              <p className="text-sm text-zinc-400 leading-relaxed">
+                one curl command. wires implexa into your existing claude
+                code, codex, cursor, or gemini cli session. no restart.
+              </p>
+            </div>
+            <div className="rounded-lg border border-amber-900/40 bg-amber-500/5 p-5">
+              <div className="text-xs text-amber-400 mb-2 font-mono">step 3</div>
+              <h3 className="text-base font-medium text-white mb-1.5">
+                implexa watches + applies
+              </h3>
+              <p className="text-sm text-zinc-400 leading-relaxed">
+                mid-task, the right skill surfaces. say &quot;yes apply&quot;
+                and the SKILL.md runs inline. nothing to pre-install,
+                nothing to remember.
+              </p>
+            </div>
+          </div>
+
+          {/* install command preview */}
+          <div className="max-w-2xl mx-auto mb-8 rounded-lg border border-zinc-900 bg-zinc-950 overflow-hidden">
+            <div className="flex items-center gap-2 px-4 py-2 border-b border-zinc-900 bg-zinc-900/50">
+              <span className="text-xs text-zinc-500 font-mono">terminal</span>
+            </div>
+            <pre className="p-4 text-sm font-mono text-zinc-300 overflow-x-auto leading-relaxed">
+              <span className="text-zinc-600">$</span>{" "}
+              <span className="text-emerald-400">curl</span> -fsSL{" "}
+              <span className="text-amber-400">https://core.implexa.ai/install.sh</span>{" "}
+              | <span className="text-emerald-400">bash</span>
+            </pre>
+          </div>
+
+          {/* CTAs */}
+          <div className="flex flex-wrap items-center justify-center gap-3 mb-4">
+            <Link
+              href="/install"
+              className={buttonVariants({
+                size: "lg",
+                className:
+                  "bg-white text-black hover:bg-zinc-200 h-12 px-6 text-base inline-flex items-center gap-2",
+              })}
+            >
+              <Download className="size-4" aria-hidden="true" />
+              install the plugin
+            </Link>
+            <Link
+              href="https://app.implexa.ai/signup"
+              className={buttonVariants({
+                variant: "outline",
+                size: "lg",
+                className:
+                  "border-zinc-700 text-zinc-300 hover:bg-zinc-950 hover:text-white h-12 px-6 text-base",
+              })}
+            >
+              sign up free
+            </Link>
+          </div>
+          <p className="text-center text-sm text-zinc-500">
+            works in claude code, codex, cursor, gemini cli. plugin is MIT
+            licensed. free tier forever.
           </p>
-          <Link
-            href="/install"
-            className={buttonVariants({
-              size: "lg",
-              className:
-                "bg-white text-black hover:bg-zinc-200 h-12 px-6 text-base",
-            })}
-          >
-            install the plugin
-          </Link>
         </section>
       </main>
       <SiteFooter />
