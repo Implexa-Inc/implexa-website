@@ -1,8 +1,10 @@
 import type { MetadataRoute } from "next";
+import { after } from "next/server";
 import { absoluteUrl } from "@/lib/site";
 import { listResources } from "@/lib/resources";
 import { listBlogPosts } from "@/lib/blog";
 import { listAllSkillsForSitemap } from "@/lib/skill-catalog";
+import { submitToIndexNow } from "@/lib/indexnow";
 
 // Dynamic sitemap for the SEO surface. Lists:
 //   - static pages (home, search, install, scores)
@@ -123,5 +125,47 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     blogPages(),
     skillPages(),
   ]);
-  return [...staticPages(now), ...resources, ...blog, ...skills];
+  const entries = [...staticPages(now), ...resources, ...blog, ...skills];
+
+  // Side-effect: ping IndexNow with anything modified in the last 24h so
+  // Bing pulls it out of "discovered but not crawled" within minutes
+  // instead of weeks. This is the main AEO unblock — Perplexity and
+  // chatgpt-search both ride Bing's index.
+  //
+  // `after()` runs the callback once the response is flushed, so it
+  // doesn't add latency to the sitemap response itself. The helper is a
+  // no-op when IMPLEXA_INDEXNOW_KEY is unset, so dev/preview builds
+  // never accidentally ping the API.
+  //
+  // We filter to the last 24h because the sitemap revalidates daily —
+  // anything older than that was already submitted on a previous
+  // revalidation. Resubmitting unchanged URLs wastes our IndexNow quota
+  // and (per the protocol's own warnings) risks rate-limiting.
+  after(() => {
+    const cutoff = now.getTime() - 24 * 60 * 60 * 1000;
+    const recent = entries
+      .filter((e) => {
+        if (!e.lastModified) return false;
+        const t =
+          e.lastModified instanceof Date
+            ? e.lastModified.getTime()
+            : new Date(e.lastModified).getTime();
+        return Number.isFinite(t) && t >= cutoff;
+      })
+      .map((e) => e.url);
+
+    if (recent.length === 0) return;
+
+    void submitToIndexNow(recent).then((result) => {
+      if (result.ok) {
+        console.log(
+          `[indexnow] sitemap-driven submission: ${result.submitted} URLs`
+        );
+      } else {
+        console.warn(`[indexnow] sitemap submission skipped: ${result.error}`);
+      }
+    });
+  });
+
+  return entries;
 }
