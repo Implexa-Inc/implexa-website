@@ -486,7 +486,7 @@ export default async function HomePage() {
                 publish to the index.
               </p>
               <div className="text-xs">
-                <Cmd>implexa: record-skill</Cmd>
+                <Cmd>implexa: record</Cmd>
               </div>
             </div>
 
@@ -633,26 +633,38 @@ export default async function HomePage() {
           <div className="rounded-lg border border-zinc-900 bg-zinc-950 overflow-hidden mb-12">
             <div className="px-5 py-3 border-b border-zinc-900 bg-zinc-900/40">
               <span className="text-xs text-zinc-500 font-mono uppercase tracking-wider">
-                cheatsheet · the four commands
+                cheatsheet · the seven commands
               </span>
             </div>
             <div className="divide-y divide-zinc-900">
               {[
                 {
-                  cmd: "implexa: recommend a skill for <task>",
-                  what: "find the right skill mid-session",
-                },
-                {
-                  cmd: "implexa: suggest",
-                  what: "ranked picks based on what you're doing right now",
-                },
-                {
-                  cmd: "implexa: record-skill",
-                  what: "capture your workflow into a reusable SKILL.md",
+                  cmd: "implexa: suggest [for X]",
+                  what: "find skills — active search or passive buffer",
                 },
                 {
                   cmd: "implexa: run <skill or prompt>",
-                  what: "run any indexed skill inline, no install needed",
+                  what: "apply the best-fit skill from library + cross-vendor graph",
+                },
+                {
+                  cmd: "implexa: record",
+                  what: "capture a skill — new demo, post-hoc save, or update via re-record",
+                },
+                {
+                  cmd: "implexa: my-skills [scope]",
+                  what: "browse libraries — personal / team / org / public",
+                },
+                {
+                  cmd: "implexa: schedule <skill> <cadence>",
+                  what: "auto-run any skill on a recurrence, dashboard or slack",
+                },
+                {
+                  cmd: "implexa: share-this",
+                  what: "team-gated or public share link, one-click install",
+                },
+                {
+                  cmd: "implexa: help",
+                  what: "list commands + your current credit balance",
                 },
               ].map((r) => (
                 <div
@@ -665,6 +677,11 @@ export default async function HomePage() {
                   <span className="text-sm text-zinc-400">{r.what}</span>
                 </div>
               ))}
+            </div>
+            <div className="px-5 py-3 border-t border-zinc-900 bg-zinc-900/20">
+              <span className="text-xs text-zinc-500 leading-relaxed">
+                for anything else, just ask in natural language. fork, morning brief, skill ROI, clawhub publish all route through the model.
+              </span>
             </div>
           </div>
 
