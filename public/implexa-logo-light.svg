@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 160" role="img" aria-label="implexa">
+  <style>
+    .wm { font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif; font-weight: 700; font-size: 120px; letter-spacing: -4px; }
+  </style>
+  <!-- light theme variant: dark text on light bg -->
+  <text x="40" y="125" class="wm" fill="#0a0a0a">ımplexa</text>
+  <circle cx="54" cy="40" r="11" fill="#34d399"/>
+  <circle cx="350" cy="92" r="11" fill="#fbbf24"/>
+</svg>

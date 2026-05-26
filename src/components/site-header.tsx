@@ -6,10 +6,17 @@ export function SiteHeader() {
       <div className="mx-auto max-w-6xl flex h-14 items-center justify-between px-4 sm:px-6">
         <Link
           href="/"
-          className="flex items-center gap-2 text-lg font-semibold tracking-tight text-white"
+          className="flex items-center"
+          aria-label="implexa home"
         >
-          <span className="inline-block size-2 rounded-full bg-white" />
-          implexa
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/implexa-logo.svg"
+            alt="implexa"
+            className="h-7 w-auto"
+            width={120}
+            height={32}
+          />
         </Link>
         <nav className="flex items-center gap-1 text-sm">
           <Link
