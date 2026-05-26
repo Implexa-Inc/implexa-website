@@ -10,7 +10,12 @@ import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { RunInClaudeButton } from "@/components/run-in-claude-button";
 import { SkillScorePanel } from "@/components/skill-score-panel";
+import { SkillEnrichmentPanel } from "@/components/skill-enrichment-panel";
 import { fetchSkillScore } from "@/lib/skill-score";
+import {
+  fetchSkillEnrichment,
+  firstParagraphOf,
+} from "@/lib/skill-enrichment";
 import { SkillCard } from "@/components/skill-card";
 import { absoluteUrl } from "@/lib/site";
 import {
@@ -94,10 +99,21 @@ export async function generateMetadata(props: {
   params: Promise<RouteParams>;
 }): Promise<Metadata> {
   const { source, slug } = await props.params;
-  const skill = await fetchAggregatedSkill(source, slug);
+  // Enrichment fetched in parallel with the base skill. When an enriched
+  // version exists, its first paragraph beats the raw description for SEO
+  // (unique authored text > scraped upstream blurb).
+  const [skill, enrichment] = await Promise.all([
+    fetchAggregatedSkill(source, slug),
+    fetchSkillEnrichment(source, slug),
+  ]);
   const title = skill?.name ?? slug.replace(/-/g, " ");
+  const enrichedDesc =
+    enrichment?.enriched && enrichment.enriched_content
+      ? firstParagraphOf(enrichment.enriched_content, 200)
+      : "";
   const description =
-    skill?.description ??
+    enrichedDesc ||
+    skill?.description ||
     `${title}, a SKILL.md from ${source}. one-click install to claude code, codex, or cursor via implexa.`;
   const canonicalPath = `/s/${source}/${slug}`;
 
@@ -123,11 +139,13 @@ export default async function SkillDetailPage(props: {
   params: Promise<RouteParams>;
 }) {
   const { source, slug } = await props.params;
-  // Fetch skill + score in parallel; the score query is independent of the
-  // skill row and a slow score fetch shouldn't block first paint.
-  const [skill, score] = await Promise.all([
+  // Fetch skill + score + enrichment in parallel. All three are independent
+  // of each other; serializing would compound latency for no reason. Each
+  // helper returns null on failure so partial state still renders.
+  const [skill, score, enrichment] = await Promise.all([
     fetchAggregatedSkill(source, slug),
     fetchSkillScore(source, slug),
+    fetchSkillEnrichment(source, slug),
   ]);
 
   // If the backend doesn't recognize this (source, slug), render 404 so we
@@ -218,7 +236,42 @@ export default async function SkillDetailPage(props: {
       ]
     : [];
 
-  const ldJson = jsonLdGraph(...baseSchemas, ...reviewSchemas);
+  // CreativeWork schema for the Tier B enriched version. Signals to Google
+  // + AI assistants that we host an authored derivative work (NOT a
+  // duplicate of the upstream SKILL.md). isBasedOn links back to the
+  // original; author = Implexa (we wrote the canonical version).
+  const enrichmentSchemas: Array<Record<string, unknown>> =
+    enrichment?.enriched && enrichment.enriched_content
+      ? [
+          {
+            "@type": "CreativeWork",
+            name: `${title} (Implexa-enriched)`,
+            author: { "@type": "Organization", "name": "Implexa" },
+            isBasedOn: {
+              "@type": "SoftwareApplication",
+              name: title,
+              ...(skill.author
+                ? { author: { "@type": "Person", name: skill.author } }
+                : {}),
+            },
+            datePublished: enrichment.enriched_at,
+            // Preview only — full body is on the page itself and Google
+            // doesn't need the full text duplicated in JSON-LD.
+            text: enrichment.enriched_content.slice(0, 500),
+          },
+        ]
+      : [];
+
+  const ldJson = jsonLdGraph(
+    ...baseSchemas,
+    ...reviewSchemas,
+    ...enrichmentSchemas,
+  );
+
+  const hasEnrichment =
+    enrichment?.enriched === true &&
+    typeof enrichment.enriched_content === "string" &&
+    enrichment.enriched_content.length > 100;
 
   return (
     <>
@@ -307,13 +360,37 @@ export default async function SkillDetailPage(props: {
 
         {score && score.scored ? <SkillScorePanel score={score} /> : null}
 
+        {hasEnrichment && enrichment ? (
+          <SkillEnrichmentPanel
+            enrichment={enrichment}
+            author={skill.author ?? null}
+            source={source}
+          />
+        ) : null}
+
         {content && content.length > 100 ? (
-          <div className="prose prose-invert max-w-none">
-            <h2 className="text-lg font-semibold text-white mb-3">SKILL.md</h2>
-            <pre className="bg-zinc-950 border border-zinc-900 rounded-lg p-4 text-xs text-zinc-300 overflow-auto whitespace-pre-wrap font-mono leading-relaxed">
-              {content}
-            </pre>
-          </div>
+          hasEnrichment ? (
+            // Original SKILL.md collapsed beneath the canonical Implexa
+            // version. Open-by-default for unenriched skills (above).
+            <details className="group rounded-lg border border-zinc-900 bg-zinc-950">
+              <summary className="cursor-pointer list-none px-4 py-3 text-sm text-zinc-400 hover:text-white inline-flex items-center justify-between w-full select-none">
+                <span>view original SKILL.md from {source}</span>
+                <span className="text-[10px] uppercase tracking-wider text-zinc-600 group-open:hidden">
+                  click to expand
+                </span>
+              </summary>
+              <pre className="border-t border-zinc-900 p-4 text-xs text-zinc-300 overflow-auto whitespace-pre-wrap font-mono leading-relaxed">
+                {content}
+              </pre>
+            </details>
+          ) : (
+            <div className="prose prose-invert max-w-none">
+              <h2 className="text-lg font-semibold text-white mb-3">SKILL.md</h2>
+              <pre className="bg-zinc-950 border border-zinc-900 rounded-lg p-4 text-xs text-zinc-300 overflow-auto whitespace-pre-wrap font-mono leading-relaxed">
+                {content}
+              </pre>
+            </div>
+          )
         ) : (
           <div className="rounded-lg border border-zinc-900 bg-zinc-950 p-6">
             <h2 className="text-base font-semibold text-white mb-2">
