@@ -1,4 +1,5 @@
 import { listResources } from "@/lib/resources";
+import { listBlogPosts } from "@/lib/blog";
 import { SITE_URL } from "@/lib/site";
 
 // /llms.txt — the AEO surface for AI assistants (Perplexity, ChatGPT Search,
@@ -16,13 +17,23 @@ import { SITE_URL } from "@/lib/site";
 export const revalidate = 3600;
 
 export async function GET(): Promise<Response> {
-  const resources = await listResources();
+  const [resources, blog] = await Promise.all([
+    listResources(),
+    listBlogPosts(),
+  ]);
 
   const featuredArticles = resources
     .slice(0, 10)
     .map(
       (r) =>
         `- [${r.title}](${SITE_URL}/resources/${r.slug}): ${r.description}`,
+    )
+    .join("\n");
+
+  const featuredBlog = blog
+    .slice(0, 10)
+    .map(
+      (p) => `- [${p.title}](${SITE_URL}/blog/${p.slug}): ${p.description}`,
     )
     .join("\n");
 
@@ -39,6 +50,10 @@ Implexa watches your work in Claude Code, Codex, Cursor, and Gemini CLI, then su
 - [Search](${SITE_URL}/search): semantic search over every indexed SKILL.md
 - [Scores](${SITE_URL}/scores): SkillRank leaderboard, top-rated skills across the index
 - [Resources](${SITE_URL}/resources): cornerstone articles on the skill graph, ambient recommenders, the SKILL.md ecosystem
+- [Blog](${SITE_URL}/blog): explainers and tutorials on Claude Skills, SKILL.md, capturing workflows
+- [Claude Skills (pillar guide)](${SITE_URL}/claude-skills): the canonical "what are claude skills" guide with the 6-component contract
+- [Pricing](${SITE_URL}/pricing): free forever for unlimited cross-vendor search; pro for SkillRank + org library
+- [Contact](${SITE_URL}/contact): email and github
 
 ## How skill detail pages work
 
@@ -56,6 +71,10 @@ Each detail page renders the skill's name, description, the full SKILL.md body, 
 ## Featured articles
 
 ${featuredArticles}
+
+## Blog posts
+
+${featuredBlog}
 
 ## API
 
