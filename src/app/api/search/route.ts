@@ -59,8 +59,9 @@ export async function GET(req: NextRequest) {
           // single-shot the ambient hook needs.
           arguments: {
             messages: [q],
-            // tool schema caps topN at 10. that's plenty for a search results page.
-            topN: 10,
+            // tool schema accepts up to 50. We ask for 30 to balance
+            // a meaningful results page against payload size + latency.
+            topN: 30,
             minScore: 0.18,
             skipGates: true,
           },

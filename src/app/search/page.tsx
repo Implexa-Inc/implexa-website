@@ -61,7 +61,7 @@ async function fetchSearchResults(q: string): Promise<SkillCardData[]> {
           name: "recommend_skills_for_context",
           arguments: {
             messages: [q],
-            topN: 10,
+            topN: 30,
             minScore: 0.18,
             skipGates: true,
           },
