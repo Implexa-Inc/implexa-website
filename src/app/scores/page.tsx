@@ -24,6 +24,17 @@ type ScoredSkill = {
   star_count: number | null;
 };
 
+// list_skill_scores response envelope. Backend returns
+// { ok, count, rows: [...] }; rows uses snake_case keys we map directly
+// onto ScoredSkill.
+type ScoredRowsEnvelope = {
+  ok?: boolean;
+  count?: number;
+  rows?: ScoredSkill[];
+  // legacy/alt key tolerated in case backend ever returns `scores`
+  scores?: ScoredSkill[];
+};
+
 type SearchParams = {
   source?: string | string[];
   page?: string | string[];
@@ -69,8 +80,10 @@ async function fetchScoredSkills(
     const body: { result?: { content?: Array<{ text?: string }> } } =
       JSON.parse(jsonStr);
     const raw = body?.result?.content?.[0]?.text ?? "{}";
-    const parsed: { scores?: ScoredSkill[] } = JSON.parse(raw);
-    return Array.isArray(parsed?.scores) ? parsed.scores : [];
+    const parsed: ScoredRowsEnvelope = JSON.parse(raw);
+    if (Array.isArray(parsed?.rows)) return parsed.rows;
+    if (Array.isArray(parsed?.scores)) return parsed.scores;
+    return [];
   } catch {
     return [];
   }

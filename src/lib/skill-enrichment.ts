@@ -147,7 +147,10 @@ export function componentRows(
     { key: "output_contract", label: "output contract" },
     { key: "outcome_signal", label: "outcome signal" },
   ];
+  // Only return rows the model actually scored. Coercing missing keys to 0
+  // renders a wall of 0/10 bars when the enrichment call truncated before
+  // the COMPONENTS marker (common when MAX_OUTPUT_TOKENS clips the tail).
   return order
-    .map((o) => ({ ...o, score: components[o.key] ?? 0 }))
-    .filter((r) => typeof r.score === "number");
+    .map((o) => ({ ...o, score: components[o.key] }))
+    .filter((r): r is ComponentRow => typeof r.score === "number");
 }
