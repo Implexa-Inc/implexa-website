@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import { Sparkles, Download } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -9,6 +10,12 @@ import { SiteFooter } from "@/components/site-footer";
 import { SkillCard } from "@/components/skill-card";
 import type { SkillCard as SkillCardData } from "@/lib/placeholder-data";
 import { CATEGORIES } from "@/lib/placeholder-data";
+
+// Explicit canonical so the homepage is never indexed under a query-string
+// variant (e.g. ?utm=x). Title + description come from layout.tsx defaults.
+export const metadata: Metadata = {
+  alternates: { canonical: "/" },
+};
 
 type ToolMatch = {
   slug?: string;

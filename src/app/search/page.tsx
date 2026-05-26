@@ -28,9 +28,14 @@ export async function generateMetadata(props: {
 }): Promise<Metadata> {
   const sp = await props.searchParams;
   const q = typeof sp.q === "string" ? sp.q : Array.isArray(sp.q) ? sp.q[0] : "";
+  // Canonical always points at /search (no query string). Queried variants
+  // shouldn't compete with the canonical entrypoint in Google's index;
+  // they're effectively infinite long-tail and de-rank the brand page.
   return {
     title: q ? `search: ${q}` : "search",
     description: "search 100k+ skills across every AI agent.",
+    alternates: { canonical: "/search" },
+    robots: q ? { index: false, follow: true } : undefined,
   };
 }
 

@@ -11,6 +11,14 @@ import { SiteFooter } from "@/components/site-footer";
 import { RunInClaudeButton } from "@/components/run-in-claude-button";
 import { SkillScorePanel } from "@/components/skill-score-panel";
 import { fetchSkillScore } from "@/lib/skill-score";
+import { SkillCard } from "@/components/skill-card";
+import { absoluteUrl } from "@/lib/site";
+import {
+  jsonLdGraph,
+  breadcrumbSchema,
+  softwareApplicationSchema,
+} from "@/lib/jsonld";
+import { fetchRelatedSkills } from "@/lib/skill-catalog";
 
 type RouteParams = { source: string; slug: string };
 
@@ -91,12 +99,20 @@ export async function generateMetadata(props: {
   const description =
     skill?.description ??
     `${title}, a SKILL.md from ${source}. one-click install to claude code, codex, or cursor via implexa.`;
+  const canonicalPath = `/s/${source}/${slug}`;
 
   return {
     title: `${title} (${source})`,
     description,
+    alternates: { canonical: canonicalPath },
     openGraph: {
       type: "article",
+      url: absoluteUrl(canonicalPath),
+      title: `${title} | implexa`,
+      description,
+    },
+    twitter: {
+      card: "summary_large_image",
       title: `${title} | implexa`,
       description,
     },
@@ -120,6 +136,11 @@ export default async function SkillDetailPage(props: {
     notFound();
   }
 
+  // Related skills run in parallel with whatever else this page does. We
+  // don't await up-top because the rail can render empty if it fails; the
+  // page still works without it.
+  const related = await fetchRelatedSkills(source, slug, 5);
+
   const title = skill.name ?? slug.replace(/-/g, " ");
   const description = skill.description ?? "";
   const content = skill.content ?? "";
@@ -131,63 +152,76 @@ export default async function SkillDetailPage(props: {
   const stars =
     typeof skill.star_count === "number" ? skill.star_count : null;
 
-  // JSON-LD Review schema. THE AEO weapon — answer engines pick up Review
-  // + AggregateRating natively and cite "implexa scored X 8.7/10" in their
-  // responses. Only emit when we have a real score; an empty Review would
-  // be a thin-content signal Google penalizes.
+  // Build unified JSON-LD graph for this page. Combines SoftwareApplication
+  // + BreadcrumbList (SEO foundation) with Review + AggregateRating (SkillScore
+  // AEO weapon) when score data is available. Single @graph block — AI
+  // assistants + Google parse this as one semantically-linked entity set.
   const hasScore =
     score?.scored === true &&
     typeof score.display_score === "number" &&
     !Number.isNaN(score.display_score);
 
-  const reviewJsonLd = hasScore
-    ? {
-        "@context": "https://schema.org",
-        "@graph": [
-          {
-            "@type": "Review",
-            "itemReviewed": {
-              "@type": "SoftwareApplication",
-              "name": title,
-              "applicationCategory": "AI Agent Skill",
-              "operatingSystem": "Cross-platform",
-            },
-            "author": { "@type": "Organization", "name": "Implexa" },
-            "datePublished":
-              score?.tier_1?.at ?? score?.updated_at ?? undefined,
-            "reviewBody": score?.tier_1?.summary ?? "",
-            "reviewRating": {
-              "@type": "Rating",
-              "ratingValue": score?.display_score,
-              "bestRating": 10,
-              "worstRating": 0,
-            },
+  const baseSchemas: Array<Record<string, unknown>> = [
+    softwareApplicationSchema({
+      source,
+      slug,
+      name: skill.name,
+      description: skill.description,
+      author: skill.author,
+      source_url: skill.source_url,
+      install_count: skill.install_count ?? null,
+      star_count: skill.star_count ?? null,
+      last_seen_at: skill.last_seen_at,
+    }),
+    breadcrumbSchema([
+      { name: "implexa", url: absoluteUrl("/") },
+      { name: "skills", url: absoluteUrl("/search") },
+      { name: source, url: absoluteUrl(`/search?q=${encodeURIComponent(source)}`) },
+      { name: title, url: absoluteUrl(`/s/${source}/${slug}`) },
+    ]),
+  ];
+
+  const reviewSchemas: Array<Record<string, unknown>> = hasScore
+    ? [
+        {
+          "@type": "Review",
+          "itemReviewed": {
+            "@type": "SoftwareApplication",
+            "name": title,
+            "applicationCategory": "AI Agent Skill",
+            "operatingSystem": "Cross-platform",
           },
-          {
-            "@type": "AggregateRating",
-            "itemReviewed": {
-              "@type": "SoftwareApplication",
-              "name": title,
-              "applicationCategory": "AI Agent Skill",
-            },
+          "author": { "@type": "Organization", "name": "Implexa" },
+          "datePublished":
+            score?.tier_1?.at ?? score?.updated_at ?? undefined,
+          "reviewBody": score?.tier_1?.summary ?? "",
+          "reviewRating": {
+            "@type": "Rating",
             "ratingValue": score?.display_score,
             "bestRating": 10,
             "worstRating": 0,
-            "ratingCount": 1,
-            "reviewCount": 1,
           },
-        ],
-      }
-    : null;
+        },
+        {
+          "@type": "AggregateRating",
+          "itemReviewed": {
+            "@type": "SoftwareApplication",
+            "name": title,
+            "applicationCategory": "AI Agent Skill",
+          },
+          "ratingValue": score?.display_score,
+          "bestRating": 10,
+          "worstRating": 0,
+          "ratingCount": 1,
+          "reviewCount": 1,
+        },
+      ]
+    : [];
+
+  const ldJson = jsonLdGraph(...baseSchemas, ...reviewSchemas);
 
   return (
     <>
-      {reviewJsonLd ? (
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(reviewJsonLd) }}
-        />
-      ) : null}
       <SiteHeader />
       <main className="flex-1 mx-auto w-full max-w-4xl px-4 sm:px-6 py-12">
         <Link
@@ -303,6 +337,38 @@ export default async function SkillDetailPage(props: {
           </div>
         )}
 
+        {related.length > 0 ? (
+          <section className="mt-16">
+            <Separator className="bg-zinc-900 mb-10" />
+            <div className="flex items-baseline justify-between mb-6">
+              <h2 className="text-xl font-semibold text-white">
+                related skills
+              </h2>
+              <span className="text-xs text-zinc-500">
+                semantically similar in the cross-vendor index
+              </span>
+            </div>
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {related.map((r) => (
+                <SkillCard
+                  key={`${r.source}/${r.slug}`}
+                  skill={{
+                    slug: r.slug,
+                    source: r.source,
+                    title: r.name,
+                    description: r.description.slice(0, 200),
+                    author: r.author ?? r.source,
+                    tag:
+                      r.similarity != null
+                        ? `${(r.similarity * 100).toFixed(0)}% match`
+                        : "related",
+                  }}
+                />
+              ))}
+            </div>
+          </section>
+        ) : null}
+
         <div className="mt-10 text-sm text-zinc-500">
           <p>
             don&apos;t have the plugin yet?{" "}
@@ -314,6 +380,13 @@ export default async function SkillDetailPage(props: {
         </div>
       </main>
       <SiteFooter />
+      <script
+        type="application/ld+json"
+        // ldJson is built from server-side fetched skill metadata. The
+        // backend already strips HTML; JSON.stringify escapes embedded
+        // quotes. Safe to inline here.
+        dangerouslySetInnerHTML={{ __html: ldJson }}
+      />
     </>
   );
 }

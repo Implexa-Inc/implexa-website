@@ -10,6 +10,7 @@ export const metadata: Metadata = {
   title: "install",
   description:
     "install the implexa plugin in claude code, codex, or cursor. one command per runtime, takes 30 seconds.",
+  alternates: { canonical: "/install" },
 };
 
 const STEPS = [

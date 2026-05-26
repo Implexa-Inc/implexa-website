@@ -6,6 +6,12 @@ import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { Badge } from "@/components/ui/badge";
 import { getResource, getResourceSlugs } from "@/lib/resources";
+import { absoluteUrl } from "@/lib/site";
+import {
+  jsonLdGraph,
+  breadcrumbSchema,
+  articleSchema,
+} from "@/lib/jsonld";
 
 type RouteParams = { slug: string };
 
@@ -24,13 +30,14 @@ export async function generateMetadata(props: {
   }
 
   const { title, description } = resource.frontmatter;
-  const url = `https://implexa.ai/resources/${slug}`;
+  const canonicalPath = `/resources/${slug}`;
+  const url = absoluteUrl(canonicalPath);
   const ogImage = `/og-resources-${slug}.png`;
 
   return {
     title,
     description,
-    alternates: { canonical: url },
+    alternates: { canonical: canonicalPath },
     openGraph: {
       type: "article",
       url,
@@ -76,6 +83,24 @@ export default async function ResourcePage(props: {
   }
 
   const { title, description, publishedAt, tags } = resource.frontmatter;
+
+  // Article + Breadcrumb graph. Composes with the site-wide Organization +
+  // WebSite that layout.tsx already emits, so the full document graph is
+  // 4 nodes: Org, WebSite, Article, BreadcrumbList.
+  const ldJson = jsonLdGraph(
+    articleSchema({
+      slug,
+      title,
+      description,
+      publishedAt,
+      tags,
+    }),
+    breadcrumbSchema([
+      { name: "implexa", url: absoluteUrl("/") },
+      { name: "resources", url: absoluteUrl("/resources") },
+      { name: title, url: absoluteUrl(`/resources/${slug}`) },
+    ]),
+  );
 
   return (
     <>
@@ -161,6 +186,10 @@ export default async function ResourcePage(props: {
         </section>
       </main>
       <SiteFooter />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: ldJson }}
+      />
     </>
   );
 }

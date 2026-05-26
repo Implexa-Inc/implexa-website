@@ -10,7 +10,14 @@ export const metadata: Metadata = {
   title: "resources",
   description:
     "deep dives on cross-vendor skill discovery, ambient recommenders, the SKILL.md ecosystem, and the road to google + wikipedia for agent skills.",
-  alternates: { canonical: "https://implexa.ai/resources" },
+  alternates: {
+    canonical: "/resources",
+    types: {
+      "application/rss+xml": [
+        { url: "/resources/feed.xml", title: "implexa resources" },
+      ],
+    },
+  },
 };
 
 function formatPublishDate(iso: string): string {
