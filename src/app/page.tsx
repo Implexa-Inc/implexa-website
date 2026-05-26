@@ -271,6 +271,14 @@ export default async function HomePage() {
                 graph. Skills are AI&apos;s web pages, and this is where you
                 find the best ones.
               </p>
+              <p className="text-sm text-zinc-500">
+                <Link
+                  href="/resources/what-is-a-skill-graph"
+                  className="text-zinc-400 hover:text-white underline decoration-zinc-700 hover:decoration-white"
+                >
+                  read more: what is a skill graph?
+                </Link>
+              </p>
             </div>
           </div>
 

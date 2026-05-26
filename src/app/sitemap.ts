@@ -1,6 +1,7 @@
 import type { MetadataRoute } from "next";
 import { absoluteUrl } from "@/lib/site";
 import { listResources } from "@/lib/resources";
+import { listBlogPosts } from "@/lib/blog";
 import { listAllSkillsForSitemap } from "@/lib/skill-catalog";
 
 // Dynamic sitemap for the SEO surface. Lists:
@@ -56,7 +57,41 @@ function staticPages(now: Date): MetadataRoute.Sitemap {
       changeFrequency: "weekly",
       priority: 0.8,
     },
+    {
+      url: absoluteUrl("/blog"),
+      lastModified: now,
+      changeFrequency: "weekly",
+      priority: 0.8,
+    },
+    {
+      url: absoluteUrl("/claude-skills"),
+      lastModified: now,
+      changeFrequency: "monthly",
+      priority: 0.9,
+    },
+    {
+      url: absoluteUrl("/pricing"),
+      lastModified: now,
+      changeFrequency: "monthly",
+      priority: 0.8,
+    },
+    {
+      url: absoluteUrl("/contact"),
+      lastModified: now,
+      changeFrequency: "yearly",
+      priority: 0.5,
+    },
   ];
+}
+
+async function blogPages(): Promise<MetadataRoute.Sitemap> {
+  const items = await listBlogPosts();
+  return items.map<SitemapEntry>((p) => ({
+    url: absoluteUrl(`/blog/${p.slug}`),
+    lastModified: new Date(`${p.publishedAt}T00:00:00Z`),
+    changeFrequency: "monthly",
+    priority: 0.7,
+  }));
 }
 
 async function resourcePages(): Promise<MetadataRoute.Sitemap> {
@@ -83,9 +118,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const now = new Date();
   // Parallel: independent IO, makes a real difference when the skill catalog
   // pagination walks 11 pages.
-  const [resources, skills] = await Promise.all([
+  const [resources, blog, skills] = await Promise.all([
     resourcePages(),
+    blogPages(),
     skillPages(),
   ]);
-  return [...staticPages(now), ...resources, ...skills];
+  return [...staticPages(now), ...resources, ...blog, ...skills];
 }

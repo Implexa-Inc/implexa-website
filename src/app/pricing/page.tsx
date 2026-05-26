@@ -326,6 +326,18 @@ export default function PricingPage() {
               </p>
             </div>
           </div>
+
+          {/* read-more link to the developer-flavored tutorial — closes the
+              loop for engineers who land on pricing and want to see what
+              authoring a skill actually looks like before buying in. */}
+          <p className="text-sm text-zinc-500 text-center mt-10">
+            <Link
+              href="/blog/how-to-create-a-claude-skill"
+              className="text-zinc-400 hover:text-white underline decoration-zinc-700 hover:decoration-white"
+            >
+              read more: how to create a claude skill (step-by-step)
+            </Link>
+          </p>
         </section>
 
         {/* json-ld */}
