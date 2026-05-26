@@ -13,8 +13,14 @@ export function SiteHeader() {
         </Link>
         <nav className="flex items-center gap-1 text-sm">
           <Link
-            href="/resources"
+            href="/pricing"
             className="px-3 py-1.5 text-zinc-400 hover:text-white transition-colors"
+          >
+            pricing
+          </Link>
+          <Link
+            href="/resources"
+            className="px-3 py-1.5 text-zinc-400 hover:text-white transition-colors hidden sm:inline-block"
           >
             resources
           </Link>
@@ -26,11 +32,23 @@ export function SiteHeader() {
           </Link>
           <Link
             href="https://github.com/Implexa-Inc"
-            className="px-3 py-1.5 text-zinc-400 hover:text-white transition-colors"
+            className="px-3 py-1.5 text-zinc-400 hover:text-white transition-colors hidden sm:inline-block"
             target="_blank"
             rel="noopener noreferrer"
           >
             github
+          </Link>
+          <Link
+            href="https://app.implexa.ai/login"
+            className="ml-2 px-3 py-1.5 rounded-md text-zinc-300 hover:text-white hover:bg-zinc-900 transition-colors"
+          >
+            sign in
+          </Link>
+          <Link
+            href="https://app.implexa.ai/signup"
+            className="px-3 py-1.5 rounded-md bg-white text-black hover:bg-zinc-200 font-medium transition-colors"
+          >
+            sign up
           </Link>
         </nav>
       </div>
