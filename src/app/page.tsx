@@ -301,7 +301,8 @@ export default async function HomePage() {
               <Link
                 key={q}
                 href={`/search?q=${encodeURIComponent(q)}`}
-                className="px-2.5 py-1 rounded-full border border-zinc-800 text-zinc-300 hover:border-zinc-600 hover:bg-zinc-950 hover:text-white transition-colors"
+                prefetch
+                className="px-2.5 py-1 rounded-full border border-zinc-800 text-zinc-300 hover:border-zinc-600 hover:bg-zinc-950 hover:text-white active:bg-amber-500/10 active:border-amber-500/50 active:text-amber-300 transition-colors"
               >
                 {q}
               </Link>
@@ -344,9 +345,12 @@ export default async function HomePage() {
                 <Link
                   key={cat.slug}
                   href={`/search?q=${encodeURIComponent(cat.label)}`}
-                  className="group inline-flex items-center gap-2 px-4 py-2 rounded-full border border-zinc-800 hover:border-zinc-600 hover:bg-zinc-950 transition-colors"
+                  prefetch
+                  className="group inline-flex items-center gap-2 px-4 py-2 rounded-full border border-zinc-800 hover:border-zinc-600 hover:bg-zinc-950 active:bg-amber-500/10 active:border-amber-500/50 transition-colors"
                 >
-                  <span className="text-sm text-white">{cat.label}</span>
+                  <span className="text-sm text-white group-active:text-amber-300">
+                    {cat.label}
+                  </span>
                   <Badge
                     variant="secondary"
                     className="bg-zinc-900 text-zinc-500 text-[10px] group-hover:bg-zinc-900"
