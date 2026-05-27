@@ -18,8 +18,8 @@ import { SiteFooter } from "@/components/site-footer";
 import { SkillCard } from "@/components/skill-card";
 import { CountUpPill } from "@/components/count-up-pill";
 import { CopyableInstall } from "@/components/copyable-install";
-import { RotatingVerb } from "@/components/rotating-verb";
 import { AnimatedTerminal } from "@/components/animated-terminal";
+import { RecentSearchTicker } from "@/components/recent-search-ticker";
 import type { SkillCard as SkillCardData } from "@/lib/placeholder-data";
 import { CATEGORIES } from "@/lib/placeholder-data";
 
@@ -165,41 +165,80 @@ export default async function HomePage() {
       <main className="flex-1">
 
         {/* ─────────────────────────────────────────────────────────────
-            section 1 — claude/codex hero. rotating-verb headline,
-            live count chip, animated terminal demo cycling through
-            three workflow examples, then install command at the bottom.
+            section 1 — asymmetric two-column hero (linear.app / cursor.com
+            pattern). left: words + CTAs + recent-search ticker. right:
+            animated terminal demo (play-once + replay). stacks on mobile.
             ───────────────────────────────────────────────────────────── */}
-        <section className="mx-auto max-w-4xl px-4 sm:px-6 pt-24 pb-16 text-center">
-          {/* rotating-verb headline — Search / Run / Record / Share /
-              Like & Dislike cycles through; the rest is static. */}
-          <h1 className="text-4xl sm:text-6xl font-semibold tracking-tight text-white leading-[1.1] mb-6">
-            <RotatingVerb /> Skills
-            <br />
-            right inside{" "}
-            <span className="text-zinc-400">Claude Code &amp; Codex.</span>
-          </h1>
+        <section className="mx-auto max-w-6xl px-4 sm:px-6 pt-20 pb-20">
+          <div className="grid gap-12 lg:gap-16 lg:grid-cols-[1.05fr_1fr] lg:items-center">
 
-          {/* subhead — tighter than before */}
-          <p className="text-lg sm:text-xl text-zinc-400 max-w-2xl mx-auto leading-relaxed mb-8">
-            implexa indexes, scores, enriches, and recommends skills as you
-            work. no installs. no restarts. no remembering when to use which.
-            ever.
-          </p>
+            {/* ─── left column: pitch + CTAs ─── */}
+            <div>
+              {/* small count chip above the headline, inline with the brand
+                  voice (lowercase, factual). real number from server fetch. */}
+              <div className="mb-6">
+                <CountUpPill target={skillCount} />
+              </div>
 
-          {/* live skill counter — animates up on mount + drifts upward */}
-          <div className="mb-10">
-            <CountUpPill target={skillCount} />
+              <h1 className="text-4xl lg:text-5xl xl:text-6xl font-semibold tracking-tight text-white leading-[1.05] mb-5">
+                The skill graph for{" "}
+                <span className="text-zinc-400">Claude Code &amp; Codex.</span>
+              </h1>
+
+              <p className="text-lg text-zinc-400 leading-relaxed mb-8 max-w-xl">
+                {skillCount.toLocaleString()}+ skills indexed, scored, and
+                runnable inline. no installs. no restarts. no remembering
+                when to use which.
+              </p>
+
+              {/* two CTAs, primary + secondary. install is the conversion;
+                  browse-top-skills is the low-commitment exploration path. */}
+              <div className="flex flex-wrap items-center gap-3 mb-8">
+                <Link
+                  href="/install"
+                  className={buttonVariants({
+                    size: "lg",
+                    className:
+                      "bg-white text-black hover:bg-zinc-200 h-12 px-6 text-base inline-flex items-center gap-2",
+                  })}
+                >
+                  <Download className="size-4" aria-hidden="true" />
+                  install plugin
+                </Link>
+                <Link
+                  href="/scores"
+                  className={buttonVariants({
+                    variant: "outline",
+                    size: "lg",
+                    className:
+                      "border-zinc-700 text-zinc-300 hover:bg-zinc-950 hover:text-white h-12 px-6 text-base",
+                  })}
+                >
+                  browse top skills →
+                </Link>
+              </div>
+
+              {/* recent-search social-proof ticker. rotates real query
+                  topics every ~3.4s. */}
+              <RecentSearchTicker />
+            </div>
+
+            {/* ─── right column: animated terminal proof ─── */}
+            <div className="lg:pl-4">
+              <AnimatedTerminal />
+              {/* small caption under the terminal to anchor what it is */}
+              <p className="text-xs text-zinc-600 mt-3 text-center lg:text-left">
+                running inline in claude code · also works in codex
+              </p>
+            </div>
           </div>
 
-          {/* animated terminal demo — cycles between social-media,
-              record-skill, and recommend-skills scripts. typewriter for
-              prompts, instant reveal for assistant answers, pulsing
-              italics for status lines. */}
-          <AnimatedTerminal />
-
-          {/* install command — platform toggle picks claude code vs codex.
-              signup is bundled into either install flow. */}
-          <div className="mt-12">
+          {/* install command, below the two-column hero for the visitors
+              who scrolled this far and want the copy-paste right now */}
+          <div className="mt-16 pt-12 border-t border-zinc-900">
+            <p className="text-center text-sm text-zinc-500 mb-5">
+              or grab the install command directly:
+            </p>
             <CopyableInstall />
           </div>
         </section>

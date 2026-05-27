@@ -1,25 +1,22 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { RotateCcw } from "lucide-react";
 
-// Animated demo of three Implexa workflows running inside a Claude Code
-// session. Cycles between scripts: social-media-campaign, record-skill,
-// recommend-based-on-work. Each script is a list of "steps" with one of
-// three rendering modes:
+// Animated demo of an Implexa workflow running inside a Claude Code session.
+// Plays ONE script on mount, then shows a Replay button. No infinite cycle —
+// auto-loop competes with hero copy for attention. User-initiated replay is
+// the linear.app / cursor.com pattern.
 //
-//   - prompt: typewriter the user's prompt character-by-character (fast,
-//     about 32ms/char). Prefixed with "> " in zinc-300.
-//   - answer: reveal the assistant's response as a whole sentence with a
-//     short fade. Multi-line allowed (\n).
+// Three render modes per step:
+//   - prompt: typewriter the user's prompt character-by-character (32ms/char).
+//             Prefixed with "> " in zinc.
+//   - answer: reveal the assistant's response as a whole block with a short
+//             fade. Multi-line allowed (\n).
 //   - pulse:  status-style line that appears with a 1s pulse animation,
-//     used for "running..." / "asking question..." / "recording for N min"
-//     intermediate states.
+//             used for "running..." / "asking question..." intermediate states.
 //
-// After all steps in a script finish, we hold for `holdAfterMs` then
-// clear and advance to the next script.
-//
-// Respects prefers-reduced-motion: jumps to each script's terminal state
-// instead of typing, and keeps the cycle to one script-per-page-load.
+// Respects prefers-reduced-motion (skips typewriter, snaps to final state).
 
 type Step =
   | { mode: "prompt"; text: string; afterMs?: number }
@@ -28,14 +25,16 @@ type Step =
 
 type Script = {
   id: string;
+  label: string;
   steps: Step[];
-  holdAfterMs?: number; // how long to show the finished state before clearing
 };
 
-// 3 cycling scripts. Edits here propagate to all renders.
+// Three scripts the user can replay through. Default plays the first.
+// Edits here propagate everywhere — keep them concise + skimmable.
 const SCRIPTS: Script[] = [
   {
     id: "social-media",
+    label: "automate social media",
     steps: [
       { mode: "prompt", text: "Implexa, help me automate my social media campaigns..." },
       {
@@ -48,61 +47,58 @@ const SCRIPTS: Script[] = [
       {
         mode: "answer",
         text: "✓ running social-media-daily-for-enterprises inline...",
-        afterMs: 1500,
+        afterMs: 800,
       },
     ],
-    holdAfterMs: 2200,
   },
   {
     id: "record-skill",
+    label: "record a new skill",
     steps: [
       { mode: "prompt", text: "Implexa, record a skill..." },
       {
         mode: "answer",
         text:
-          "💡 Implexa: sure, just start doing your work. i'll watch + capture the steps, then turn them into a skill.",
-        afterMs: 900,
+          "💡 Implexa: sure, just start doing your work. i'll watch + capture the steps.",
+        afterMs: 700,
       },
-      { mode: "pulse", text: "(recording work for over 30 mins...)", afterMs: 1800 },
+      { mode: "pulse", text: "(recording work for over 30 mins...)", afterMs: 1400 },
       { mode: "prompt", text: "Implexa: save recording" },
-      { mode: "pulse", text: "asking interview question 1/4...", afterMs: 1400 },
+      { mode: "pulse", text: "asking interview question 1/4...", afterMs: 1200 },
     ],
-    holdAfterMs: 1800,
   },
   {
     id: "recommend",
+    label: "recommend skills for me",
     steps: [
-      { mode: "prompt", text: "Implexa, based on my work recommend me skills to use..." },
-      { mode: "pulse", text: "scanning your recent sessions...", afterMs: 900 },
+      { mode: "prompt", text: "Implexa, recommend skills based on my work..." },
+      { mode: "pulse", text: "scanning your recent sessions...", afterMs: 800 },
       {
         mode: "answer",
         text:
-          "💡 Implexa: spotted 4 strong fits from what you've been doing this week:\n   1. cold-outreach-drafter (smithery · 9.4) — for the prospect emails\n   2. hubspot-pipeline-sync (clawhub · 8.8) — your crm work pattern\n   3. linkedin-comment-drafter (skills.sh · 8.6) — daily engagement\n   4. jira-ticket-triage (anthropic · 8.5) — your triage routine",
-        afterMs: 1800,
+          "💡 Implexa: 4 strong fits from your recent work:\n   1. cold-outreach-drafter (smithery · 9.4)\n   2. hubspot-pipeline-sync (clawhub · 8.8)\n   3. linkedin-comment-drafter (skills.sh · 8.6)\n   4. jira-ticket-triage (anthropic · 8.5)",
+        afterMs: 1400,
       },
-      { mode: "prompt", text: "Implexa: run #2" },
-      { mode: "answer", text: "✓ running hubspot-pipeline-sync inline...", afterMs: 1300 },
     ],
-    holdAfterMs: 2400,
   },
 ];
 
-const CHAR_DELAY_MS = 32; // typewriter speed
-const ANSWER_REVEAL_MS = 200; // fade duration for assistant lines
+const CHAR_DELAY_MS = 32;
+const ANSWER_REVEAL_MS = 220;
 
 type RenderedLine = {
   key: string;
   mode: Step["mode"];
   text: string;
-  full: boolean; // true when the line is done animating in
+  full: boolean;
 };
 
 export function AnimatedTerminal() {
   const [scriptIndex, setScriptIndex] = useState(0);
   const [lines, setLines] = useState<RenderedLine[]>([]);
+  const [isPlaying, setIsPlaying] = useState(true);
   const timersRef = useRef<number[]>([]);
 
-  // Reduced-motion check — once at mount.
   const reducedMotionRef = useRef(false);
   useEffect(() => {
     reducedMotionRef.current =
@@ -110,24 +106,22 @@ export function AnimatedTerminal() {
       window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   }, []);
 
-  // Step orchestrator. Each script run owns its own setTimeout chain;
-  // when it finishes we clear, bump scriptIndex, and the effect re-fires
-  // to start the next one.
+  // Play through the current script's steps. On finish, set isPlaying=false
+  // so the replay button surfaces. Doesn't auto-advance to the next script.
   useEffect(() => {
     const script = SCRIPTS[scriptIndex];
     const reduce = reducedMotionRef.current;
     setLines([]);
+    setIsPlaying(true);
 
     let accumulated = 0;
     const newTimers: number[] = [];
 
     const addLineImmediate = (step: Step, k: string) => {
-      // Add the full text instantly (for reduced motion OR answer mode).
       setLines((prev) => [...prev, { key: k, mode: step.mode, text: step.text, full: true }]);
     };
 
     const typewriter = (step: Step, k: string) => {
-      // Start the line with empty text.
       setLines((prev) => [...prev, { key: k, mode: step.mode, text: "", full: false }]);
       const chars = step.text.split("");
       let i = 0;
@@ -137,10 +131,8 @@ export function AnimatedTerminal() {
         const isDone = i >= chars.length;
         setLines((prev) => {
           const updated = [...prev];
-          const lastIdx = updated.findIndex((l) => l.key === k);
-          if (lastIdx >= 0) {
-            updated[lastIdx] = { ...updated[lastIdx], text: slice, full: isDone };
-          }
+          const idx = updated.findIndex((l) => l.key === k);
+          if (idx >= 0) updated[idx] = { ...updated[idx], text: slice, full: isDone };
           return updated;
         });
         if (!isDone) {
@@ -153,34 +145,25 @@ export function AnimatedTerminal() {
 
     script.steps.forEach((step, i) => {
       const stepKey = `${script.id}-${i}`;
-      const delayBeforeStep = accumulated;
-      // Steps need slight delays between them so the user can see each appear.
       const t = window.setTimeout(() => {
-        if (reduce) {
-          addLineImmediate(step, stepKey);
-        } else if (step.mode === "prompt") {
-          typewriter(step, stepKey);
-        } else {
-          // answer + pulse: instant reveal (rely on CSS transitions for fade/pulse)
-          addLineImmediate(step, stepKey);
-        }
-      }, delayBeforeStep);
+        if (reduce) addLineImmediate(step, stepKey);
+        else if (step.mode === "prompt") typewriter(step, stepKey);
+        else addLineImmediate(step, stepKey);
+      }, accumulated);
       newTimers.push(t);
 
-      // Estimate how long this step takes to finish "appearing".
       const typewriterMs =
         step.mode === "prompt" && !reduce ? step.text.length * CHAR_DELAY_MS : ANSWER_REVEAL_MS;
-      // Plus the step's own dwell time after it lands.
       const dwellMs = step.afterMs ?? 700;
       accumulated += typewriterMs + dwellMs;
     });
 
-    // After the last step's accumulated time, hold then advance.
-    const advanceAt = accumulated + (script.holdAfterMs ?? 1800);
-    const advance = window.setTimeout(() => {
-      setScriptIndex((s) => (s + 1) % SCRIPTS.length);
-    }, reduce ? 12000 : advanceAt);
-    newTimers.push(advance);
+    // When the script finishes, surface the replay button.
+    const finishAt = accumulated;
+    const finishTimer = window.setTimeout(() => {
+      setIsPlaying(false);
+    }, reduce ? 200 : finishAt);
+    newTimers.push(finishTimer);
 
     timersRef.current = newTimers;
     return () => {
@@ -188,31 +171,51 @@ export function AnimatedTerminal() {
     };
   }, [scriptIndex]);
 
+  const replay = () => {
+    // Re-trigger by toggling. If currently on this script, bumping to next
+    // and back creates a visible "reset" beat. Simpler: cycle to next script
+    // so the user gets variety each replay click.
+    setScriptIndex((s) => (s + 1) % SCRIPTS.length);
+  };
+
   return (
-    <div className="max-w-2xl mx-auto text-left bg-zinc-950 border border-zinc-900 rounded-lg overflow-hidden shadow-2xl">
-      {/* claude-orange title bar */}
-      <div
-        className="flex items-center gap-2 px-4 py-2.5 border-b border-zinc-900"
-        style={{ backgroundColor: "#cc785c" }}
-      >
-        <div className="flex gap-1.5">
-          <div className="size-2.5 rounded-full bg-black/30" />
-          <div className="size-2.5 rounded-full bg-black/30" />
-          <div className="size-2.5 rounded-full bg-black/30" />
+    <div className="bg-zinc-950 border border-zinc-900 rounded-lg overflow-hidden shadow-2xl">
+      {/* terminal title bar — muted dark, no longer claude-orange. cleaner. */}
+      <div className="flex items-center justify-between px-4 py-2.5 border-b border-zinc-900 bg-zinc-900/50">
+        <div className="flex items-center gap-2">
+          <div className="flex gap-1.5">
+            <div className="size-2.5 rounded-full bg-zinc-700" />
+            <div className="size-2.5 rounded-full bg-zinc-700" />
+            <div className="size-2.5 rounded-full bg-zinc-700" />
+          </div>
+          <span className="text-xs text-zinc-500 ml-1 font-mono">
+            claude code · {SCRIPTS[scriptIndex].label}
+          </span>
         </div>
-        <span className="text-xs text-white/90 ml-2 font-mono">claude code</span>
+
+        {/* replay button — only visible when the script has finished playing */}
+        {!isPlaying && (
+          <button
+            type="button"
+            onClick={replay}
+            className="inline-flex items-center gap-1.5 text-xs text-zinc-500 hover:text-amber-300 transition-colors"
+            aria-label="replay demo"
+          >
+            <RotateCcw className="size-3" aria-hidden="true" />
+            replay
+          </button>
+        )}
       </div>
 
-      {/* terminal body — min-height keeps the box stable while content
-          animates in and out across script transitions */}
-      <div className="p-5 font-mono text-sm leading-relaxed min-h-[280px]">
+      {/* terminal body — fixed min-height keeps the box stable, but tighter
+          than before since we don't need to fit the longest script anymore */}
+      <div className="p-5 font-mono text-sm leading-relaxed min-h-[260px]">
         {lines.map((line, i) => {
           if (line.mode === "prompt") {
             return (
               <div key={line.key} className={i > 0 ? "mt-3 text-zinc-300" : "text-zinc-300"}>
                 <span className="text-zinc-600">{">"}</span>{" "}
                 <span className="text-white">{line.text}</span>
-                {/* blinking caret while typing */}
                 {!line.full && (
                   <span className="inline-block w-[0.5ch] -mb-[2px] bg-zinc-400 animate-pulse h-[1em] align-baseline ml-[1px]" />
                 )}
@@ -223,16 +226,16 @@ export function AnimatedTerminal() {
             return (
               <div
                 key={line.key}
-                className={(i > 0 ? "mt-2 " : "") + "text-zinc-300 whitespace-pre-line opacity-0 animate-fade-in"}
+                className={(i > 0 ? "mt-2 " : "") + "text-zinc-300 whitespace-pre-line"}
                 style={{
                   animation: `terminal-fade-in ${ANSWER_REVEAL_MS}ms ease forwards`,
+                  opacity: 0,
                 }}
               >
                 {line.text}
               </div>
             );
           }
-          // pulse
           return (
             <div
               key={line.key}
