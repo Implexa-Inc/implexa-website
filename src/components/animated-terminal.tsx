@@ -97,13 +97,11 @@ export function AnimatedTerminal() {
   const [replayNonce, setReplayNonce] = useState(0); // bumps to force re-run when user clicks the current tab
   const [lines, setLines] = useState<RenderedLine[]>([]);
   const [isPlaying, setIsPlaying] = useState(true);
-  // Auto-cycle: on mount, play scripts 0 → 1 → 2 in sequence, then STOP.
-  // User clicks on the 1/2/3 buttons disable the auto-cycle (they're
-  // picking a specific script, not asking for another tour).
-  // hasFinishedAll = end-of-cycle sentinel; cycleActive = "should we
-  // auto-advance after this script's hold expires?".
-  const [hasFinishedAll, setHasFinishedAll] = useState(false);
-  const [cycleActive, setCycleActive] = useState(true);
+  // Auto-cycle: infinite loop 0 → 1 → 2 → 0 → 1 → 2 → ... The user can
+  // click 1/2/3 to jump to a specific script; cycling continues from
+  // there to the next one in sequence. Click the active number to
+  // replay it (via replayNonce). The earlier "stop after 3" version was
+  // reverted 2026-05-27 — founder preferred continuous motion.
   const timersRef = useRef<number[]>([]);
 
   const reducedMotionRef = useRef(false);
@@ -165,23 +163,18 @@ export function AnimatedTerminal() {
       accumulated += typewriterMs + dwellMs;
     });
 
-    // When the script finishes, mark "not playing" + decide whether to
-    // auto-advance. Auto-advance only continues if cycleActive is still
-    // true (user hasn't clicked a tab manually) AND we're not on the last
-    // script. On the last script, set hasFinishedAll so the demo stops.
+    // When the script finishes, mark "not playing" + auto-advance to the
+    // next script (wrap around past the last back to 0). Infinite cycle.
     const finishAt = accumulated;
     const finishTimer = window.setTimeout(() => {
       setIsPlaying(false);
 
-      const isLastScript = scriptIndex === SCRIPTS.length - 1;
-      if (isLastScript || !cycleActive) {
-        setHasFinishedAll(true);
-        return; // STOP — don't loop or re-enter auto-cycle from a manual click
-      }
-
-      // Auto-advance to next script after a short hold.
       const advance = window.setTimeout(() => {
-        setScriptIndex((prev) => (prev === scriptIndex ? prev + 1 : prev));
+        // Only advance if we're still on the same script (guards against
+        // race with a user click that already jumped to a different one).
+        setScriptIndex((prev) =>
+          prev === scriptIndex ? (prev + 1) % SCRIPTS.length : prev,
+        );
       }, reduce ? 1000 : 1600);
       newTimers.push(advance);
     }, reduce ? 200 : finishAt);
@@ -194,10 +187,9 @@ export function AnimatedTerminal() {
   }, [scriptIndex, replayNonce]);
 
   const jumpToScript = (i: number) => {
-    // User-initiated jump → disable the auto-cycle. They're picking
-    // a specific script, not asking for another tour.
-    setCycleActive(false);
-    setHasFinishedAll(false);
+    // User-initiated jump. Cycle stays active (infinite loop) — clicking
+    // a tab just changes the entry point, then auto-advance continues
+    // from there. Click the active tab to replay it.
     if (i === scriptIndex) {
       // Already on this script — bump the nonce to re-run the effect
       // without going through an invalid intermediate index.
@@ -255,9 +247,14 @@ export function AnimatedTerminal() {
           than before since we don't need to fit the longest script anymore */}
       <div className="p-5 font-mono text-sm leading-relaxed min-h-[260px]">
         {lines.map((line, i) => {
+          // User prompts: bright white text after a muted ">" prefix.
+          // Claude responses: zinc-400 (notably grayer) so the
+          // user-vs-assistant distinction reads at a glance, not just
+          // from the emoji marker. Pulse mode keeps emerald-italic so
+          // status lines remain visually distinct from both.
           if (line.mode === "prompt") {
             return (
-              <div key={line.key} className={i > 0 ? "mt-3 text-zinc-300" : "text-zinc-300"}>
+              <div key={line.key} className={i > 0 ? "mt-3" : ""}>
                 <span className="text-zinc-600">{">"}</span>{" "}
                 <span className="text-white">{line.text}</span>
                 {!line.full && (
@@ -270,7 +267,7 @@ export function AnimatedTerminal() {
             return (
               <div
                 key={line.key}
-                className={(i > 0 ? "mt-2 " : "") + "text-zinc-300 whitespace-pre-line"}
+                className={(i > 0 ? "mt-2 " : "") + "text-zinc-400 whitespace-pre-line"}
                 style={{
                   animation: `terminal-fade-in ${ANSWER_REVEAL_MS}ms ease forwards`,
                   opacity: 0,
