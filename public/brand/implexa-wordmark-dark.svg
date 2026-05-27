@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 620 164" role="img" aria-labelledby="title desc">
+  <title id="title">Implexa wordmark for dark backgrounds</title>
+  <desc id="desc">Lowercase Implexa wordmark with emerald signal dot and flame action dot.</desc>
+  <style>
+    .wordmark {
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: 120px;
+      font-weight: 700;
+      letter-spacing: -4px;
+    }
+  </style>
+  <text x="40" y="126" class="wordmark" fill="#FAFAF8">ımplexa</text>
+  <circle cx="55" cy="41" r="11" fill="#34D399"/>
+  <circle cx="351" cy="93" r="11" fill="#FF8A3C"/>
+</svg>

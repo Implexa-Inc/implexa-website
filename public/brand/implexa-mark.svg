@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-labelledby="title desc">
+  <title id="title">Implexa mark</title>
+  <desc id="desc">Rounded dark square with linked emerald and flame nodes.</desc>
+  <defs>
+    <linearGradient id="mark-fill" x1="18" y1="14" x2="112" y2="118" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#15110C"/>
+      <stop offset="1" stop-color="#0A0805"/>
+    </linearGradient>
+    <filter id="soft-glow" x="-30%" y="-30%" width="160%" height="160%" color-interpolation-filters="sRGB">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  <rect width="128" height="128" rx="28" fill="url(#mark-fill)"/>
+  <rect x="0.75" y="0.75" width="126.5" height="126.5" rx="27.25" fill="none" stroke="#2A241E" stroke-width="1.5"/>
+  <path d="M38 36v45h52" fill="none" stroke="#10B981" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" opacity="0.72"/>
+  <path d="M90 36v56" fill="none" stroke="#FF8A3C" stroke-width="5" stroke-linecap="round" opacity="0.72"/>
+  <circle cx="38" cy="36" r="9" fill="#34D399" filter="url(#soft-glow)"/>
+  <circle cx="90" cy="92" r="9" fill="#FF8A3C" filter="url(#soft-glow)"/>
+  <circle cx="38" cy="81" r="3.5" fill="#F5F0E8" opacity="0.56"/>
+  <circle cx="90" cy="81" r="3.5" fill="#F5F0E8" opacity="0.56"/>
+</svg>

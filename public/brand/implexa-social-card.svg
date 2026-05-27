@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" role="img" aria-labelledby="title desc">
+  <title id="title">Implexa social card logo preview</title>
+  <desc id="desc">Implexa logo lockup on a warm dark brand background.</desc>
+  <defs>
+    <radialGradient id="signal" cx="28%" cy="26%" r="58%">
+      <stop stop-color="#10B981" stop-opacity="0.22"/>
+      <stop offset="0.45" stop-color="#10B981" stop-opacity="0.04"/>
+      <stop offset="1" stop-color="#10B981" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="flame" cx="72%" cy="70%" r="56%">
+      <stop stop-color="#FF8A3C" stop-opacity="0.24"/>
+      <stop offset="0.48" stop-color="#FF8A3C" stop-opacity="0.05"/>
+      <stop offset="1" stop-color="#FF8A3C" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="1200" height="630" fill="#0A0805"/>
+  <rect width="1200" height="630" fill="url(#signal)"/>
+  <rect width="1200" height="630" fill="url(#flame)"/>
+  <rect x="96" y="86" width="1008" height="458" rx="36" fill="#15110C" opacity="0.72"/>
+  <rect x="96.75" y="86.75" width="1006.5" height="456.5" rx="35.25" fill="none" stroke="#2A241E" stroke-width="1.5"/>
+  <g transform="translate(198 205)">
+    <rect width="160" height="160" rx="34" fill="#0A0805"/>
+    <rect x="1" y="1" width="158" height="158" rx="33" fill="none" stroke="#2A241E" stroke-width="2"/>
+    <path d="M48 46v56h64" fill="none" stroke="#10B981" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" opacity="0.76"/>
+    <path d="M112 46v70" fill="none" stroke="#FF8A3C" stroke-width="7" stroke-linecap="round" opacity="0.76"/>
+    <circle cx="48" cy="46" r="12" fill="#34D399"/>
+    <circle cx="112" cy="116" r="12" fill="#FF8A3C"/>
+    <circle cx="48" cy="102" r="4" fill="#F5F0E8" opacity="0.56"/>
+    <circle cx="112" cy="102" r="4" fill="#F5F0E8" opacity="0.56"/>
+  </g>
+  <style>
+    .wordmark {
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: 150px;
+      font-weight: 700;
+      letter-spacing: -5px;
+    }
+    .tagline {
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: 34px;
+      font-weight: 500;
+      letter-spacing: 0;
+    }
+  </style>
+  <text x="402" y="317" class="wordmark" fill="#FAFAF8">ımplexa</text>
+  <circle cx="421" cy="211" r="13" fill="#34D399"/>
+  <circle cx="791" cy="277" r="13" fill="#FF8A3C"/>
+  <text x="410" y="383" class="tagline" fill="#A19992">Search and use the best skills from right where you work.</text>
+</svg>

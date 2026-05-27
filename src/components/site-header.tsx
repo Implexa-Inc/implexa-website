@@ -20,6 +20,12 @@ export function SiteHeader() {
         </Link>
         <nav className="flex items-center gap-1 text-sm">
           <Link
+            href="/scores"
+            className="px-3 py-1.5 text-zinc-400 hover:text-white transition-colors"
+          >
+            top skills
+          </Link>
+          <Link
             href="/pricing"
             className="px-3 py-1.5 text-zinc-400 hover:text-white transition-colors"
           >
@@ -33,7 +39,7 @@ export function SiteHeader() {
           </Link>
           <Link
             href="/install"
-            className="px-3 py-1.5 text-zinc-400 hover:text-white transition-colors"
+            className="px-3 py-1.5 text-zinc-400 hover:text-white transition-colors hidden sm:inline-block"
           >
             install
           </Link>

@@ -18,6 +18,8 @@ import { SiteFooter } from "@/components/site-footer";
 import { SkillCard } from "@/components/skill-card";
 import { CountUpPill } from "@/components/count-up-pill";
 import { CopyableInstall } from "@/components/copyable-install";
+import { RotatingVerb } from "@/components/rotating-verb";
+import { AnimatedTerminal } from "@/components/animated-terminal";
 import type { SkillCard as SkillCardData } from "@/lib/placeholder-data";
 import { CATEGORIES } from "@/lib/placeholder-data";
 
@@ -163,76 +165,42 @@ export default async function HomePage() {
       <main className="flex-1">
 
         {/* ─────────────────────────────────────────────────────────────
-            section 1 — claude-first hero. headline + subhead + live
-            count chip + one-line install command + terminal demo with
-            the claude-orange chrome.
+            section 1 — claude/codex hero. rotating-verb headline,
+            live count chip, animated terminal demo cycling through
+            three workflow examples, then install command at the bottom.
             ───────────────────────────────────────────────────────────── */}
         <section className="mx-auto max-w-4xl px-4 sm:px-6 pt-24 pb-16 text-center">
-          {/* headline */}
-          <h1 className="text-4xl sm:text-6xl font-semibold tracking-tight text-white leading-[1.05] mb-6">
-            Search and execute skills
+          {/* rotating-verb headline — Search / Run / Record / Share /
+              Like & Dislike cycles through; the rest is static. */}
+          <h1 className="text-4xl sm:text-6xl font-semibold tracking-tight text-white leading-[1.1] mb-6">
+            <RotatingVerb /> Skills
             <br />
-            <span className="text-zinc-400">within Claude.</span>
+            right inside{" "}
+            <span className="text-zinc-400">Claude Code &amp; Codex.</span>
           </h1>
 
-          {/* subhead */}
+          {/* subhead — tighter than before */}
           <p className="text-lg sm:text-xl text-zinc-400 max-w-2xl mx-auto leading-relaxed mb-8">
             implexa indexes, scores, enriches, and recommends skills as you
-            work in Claude Code and Codex. no installs. no restarts. no
-            remembering when to use which. ever.
+            work. no installs. no restarts. no remembering when to use which.
+            ever.
           </p>
 
           {/* live skill counter — animates up on mount + drifts upward */}
-          <div className="mb-8">
+          <div className="mb-10">
             <CountUpPill target={skillCount} />
           </div>
 
-          {/* one-line install + copy. platform toggle picks claude code vs
-              codex script. signup is bundled into either install flow. */}
-          <CopyableInstall />
+          {/* animated terminal demo — cycles between social-media,
+              record-skill, and recommend-skills scripts. typewriter for
+              prompts, instant reveal for assistant answers, pulsing
+              italics for status lines. */}
+          <AnimatedTerminal />
 
-          {/* terminal demo — claude-orange chrome, social-media example */}
-          <div className="max-w-2xl mx-auto text-left bg-zinc-950 border border-zinc-900 rounded-lg overflow-hidden shadow-2xl mt-12">
-            {/* claude-orange title bar for visual familiarity */}
-            <div
-              className="flex items-center gap-2 px-4 py-2.5 border-b border-zinc-900"
-              style={{ backgroundColor: "#cc785c" }}
-            >
-              <div className="flex gap-1.5">
-                <div className="size-2.5 rounded-full bg-black/30" />
-                <div className="size-2.5 rounded-full bg-black/30" />
-                <div className="size-2.5 rounded-full bg-black/30" />
-              </div>
-              <span className="text-xs text-white/90 ml-2 font-mono">
-                claude code
-              </span>
-            </div>
-            <div className="p-5 font-mono text-sm leading-relaxed">
-              <div className="text-zinc-300">
-                <span className="text-zinc-600">{">"}</span>{" "}
-                <span className="text-white">
-                  Implexa, help me automate my social media campaigns...
-                </span>
-              </div>
-              <div className="mt-3 text-zinc-400">
-                <span className="text-emerald-400">💡</span>{" "}
-                Implexa: try{" "}
-                <span className="text-white">
-                  social-media-daily-for-enterprises
-                </span>{" "}
-                <span className="text-zinc-500">(smithery · 9.2/10)</span>
-              </div>
-              <div className="text-zinc-500 ml-6 mt-0.5">
-                drafts + schedules a week of cross-channel posts from one brief
-              </div>
-              <div className="mt-3 text-zinc-300">
-                <span className="text-zinc-600">{">"}</span>{" "}
-                <span className="text-white">Implexa: run it</span>
-              </div>
-              <div className="mt-2 text-emerald-400 italic">
-                ✓ running social-media-daily-for-enterprises inline...
-              </div>
-            </div>
+          {/* install command — platform toggle picks claude code vs codex.
+              signup is bundled into either install flow. */}
+          <div className="mt-12">
+            <CopyableInstall />
           </div>
         </section>
 
