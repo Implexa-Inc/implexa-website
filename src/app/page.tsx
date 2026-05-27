@@ -181,23 +181,30 @@ export default async function HomePage() {
               </div>
 
               <h1 className="text-4xl lg:text-5xl xl:text-6xl font-semibold tracking-tight text-white leading-[1.05] mb-5">
-                The skill graph for{" "}
-                <span className="text-zinc-400">Claude Code &amp; Codex.</span>
+                Access{" "}
+                <span className="underline decoration-amber-400 decoration-2 underline-offset-[6px]">
+                  {skillCount.toLocaleString()}+ vetted
+                </span>{" "}
+                AI skills.
+                <br />
+                <span className="text-zinc-400">
+                  Without installing{" "}
+                  <span className="text-white underline decoration-amber-400 decoration-2 underline-offset-[6px]">
+                    ANY
+                  </span>
+                  .
+                </span>
               </h1>
 
               <p className="text-lg text-zinc-400 leading-relaxed mb-8 max-w-xl">
-                {skillCount.toLocaleString()}+ skills indexed, scored using{" "}
+                Ranked using{" "}
                 <Link
                   href="/resources/skill-rank"
                   className="text-white underline decoration-amber-400 decoration-2 underline-offset-4 hover:decoration-amber-300 transition-colors"
                 >
                   SkillRank
                 </Link>
-                , and runnable inline.{" "}
-                <span className="text-white underline decoration-amber-400 decoration-2 underline-offset-4">
-                  no more installing
-                </span>{" "}
-                or remembering when to use which.
+                . Recommendations get better as you work.
               </p>
 
               {/* two CTAs, primary + secondary. install is the conversion;
