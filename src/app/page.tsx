@@ -99,11 +99,26 @@ async function fetchHomeSkills(seed: string, count: number): Promise<SkillCardDa
   }
 }
 
-// Live count of indexed skills. Server-renders into the catalog pill so the
-// number reflects reality, not a stale hardcoded value. Falls back to a
-// known-good fallback if backend is unreachable.
-async function fetchSkillCount(): Promise<number> {
-  if (!TOKEN) return 19000;
+// Live counts of indexed skills via the backend count_skills MCP tool.
+//
+// Returns two numbers:
+//   - vetted: rows passing the public quality gate (is_active=true AND
+//     embedding_status='ok'). Headline "Access N+ vetted AI skills" uses
+//     this. Conservative + defensible.
+//   - total: every row in aggregated_skills regardless of status. Live
+//     pill counter uses this to flex raw catalog coverage.
+//
+// Earlier version called list_aggregated_skills and looked for a `total`
+// field that the tool doesn't expose (it returns `count` = page size).
+// That meant the homepage permanently fell back to 19,000 even after
+// the catalog grew past 40k. count_skills is purpose-built for this
+// single call and returns both numbers in <50ms.
+//
+// Falls back to {vetted: 19000, total: 40000} if the backend is
+// unreachable so the page never renders broken numbers.
+async function fetchSkillCounts(): Promise<{ vetted: number; total: number }> {
+  const FALLBACK = { vetted: 19000, total: 40000 };
+  if (!TOKEN) return FALLBACK;
   try {
     const upstream = await fetch(`${BACKEND}/api/v2/mcp`, {
       method: "POST",
@@ -117,24 +132,28 @@ async function fetchSkillCount(): Promise<number> {
         id: 1,
         method: "tools/call",
         params: {
-          name: "list_aggregated_skills",
-          arguments: { limit: 1, offset: 0 },
+          name: "count_skills",
+          arguments: {},
         },
       }),
       signal: AbortSignal.timeout(8000),
       next: { revalidate: 3600 },
     });
-    if (!upstream.ok) return 19000;
+    if (!upstream.ok) return FALLBACK;
     const text = await upstream.text();
     const dataLine = text.split("\n").find((ln) => ln.startsWith("data: "));
     const jsonStr = dataLine ? dataLine.slice(6) : text;
     const body: { result?: { content?: Array<{ text?: string }> } } =
       JSON.parse(jsonStr);
     const raw = body?.result?.content?.[0]?.text ?? "{}";
-    const parsed: { total?: number; total_count?: number } = JSON.parse(raw);
-    return parsed.total ?? parsed.total_count ?? 19000;
+    const parsed: { vetted?: number | null; total?: number | null } =
+      JSON.parse(raw);
+    return {
+      vetted: typeof parsed.vetted === "number" ? parsed.vetted : FALLBACK.vetted,
+      total:  typeof parsed.total === "number" ? parsed.total : FALLBACK.total,
+    };
   } catch {
-    return 19000;
+    return FALLBACK;
   }
 }
 
@@ -153,10 +172,14 @@ export default async function HomePage() {
   // Parallel fetches: trending + fresh skills + live count.
   // If any fails, that section renders empty rather than falling back to
   // broken placeholders.
-  const [trending, fresh, skillCount] = await Promise.all([
+  // counts.vetted → hero "Access N+ vetted AI skills" (filtered to
+  // is_active + embedding_status='ok', the runnable-and-searchable subset).
+  // counts.total → live pill counter ("N and counting skills"), flexes raw
+  // catalog coverage including stubs / dead links / un-embedded rows.
+  const [trending, fresh, counts] = await Promise.all([
     fetchHomeSkills("automate productivity workflow", 6),
     fetchHomeSkills("integration api connector", 6),
-    fetchSkillCount(),
+    fetchSkillCounts(),
   ]);
 
   return (
@@ -177,11 +200,11 @@ export default async function HomePage() {
               {/* small count chip above the headline, inline with the brand
                   voice (lowercase, factual). real number from server fetch. */}
               <div className="mb-6">
-                <CountUpPill target={skillCount} />
+                <CountUpPill target={counts.total} />
               </div>
 
               <h1 className="text-4xl lg:text-5xl xl:text-6xl font-semibold tracking-tight text-white leading-[1.05] mb-5">
-                Access {skillCount.toLocaleString()}+{" "}
+                Access {counts.vetted.toLocaleString()}+{" "}
                 <span className="underline decoration-amber-400 decoration-2 underline-offset-[6px]">
                   vetted
                 </span>{" "}
@@ -327,7 +350,7 @@ export default async function HomePage() {
                 className="size-1.5 rounded-full bg-emerald-500 animate-pulse"
                 aria-hidden="true"
               />
-              {skillCount.toLocaleString()} skills indexed across 5 vendors
+              {counts.total.toLocaleString()} skills indexed across 6 sources
             </div>
           </div>
 
@@ -608,7 +631,7 @@ export default async function HomePage() {
                 with implexa
               </div>
               <h3 className="text-base font-medium text-white mb-2">
-                {skillCount.toLocaleString()}+ skills, applied on demand
+                {counts.vetted.toLocaleString()}+ skills, applied on demand
               </h3>
               <p className="text-sm text-zinc-400 leading-relaxed">
                 search the full cross-vendor index from inside claude code
