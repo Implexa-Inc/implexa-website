@@ -1,7 +1,7 @@
 ---
 title: "the first ambient cross-vendor skill recommender, with privacy-by-discard"
 slug: "ambient-cross-vendor-recommender"
-description: "implexa is the ambient cross-vendor SKILL.md recommender. one index across 5 sources. inline-apply, no install. privacy by discard."
+description: "implexa is the ambient cross-vendor SKILL.md recommender. one index across 6 sources. inline-apply, no install. privacy by discard."
 publishedAt: "2026-05-25"
 tags: ["launch", "ambient-recommender", "skill-discovery", "SKILL.md", "claude-code"]
 ---

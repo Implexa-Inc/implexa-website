@@ -429,9 +429,9 @@ Trigger when the user mentions an upcoming meeting with a named company.
                 </Link>{" "}
                 or{" "}
                 <Link href="/search" className="text-white underline decoration-zinc-600 hover:decoration-white">
-                  search 19,000+ skills
+                  search 40,000+ skills
                 </Link>{" "}
-                across five vendors.
+                across six sources.
               </p>
             </Section>
 
