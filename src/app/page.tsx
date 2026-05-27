@@ -210,7 +210,7 @@ export default async function HomePage() {
 
               {/* two CTAs, primary + secondary. install is the conversion;
                   browse-top-skills is the low-commitment exploration path. */}
-              <div className="flex flex-wrap items-center gap-3 mb-8">
+              <div className="flex flex-wrap items-center gap-3 mb-4">
                 <Link
                   href="/install"
                   className={buttonVariants({
@@ -234,6 +234,19 @@ export default async function HomePage() {
                   browse top skills →
                 </Link>
               </div>
+
+              {/* the wedge in one sentence. positioned right under the CTAs
+                  so it's the last thing the eye reads before the click.
+                  ONE + NEVER carry the caps emphasis (matches the headline's
+                  "ANY" pattern). text-white for the caps, text-zinc-400
+                  for the surrounding prose. */}
+              <p className="text-sm text-zinc-400 leading-relaxed mb-8 max-w-md">
+                Install{" "}
+                <span className="text-white font-semibold">ONE</span>{" "}
+                plugin and you{" "}
+                <span className="text-white font-semibold">NEVER</span>{" "}
+                install another SKILL.md file again.
+              </p>
 
               {/* recent-search social-proof ticker. rotates real query
                   topics every ~3.4s. */}
