@@ -188,16 +188,23 @@ export type ResourceForSchema = {
   description: string;
   publishedAt: string;
   tags?: string[];
+  // Optional URL section — defaults to "resources" so existing callers
+  // (resource posts) keep working unchanged. /guides passes "guides" so
+  // its JSON-LD @id + image point at /guides/<slug> instead of /resources.
+  // Without this the rich-result @id mismatched the HTML canonical, which
+  // confused entity resolution.
+  section?: "resources" | "guides";
 };
 
 /**
- * Article schema for a resource post. Google's Article rich result needs
+ * Article schema for a long-form post. Google's Article rich result needs
  * headline, datePublished, author, and an image (we use the OG image).
  * mainEntityOfPage links the schema to the canonical URL.
  */
 export function articleSchema(post: ResourceForSchema): JsonLdNode {
-  const url = `${SITE_URL}/resources/${post.slug}`;
-  const ogImage = `${SITE_URL}/og-resources-${post.slug}.png`;
+  const section = post.section ?? "resources";
+  const url = `${SITE_URL}/${section}/${post.slug}`;
+  const ogImage = `${SITE_URL}/og-${section}-${post.slug}.png`;
 
   return {
     "@type": "Article",

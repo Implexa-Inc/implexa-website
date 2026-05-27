@@ -20,6 +20,9 @@ export function SiteFooter() {
           <Link href="/resources" className="hover:text-white transition-colors">
             resources
           </Link>
+          <Link href="/guides" className="hover:text-white transition-colors">
+            guides
+          </Link>
           <Link href="/install" className="hover:text-white transition-colors">
             install
           </Link>
