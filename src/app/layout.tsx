@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import "./globals.css";
 import {
   SITE_URL,
@@ -100,6 +101,11 @@ export default function RootLayout({
         <MouseGridSpotlight />
         {children}
         <Analytics />
+        {/* Speed Insights: real-user core web vitals (LCP, INP, CLS) reported
+            from actual page visits. Feeds the Vercel dashboard's Speed tab
+            and matters for SEO since Google ranks on real-user CWV, not lab
+            scores. Zero-config in production; no-op in development. */}
+        <SpeedInsights />
         <script
           type="application/ld+json"
           // The JSON is built at module-eval time from constants. No user
