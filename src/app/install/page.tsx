@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { Metadata } from "next";
-import { ArrowLeft, Check } from "lucide-react";
+import { ArrowLeft, Check, Clock } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { SiteHeader } from "@/components/site-header";
@@ -9,15 +9,15 @@ import { SiteFooter } from "@/components/site-footer";
 export const metadata: Metadata = {
   title: "install",
   description:
-    "install the implexa plugin in claude code, codex, or cursor. one command per runtime, takes 30 seconds.",
+    "install the implexa plugin in claude code or codex. one curl command, ~30 seconds, signs you up + writes the config.",
   alternates: { canonical: "/install" },
 };
 
 const STEPS = [
   "implexa runs alongside your session",
-  "watches every prompt, semantic-matches against 100k+ skills",
+  "watches every prompt, semantic-matches against 22k+ skills across 6 sources",
   "surfaces the best fit with a 15-word reason",
-  "one tap to apply inline. no download, no install",
+  "one command to apply inline. no download, no install per skill",
 ];
 
 export default function InstallPage() {
@@ -37,45 +37,75 @@ export default function InstallPage() {
           install implexa
         </h1>
         <p className="text-lg text-zinc-400 mb-10">
-          30 seconds. one command per runtime. cross-vendor by design.
+          one curl command. ~30 seconds. signs you up + writes the config.
         </p>
 
         <section className="space-y-6 mb-12">
+          {/* claude code — uses install.sh which handles device-auth + hooks
+              + MCP server registration in one pass */}
           <Card className="bg-zinc-950 border-zinc-900">
             <CardHeader>
               <CardTitle className="text-white text-lg">claude code</CardTitle>
             </CardHeader>
             <CardContent>
-              <CodeBlock command="/plugin marketplace add Implexa-Inc/implexa-plugin" />
+              <CodeBlock command="curl -fsSL https://core.implexa.ai/install.sh | bash" />
               <p className="text-xs text-zinc-500 mt-3">
-                requires claude code 1.5+. installs the UserPromptSubmit hook
-                plus the implexa MCP server.
+                opens a browser for sign-in (device-auth), writes the
+                UserPromptSubmit hook + the MCP server config, registers
+                the plugin in claude code&apos;s marketplace cache. fully
+                quit + relaunch claude code to pick up the new tools.
               </p>
             </CardContent>
           </Card>
 
+          {/* codex CLI — separate script because ~/.codex/config.toml uses
+              a different shape than ~/.claude/* (headers instead of bearer_token,
+              query-param auth, marketplace + plugin registration blocks) */}
           <Card className="bg-zinc-950 border-zinc-900">
             <CardHeader>
-              <CardTitle className="text-white text-lg">codex CLI</CardTitle>
+              <CardTitle className="text-white text-lg">codex</CardTitle>
             </CardHeader>
             <CardContent>
-              <CodeBlock command="codex skill add implexa@latest" />
+              <CodeBlock command="curl -fsSL https://core.implexa.ai/install-for-codex.sh | bash" />
               <p className="text-xs text-zinc-500 mt-3">
-                requires openai codex CLI 0.4+. uses the agentskills.io standard.
+                requires openai codex CLI ≥0.50 (
+                <code className="text-zinc-400">npm install -g @openai/codex</code>
+                ). same device-auth flow as claude. writes the implexa MCP
+                server block to{" "}
+                <code className="text-zinc-400">~/.codex/config.toml</code> and
+                installs the plugin skills to the cache. fully quit + relaunch
+                codex to load them.
               </p>
             </CardContent>
           </Card>
 
-          <Card className="bg-zinc-950 border-zinc-900">
+          {/* cursor — honest about state. we haven't built or verified this
+              path, marketplace install scripts don't exist yet. soft signup
+              for "tell me when it's ready" instead of fake commands. */}
+          <Card className="bg-zinc-950 border-zinc-900 opacity-70">
             <CardHeader>
-              <CardTitle className="text-white text-lg">cursor</CardTitle>
+              <CardTitle className="text-white text-lg flex items-center gap-2">
+                cursor
+                <span className="text-xs font-normal text-amber-300/80 inline-flex items-center gap-1">
+                  <Clock className="size-3" aria-hidden="true" />
+                  coming soon
+                </span>
+              </CardTitle>
             </CardHeader>
             <CardContent>
-              <CodeBlock command="cursor mcp add implexa https://core.implexa.ai/api/v2/mcp" />
-              <p className="text-xs text-zinc-500 mt-3">
-                rules sync via cursor's remote-rules surface. plugin runs as an
-                MCP server.
+              <p className="text-sm text-zinc-400 mb-3">
+                cursor&apos;s MCP config (
+                <code className="text-zinc-400">.cursor/mcp.json</code>
+                ) supports streamable HTTP servers, so the technical path
+                exists. we&apos;re still verifying the auth + tool-discovery
+                shape end-to-end before publishing an install script.
               </p>
+              <Link
+                href="mailto:hello@implexa.ai?subject=Tell%20me%20when%20Cursor%20support%20ships"
+                className="text-sm text-amber-300/90 hover:text-amber-200 transition-colors"
+              >
+                tell me when it&apos;s ready →
+              </Link>
             </CardContent>
           </Card>
         </section>
@@ -102,12 +132,42 @@ export default function InstallPage() {
         <section className="mb-12">
           <h2 className="text-xl font-semibold text-white mb-4">verify it</h2>
           <p className="text-zinc-400 mb-3">
-            after install, type this in any session:
+            after install + relaunch, type this in any session:
           </p>
           <CodeBlock command="implexa, find me a skill for outbound sequences" />
           <p className="text-xs text-zinc-500 mt-3">
-            you should see top-3 matches with a fit reason and a one-click run
-            button.
+            you should see ranked matches with a fit reason and a one-tap
+            apply path. or use the slash commands directly:{" "}
+            <code className="text-zinc-400">
+              /implexa:suggest
+            </code>
+            ,{" "}
+            <code className="text-zinc-400">
+              /implexa:run
+            </code>
+            ,{" "}
+            <code className="text-zinc-400">
+              /implexa:record
+            </code>
+            ,{" "}
+            <code className="text-zinc-400">
+              /implexa:my-skills
+            </code>
+            ,{" "}
+            <code className="text-zinc-400">
+              /implexa:help
+            </code>
+            ,{" "}
+            <code className="text-zinc-400">
+              /implexa:schedule
+            </code>
+            ,{" "}
+            <code className="text-zinc-400">
+              /implexa:share-this
+            </code>
+            . codex uses{" "}
+            <code className="text-zinc-400">$implexa-*</code> instead of{" "}
+            <code className="text-zinc-400">/implexa:*</code>.
           </p>
         </section>
 

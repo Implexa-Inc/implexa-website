@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { RotateCcw } from "lucide-react";
 
 // Animated demo of an Implexa workflow running inside a Claude Code session.
 // Plays ONE script on mount, then shows a Replay button. No infinite cycle —
@@ -95,6 +94,7 @@ type RenderedLine = {
 
 export function AnimatedTerminal() {
   const [scriptIndex, setScriptIndex] = useState(0);
+  const [replayNonce, setReplayNonce] = useState(0); // bumps to force re-run when user clicks the current tab
   const [lines, setLines] = useState<RenderedLine[]>([]);
   const [isPlaying, setIsPlaying] = useState(true);
   const timersRef = useRef<number[]>([]);
@@ -169,42 +169,60 @@ export function AnimatedTerminal() {
     return () => {
       for (const t of newTimers) window.clearTimeout(t);
     };
-  }, [scriptIndex]);
+  }, [scriptIndex, replayNonce]);
 
-  const replay = () => {
-    // Re-trigger by toggling. If currently on this script, bumping to next
-    // and back creates a visible "reset" beat. Simpler: cycle to next script
-    // so the user gets variety each replay click.
-    setScriptIndex((s) => (s + 1) % SCRIPTS.length);
+  const jumpToScript = (i: number) => {
+    if (i === scriptIndex) {
+      // Already on this script — bump the nonce to re-run the effect
+      // without re-rendering between an invalid intermediate index.
+      setReplayNonce((n) => n + 1);
+    } else {
+      setScriptIndex(i);
+    }
   };
 
   return (
     <div className="bg-zinc-950 border border-zinc-900 rounded-lg overflow-hidden shadow-2xl">
       {/* terminal title bar — muted dark, no longer claude-orange. cleaner. */}
       <div className="flex items-center justify-between px-4 py-2.5 border-b border-zinc-900 bg-zinc-900/50">
-        <div className="flex items-center gap-2">
-          <div className="flex gap-1.5">
+        <div className="flex items-center gap-2 min-w-0">
+          <div className="flex gap-1.5 shrink-0">
             <div className="size-2.5 rounded-full bg-zinc-700" />
             <div className="size-2.5 rounded-full bg-zinc-700" />
             <div className="size-2.5 rounded-full bg-zinc-700" />
           </div>
-          <span className="text-xs text-zinc-500 ml-1 font-mono">
+          <span className="text-xs text-zinc-500 ml-1 font-mono truncate">
             claude code · {SCRIPTS[scriptIndex].label}
           </span>
         </div>
 
-        {/* replay button — only visible when the script has finished playing */}
-        {!isPlaying && (
-          <button
-            type="button"
-            onClick={replay}
-            className="inline-flex items-center gap-1.5 text-xs text-zinc-500 hover:text-amber-300 transition-colors"
-            aria-label="replay demo"
-          >
-            <RotateCcw className="size-3" aria-hidden="true" />
-            replay
-          </button>
-        )}
+        {/* numbered script picker — 1 / 2 / 3. active is white, others
+            are zinc-600. clicking jumps to that script (or replays if
+            it's already the active one). always visible, not just when
+            the current script finishes. */}
+        <div className="flex items-center gap-2 shrink-0" role="tablist" aria-label="demo scripts">
+          {SCRIPTS.map((s, i) => {
+            const active = i === scriptIndex;
+            return (
+              <button
+                key={s.id}
+                type="button"
+                role="tab"
+                aria-selected={active}
+                aria-label={`play demo ${i + 1}: ${s.label}`}
+                onClick={() => jumpToScript(i)}
+                className={
+                  "font-mono text-xs tabular-nums transition-colors " +
+                  (active
+                    ? "text-white"
+                    : "text-zinc-600 hover:text-zinc-400")
+                }
+              >
+                {i + 1}
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       {/* terminal body — fixed min-height keeps the box stable, but tighter

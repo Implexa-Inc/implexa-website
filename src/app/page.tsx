@@ -186,9 +186,15 @@ export default async function HomePage() {
               </h1>
 
               <p className="text-lg text-zinc-400 leading-relaxed mb-8 max-w-xl">
-                {skillCount.toLocaleString()}+ skills indexed, scored, and
-                runnable inline. no installs. no restarts. no remembering
-                when to use which.
+                {skillCount.toLocaleString()}+ skills indexed,{" "}
+                <span className="text-white underline decoration-amber-400 decoration-2 underline-offset-4">
+                  scored
+                </span>
+                , and runnable inline.{" "}
+                <span className="text-white underline decoration-amber-400 decoration-2 underline-offset-4">
+                  no installs
+                </span>
+                . no restarts. no remembering when to use which.
               </p>
 
               {/* two CTAs, primary + secondary. install is the conversion;
