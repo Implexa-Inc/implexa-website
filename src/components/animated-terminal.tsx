@@ -97,6 +97,13 @@ export function AnimatedTerminal() {
   const [replayNonce, setReplayNonce] = useState(0); // bumps to force re-run when user clicks the current tab
   const [lines, setLines] = useState<RenderedLine[]>([]);
   const [isPlaying, setIsPlaying] = useState(true);
+  // Auto-cycle: on mount, play scripts 0 → 1 → 2 in sequence, then STOP.
+  // User clicks on the 1/2/3 buttons disable the auto-cycle (they're
+  // picking a specific script, not asking for another tour).
+  // hasFinishedAll = end-of-cycle sentinel; cycleActive = "should we
+  // auto-advance after this script's hold expires?".
+  const [hasFinishedAll, setHasFinishedAll] = useState(false);
+  const [cycleActive, setCycleActive] = useState(true);
   const timersRef = useRef<number[]>([]);
 
   const reducedMotionRef = useRef(false);
@@ -158,10 +165,25 @@ export function AnimatedTerminal() {
       accumulated += typewriterMs + dwellMs;
     });
 
-    // When the script finishes, surface the replay button.
+    // When the script finishes, mark "not playing" + decide whether to
+    // auto-advance. Auto-advance only continues if cycleActive is still
+    // true (user hasn't clicked a tab manually) AND we're not on the last
+    // script. On the last script, set hasFinishedAll so the demo stops.
     const finishAt = accumulated;
     const finishTimer = window.setTimeout(() => {
       setIsPlaying(false);
+
+      const isLastScript = scriptIndex === SCRIPTS.length - 1;
+      if (isLastScript || !cycleActive) {
+        setHasFinishedAll(true);
+        return; // STOP — don't loop or re-enter auto-cycle from a manual click
+      }
+
+      // Auto-advance to next script after a short hold.
+      const advance = window.setTimeout(() => {
+        setScriptIndex((prev) => (prev === scriptIndex ? prev + 1 : prev));
+      }, reduce ? 1000 : 1600);
+      newTimers.push(advance);
     }, reduce ? 200 : finishAt);
     newTimers.push(finishTimer);
 
@@ -172,9 +194,13 @@ export function AnimatedTerminal() {
   }, [scriptIndex, replayNonce]);
 
   const jumpToScript = (i: number) => {
+    // User-initiated jump → disable the auto-cycle. They're picking
+    // a specific script, not asking for another tour.
+    setCycleActive(false);
+    setHasFinishedAll(false);
     if (i === scriptIndex) {
       // Already on this script — bump the nonce to re-run the effect
-      // without re-rendering between an invalid intermediate index.
+      // without going through an invalid intermediate index.
       setReplayNonce((n) => n + 1);
     } else {
       setScriptIndex(i);

@@ -186,15 +186,18 @@ export default async function HomePage() {
               </h1>
 
               <p className="text-lg text-zinc-400 leading-relaxed mb-8 max-w-xl">
-                {skillCount.toLocaleString()}+ skills indexed,{" "}
-                <span className="text-white underline decoration-amber-400 decoration-2 underline-offset-4">
-                  scored
-                </span>
+                {skillCount.toLocaleString()}+ skills indexed, scored using{" "}
+                <Link
+                  href="/resources/skill-rank"
+                  className="text-white underline decoration-amber-400 decoration-2 underline-offset-4 hover:decoration-amber-300 transition-colors"
+                >
+                  SkillRank
+                </Link>
                 , and runnable inline.{" "}
                 <span className="text-white underline decoration-amber-400 decoration-2 underline-offset-4">
-                  no installs
-                </span>
-                . no restarts. no remembering when to use which.
+                  no more installing
+                </span>{" "}
+                or remembering when to use which.
               </p>
 
               {/* two CTAs, primary + secondary. install is the conversion;
