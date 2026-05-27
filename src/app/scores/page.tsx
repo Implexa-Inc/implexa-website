@@ -118,7 +118,10 @@ function scoreColor(score: number): string {
   return "text-zinc-500";
 }
 
-const SOURCES = ["all", "anthropic", "smithery", "clawhub", "skills.sh", "agentskills"];
+// "implexa" added 2026-05 alongside backend migration 0036 — surfaces the
+// founder-curated canonical rows (see scripts/seed/implexa-curated-skills.js
+// in implexa-backend) as a first-class source chip on the leaderboard.
+const SOURCES = ["all", "anthropic", "smithery", "clawhub", "skills.sh", "agentskills", "implexa"];
 
 export default async function ScoresPage(props: {
   searchParams: Promise<SearchParams>;
