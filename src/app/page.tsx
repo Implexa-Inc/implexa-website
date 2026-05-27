@@ -181,9 +181,9 @@ export default async function HomePage() {
               </div>
 
               <h1 className="text-4xl lg:text-5xl xl:text-6xl font-semibold tracking-tight text-white leading-[1.05] mb-5">
-                Access{" "}
+                Access {skillCount.toLocaleString()}+{" "}
                 <span className="underline decoration-amber-400 decoration-2 underline-offset-[6px]">
-                  {skillCount.toLocaleString()}+ vetted
+                  vetted
                 </span>{" "}
                 AI skills.
                 <br />
@@ -204,7 +204,8 @@ export default async function HomePage() {
                 >
                   SkillRank
                 </Link>
-                . Recommendations get better as you work.
+                . Recommendations get better as you work. Access within
+                Claude Code &amp; Codex.
               </p>
 
               {/* two CTAs, primary + secondary. install is the conversion;

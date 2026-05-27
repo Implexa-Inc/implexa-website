@@ -30,6 +30,12 @@ type Script = {
 
 // Three scripts the user can replay through. Default plays the first.
 // Edits here propagate everywhere — keep them concise + skimmable.
+// Voice rule: user calls "Implexa, ..." to open the turn; subsequent
+// user prompts are bare ("Run it" / "Save recording") since the
+// conversation context is already established. Assistant lines (💡)
+// don't repeat "Implexa:" — the bulb already conveys it's Implexa
+// speaking. System status lines (✓ running / scanning...) get no prefix.
+// This matches how a real claude code session reads.
 const SCRIPTS: Script[] = [
   {
     id: "social-media",
@@ -39,10 +45,10 @@ const SCRIPTS: Script[] = [
       {
         mode: "answer",
         text:
-          "💡 Implexa: try social-media-daily-for-enterprises (smithery · 9.2/10)\n   drafts + schedules a week of cross-channel posts from one brief",
+          "💡 try social-media-daily-for-enterprises (smithery · 9.2/10)\n   drafts + schedules a week of cross-channel posts from one brief",
         afterMs: 1100,
       },
-      { mode: "prompt", text: "Implexa: run it" },
+      { mode: "prompt", text: "Run it" },
       {
         mode: "answer",
         text: "✓ running social-media-daily-for-enterprises inline...",
@@ -58,11 +64,11 @@ const SCRIPTS: Script[] = [
       {
         mode: "answer",
         text:
-          "💡 Implexa: sure, just start doing your work. i'll watch + capture the steps.",
+          "💡 sure, just start doing your work. i'll watch + capture the steps.",
         afterMs: 700,
       },
       { mode: "pulse", text: "(recording work for over 30 mins...)", afterMs: 1400 },
-      { mode: "prompt", text: "Implexa: save recording" },
+      { mode: "prompt", text: "Save recording" },
       { mode: "pulse", text: "asking interview question 1/4...", afterMs: 1200 },
     ],
   },
@@ -75,7 +81,7 @@ const SCRIPTS: Script[] = [
       {
         mode: "answer",
         text:
-          "💡 Implexa: 4 strong fits from your recent work:\n   1. cold-outreach-drafter (smithery · 9.4)\n   2. hubspot-pipeline-sync (clawhub · 8.8)\n   3. linkedin-comment-drafter (skills.sh · 8.6)\n   4. jira-ticket-triage (anthropic · 8.5)",
+          "💡 found 4 strong fits from your recent work:\n   1. cold-outreach-drafter (smithery · 9.4)\n   2. hubspot-pipeline-sync (clawhub · 8.8)\n   3. linkedin-comment-drafter (skills.sh · 8.6)\n   4. jira-ticket-triage (anthropic · 8.5)",
         afterMs: 1400,
       },
     ],
