@@ -95,18 +95,18 @@ export async function generateMetadata(props: {
   const sp = await props.searchParams;
   const source = typeof sp.source === "string" ? sp.source : "";
   return {
-    title: source ? `top ${source} skills` : "top-rated skills",
+    title: source ? `top ${source} skills · SkillRank` : "top-rated skills · SkillRank",
     description:
-      "the SkillRank leaderboard across the cross-vendor skill graph. multi-signal ranking from structural quality + semantic match + cohort signals.",
+      "the SkillRank leaderboard for AI skills. 22,000+ skills from Anthropic, Smithery, ClawHub, Skills.sh, GitHub ranked by structural quality, semantic match, tool overlap, and outcome signals.",
     alternates: { canonical: "/scores" },
     openGraph: {
       type: "website",
       url: absoluteUrl("/scores"),
       title: source
-        ? `top ${source} skills | implexa`
-        : "top-rated skills | implexa",
+        ? `top ${source} skills, ranked by SkillRank | implexa`
+        : "top-rated skills, ranked by SkillRank | implexa",
       description:
-        "the SkillRank leaderboard across the cross-vendor skill graph.",
+        "the SkillRank leaderboard across the cross-vendor skill graph. multi-signal ranking for every AI skill in the index.",
     },
   };
 }
@@ -173,9 +173,15 @@ export default async function ScoresPage(props: {
           </h1>
         </div>
         <p className="text-lg text-zinc-400 max-w-2xl mb-8">
-          the SkillScore leaderboard across the cross-vendor skill graph.
-          ranked by structural quality: components present, trigger clarity,
-          procedure depth, edge-case coverage, documentation polish.
+          ranked by{" "}
+          <Link
+            href="/resources/skill-rank"
+            className="text-white underline decoration-amber-400 decoration-2 underline-offset-4 hover:decoration-amber-300 transition-colors"
+          >
+            SkillRank
+          </Link>{" "}
+          across the cross-vendor skill graph. multi-signal score: structural
+          quality, semantic match, tool overlap, and outcome signals.
         </p>
 
         {/* source filter chips */}

@@ -5,9 +5,18 @@ export function SiteFooter() {
     <footer className="w-full border-t border-zinc-900 mt-24">
       <div className="mx-auto max-w-6xl px-4 sm:px-6 py-10 flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
         <div className="text-sm text-zinc-500">
-          implexa, google + wikipedia for SKILL.md
+          implexa · skills ranked by{" "}
+          <Link
+            href="/resources/skill-rank"
+            className="text-zinc-300 hover:text-amber-300 transition-colors underline decoration-amber-400/40 decoration-1 underline-offset-2"
+          >
+            SkillRank
+          </Link>
         </div>
         <nav className="flex flex-wrap gap-x-6 gap-y-2 text-sm text-zinc-400">
+          <Link href="/scores" className="hover:text-white transition-colors">
+            top skills
+          </Link>
           <Link href="/resources" className="hover:text-white transition-colors">
             resources
           </Link>

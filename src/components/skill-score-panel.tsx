@@ -55,7 +55,12 @@ export function SkillScorePanel({ score }: Props) {
         <div className="flex flex-wrap items-baseline justify-between gap-3 mb-4">
           <div>
             <div className="text-xs uppercase tracking-wider text-zinc-500 mb-1">
-              implexa quality score
+              <a
+                href="/resources/skill-rank"
+                className="hover:text-amber-300 transition-colors"
+              >
+                SkillRank score ↗
+              </a>
             </div>
             <div className="flex items-baseline gap-2">
               <span
