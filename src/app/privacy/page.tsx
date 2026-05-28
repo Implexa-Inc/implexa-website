@@ -80,10 +80,10 @@ export default function PrivacyPage() {
             <li>
               you can export or delete your data anytime. email{" "}
               <a
-                href="mailto:privacy@implexa.ai"
+                href="mailto:founder@implexa.ai"
                 className="text-white underline decoration-amber-400 decoration-2 underline-offset-2 hover:decoration-amber-300"
               >
-                privacy@implexa.ai
+                founder@implexa.ai
               </a>{" "}
               and we will respond within 30 days.
             </li>
@@ -166,10 +166,10 @@ export default function PrivacyPage() {
               Work signatures are <strong className="text-white">off by default</strong>.
               Email{" "}
               <a
-                href="mailto:privacy@implexa.ai"
+                href="mailto:founder@implexa.ai"
                 className="text-white underline decoration-amber-400 decoration-2 underline-offset-2 hover:decoration-amber-300"
               >
-                privacy@implexa.ai
+                founder@implexa.ai
               </a>{" "}
               to enable or disable.
             </p>
@@ -281,10 +281,10 @@ export default function PrivacyPage() {
           <p className="mt-4">
             Email{" "}
             <a
-              href="mailto:privacy@implexa.ai"
+              href="mailto:founder@implexa.ai"
               className="text-white underline decoration-amber-400 decoration-2 underline-offset-2 hover:decoration-amber-300"
             >
-              privacy@implexa.ai
+              founder@implexa.ai
             </a>{" "}
             to exercise any of these. We respond within 30 days.
           </p>
@@ -324,10 +324,10 @@ export default function PrivacyPage() {
             collect data from minors. If you are a parent or guardian and
             think we have data on your child, email{" "}
             <a
-              href="mailto:privacy@implexa.ai"
+              href="mailto:founder@implexa.ai"
               className="text-white underline decoration-amber-400 decoration-2 underline-offset-2 hover:decoration-amber-300"
             >
-              privacy@implexa.ai
+              founder@implexa.ai
             </a>{" "}
             and we will delete it within 7 days.
           </p>
@@ -353,43 +353,28 @@ export default function PrivacyPage() {
         </Section>
 
         <Section title="contact">
-          <ul className="list-disc pl-6 space-y-2">
-            <li>
-              privacy questions:{" "}
-              <a
-                href="mailto:privacy@implexa.ai"
-                className="text-white underline decoration-amber-400 decoration-2 underline-offset-2 hover:decoration-amber-300"
-              >
-                privacy@implexa.ai
-              </a>
-            </li>
-            <li>
-              general questions:{" "}
-              <a
-                href="mailto:hello@implexa.ai"
-                className="text-white underline decoration-amber-400 decoration-2 underline-offset-2 hover:decoration-amber-300"
-              >
-                hello@implexa.ai
-              </a>
-            </li>
-            <li>
-              security issues:{" "}
-              <a
-                href="mailto:security@implexa.ai"
-                className="text-white underline decoration-amber-400 decoration-2 underline-offset-2 hover:decoration-amber-300"
-              >
-                security@implexa.ai
-              </a>{" "}
-              (please do not file public github issues for vulnerabilities)
-            </li>
-            <li>
-              postal mail:{" "}
-              <span className="text-zinc-400">
-                Implexa Inc., contact via email above for current mailing
-                address
-              </span>
-            </li>
-          </ul>
+          <p>
+            One inbox for everything for now (privacy, security, general,
+            press):
+          </p>
+          <p className="mt-3">
+            <a
+              href="mailto:founder@implexa.ai"
+              className="text-white underline decoration-amber-400 decoration-2 underline-offset-2 hover:decoration-amber-300 text-lg"
+            >
+              founder@implexa.ai
+            </a>
+          </p>
+          <p className="mt-4 text-sm text-zinc-400">
+            For security vulnerabilities please email the address above
+            with the subject line starting <code className="bg-zinc-900 px-1.5 py-0.5 rounded text-xs">[security]</code> so we route
+            it before any other queue. Please do not file public GitHub
+            issues for vulnerabilities.
+          </p>
+          <p className="mt-3 text-sm text-zinc-400">
+            Postal mail: Implexa Inc., contact via email above for current
+            mailing address.
+          </p>
         </Section>
 
         <div className="mt-16 pt-8 border-t border-zinc-900 text-xs text-zinc-500 leading-relaxed">
