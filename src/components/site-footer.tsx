@@ -48,6 +48,9 @@ export function SiteFooter() {
           >
             x / twitter
           </Link>
+          <Link href="/privacy" className="hover:text-white transition-colors">
+            privacy
+          </Link>
         </nav>
       </div>
     </footer>
