@@ -1,7 +1,7 @@
 ---
-title: "what are claude skills? (5-minute explainer)"
+title: "what are claude skills? the 2026 builder's guide"
 slug: "what-are-claude-skills"
-description: "Claude Skills are reusable instruction packs Claude loads on demand. here's what they are, what's inside a SKILL.md file, and how they compare to prompts."
+description: "claude skills are reusable instruction packs that load on demand. this is the practical guide: what's inside a SKILL.md, when to use one vs a prompt, and how 40,000+ ranked skills work across anthropic, smithery, clawhub, and skills.sh."
 publishedAt: "2026-05-18"
 tags: ["claude-skills", "SKILL.md", "anthropic", "explainer"]
 ---

@@ -29,16 +29,22 @@ import {
 const PUBLISHED_AT = "2026-05-18";
 
 export const metadata: Metadata = {
-  title: "what are claude skills? (and the right way to build them)",
+  // SEO intent differentiation 2026-05-27: this page kept overlapping with
+  // /blog/what-are-claude-skills on identical title + meta wording, causing
+  // keyword cannibalization (170 + 71 = 241 impressions split across two
+  // pages with 0 clicks). New positioning: /claude-skills = transactional
+  // "browse + use" landing. /blog/what-are-claude-skills = informational
+  // "what + why" explainer.
+  title: "claude skills marketplace: 40,000+ ranked & runnable | implexa",
   description:
-    "Claude Skills are reusable instructions Claude loads on demand. learn what they are, the 6-component contract that separates skills that work, and why demonstrating a workflow beats describing it.",
+    "browse, search, and run any of 40,000+ ranked claude skills inline. no install per skill. cross-vendor index across anthropic, smithery, clawhub, skills.sh, and github, ranked by SkillRank.",
   alternates: { canonical: "/claude-skills" },
   openGraph: {
     type: "article",
     url: absoluteUrl("/claude-skills"),
-    title: "what are claude skills? | implexa",
+    title: "claude skills marketplace: 40,000+ ranked & runnable | implexa",
     description:
-      "the pillar guide: SKILL.md anatomy, the 6-component contract, and how to build a skill that actually works.",
+      "browse + run any of 40,000+ ranked claude skills inline, no install per skill. cross-vendor index across anthropic, smithery, clawhub, skills.sh, github.",
     images: [
       {
         url: "/og-claude-skills.png",
