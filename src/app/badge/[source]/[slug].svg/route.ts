@@ -24,12 +24,20 @@ type Tier = { fill: string; text: string };
 
 // color band by score. matches the leaderboard scoreColor() intent but tuned
 // for badge legibility (light fills get dark text).
+//
+// 2026-05-28: lowered the emerald threshold from 9.0 to 8.0 and added a
+// distinct "top tier" green for 8.0-8.9. The previous version reserved
+// emerald only for 9.0+ which, in practice, meant only our 8 curated
+// implexa skills hit the green tier — every organic author scoring 7-8.9
+// got a badge that looked indistinguishable from a 5.0 dud. Bad for
+// outreach: authors should feel rewarded by their badge color.
 function tierFor(score: number | null): Tier {
   if (score === null) return { fill: "#52525b", text: "#fff" }; // zinc-600, unrated
-  if (score >= 9.0) return { fill: "#10b981", text: "#fff" }; // emerald-500
-  if (score >= 7.0) return { fill: "#3f3f46", text: "#d4d4d8" }; // zinc-700 bg, zinc-300 text
-  if (score >= 5.0) return { fill: "#f59e0b", text: "#fff" }; // amber-500
-  return { fill: "#71717a", text: "#fff" }; // zinc-500
+  if (score >= 9.0) return { fill: "#10b981", text: "#fff" }; // emerald-500, elite (~0.5%)
+  if (score >= 8.0) return { fill: "#16a34a", text: "#fff" }; // green-600, top tier (~3%)
+  if (score >= 7.0) return { fill: "#3f3f46", text: "#d4d4d8" }; // zinc-700/zinc-300, good
+  if (score >= 5.0) return { fill: "#f59e0b", text: "#fff" }; // amber-500, average
+  return { fill: "#71717a", text: "#fff" }; // zinc-500, low
 }
 
 // approximate the text width shields.io uses for its default font: ~7px per
