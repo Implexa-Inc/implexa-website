@@ -118,8 +118,14 @@ export async function generateMetadata(props: {
   };
 }
 
+// Tier color thresholds aligned with the badge route's tierFor (2026-05-28).
+// 9.0+ is the elite ~0.5% (curated implexa skills + organically perfect
+// outliers). 8.0-8.9 is the top tier (~3%) — visually rewarding via
+// emerald-300 rather than the elite emerald-400. 7.0-7.9 stays white
+// (good but not flex). below that drops to amber + zinc.
 function scoreColor(score: number): string {
   if (score >= 9) return "text-emerald-400";
+  if (score >= 8) return "text-emerald-300";
   if (score >= 7) return "text-white";
   if (score >= 5) return "text-amber-400";
   return "text-zinc-500";

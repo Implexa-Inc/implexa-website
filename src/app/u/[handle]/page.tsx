@@ -94,9 +94,12 @@ async function fetchAuthorSkills(handle: string): Promise<AuthorSkill[]> {
   }
 }
 
+// Aligned with the badge route's tierFor (2026-05-28) so a row's score
+// color on the author page matches the badge color they'd embed.
 function scoreColor(score: number | null): string {
   if (score === null) return "text-zinc-600";
   if (score >= 9) return "text-emerald-400";
+  if (score >= 8) return "text-emerald-300";
   if (score >= 7) return "text-white";
   if (score >= 5) return "text-amber-400";
   return "text-zinc-500";
