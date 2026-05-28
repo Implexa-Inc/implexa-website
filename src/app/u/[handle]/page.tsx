@@ -147,8 +147,13 @@ export default async function AuthorPage(props: {
     ? scoredSkills.reduce((acc, s) => acc + (s.display_score ?? 0), 0) / scoredSkills.length
     : null;
   const sources = Array.from(new Set(skills.map((s) => s.source)));
-  const totalInstalls = skills.reduce((acc, s) => acc + (s.install_count ?? 0), 0);
-  const totalStars = skills.reduce((acc, s) => acc + (s.star_count ?? 0), 0);
+  // NB: NOT summing install_count or star_count anymore. Each skill row
+  // on skills.sh / github is a sub-file inside a parent repo, but our
+  // aggregator stores the parent repo's star/install count on every
+  // child row. Naïve sum = ~50x over-count (one author had 675,613 stars
+  // = 50 skills × 13,500 real stars). Proper fix needs per-source URL
+  // parsing to dedupe by parent repo; until then we just drop these
+  // stats rather than show wrong numbers.
 
   // Heuristic: skills.sh + smithery authors with valid-github-username
   // handles are often the same handle on github too. We probe-link to
@@ -230,10 +235,14 @@ export default async function AuthorPage(props: {
           </div>
         ) : null}
 
-        {/* stat cards — total skills, avg score, total installs/stars.
-            only render when we have skills, otherwise it's empty clutter. */}
+        {/* stat cards — skills count + avg SkillRank only. Both are
+            honest numbers (count of distinct rows, average over scored
+            subset). Star/install totals removed 2026-05-27 because
+            aggregator stores parent-repo counts on every child row,
+            so naïve sum was off by ~50x. Re-add once we dedupe by
+            parent repo (per-source URL parsing). */}
         {totalSkills > 0 ? (
-          <div className="grid gap-3 sm:grid-cols-4 mb-10">
+          <div className="grid gap-3 sm:grid-cols-3 mb-10">
             <StatCard label="skills" value={totalSkills.toString()} />
             <StatCard
               label="avg SkillRank"
@@ -241,12 +250,9 @@ export default async function AuthorPage(props: {
               hint={`${scoredSkills.length} scored / ${totalSkills} total`}
             />
             <StatCard
-              label="total installs"
-              value={totalInstalls > 0 ? totalInstalls.toLocaleString() : "—"}
-            />
-            <StatCard
-              label="total stars"
-              value={totalStars > 0 ? totalStars.toLocaleString() : "—"}
+              label="sources"
+              value={sources.length.toString()}
+              hint={sources.join(", ")}
             />
           </div>
         ) : null}
