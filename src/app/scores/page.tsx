@@ -22,6 +22,10 @@ type ScoredSkill = {
   tier_1_summary: string | null;
   install_count: number | null;
   star_count: number | null;
+  // 2026-05-27: surfaced from list_skill_scores RPC which already returns
+  // it. Display as "by <author>" beside the skill name + link to /u/<author>
+  // for the author page (every author page is a new SEO surface).
+  author: string | null;
 };
 
 // list_skill_scores response envelope. Backend returns
@@ -231,10 +235,16 @@ export default async function ScoresPage(props: {
                       <td className="py-3 px-4">
                         <span className="text-xs text-zinc-400 font-mono">{s.source}</span>
                       </td>
+                      {/* Two distinct linkable surfaces in this cell:
+                          - the skill name + summary → /s/<source>/<slug>
+                          - the author handle → /u/<author>
+                          Nesting <a> tags is invalid HTML so we render them
+                          as siblings, not parent-child. The whole cell still
+                          gets the row-hover treatment via the parent <tr>. */}
                       <td className="py-3 px-4">
                         <Link
                           href={`/s/${s.source}/${s.slug}`}
-                          className="block group"
+                          className="group block"
                         >
                           <div className="text-white group-hover:text-zinc-100 font-medium">
                             {s.name || s.slug}
@@ -245,6 +255,17 @@ export default async function ScoresPage(props: {
                             </div>
                           ) : null}
                         </Link>
+                        {s.author ? (
+                          <div className="text-xs text-zinc-500 mt-1">
+                            by{" "}
+                            <Link
+                              href={`/u/${encodeURIComponent(s.author)}`}
+                              className="text-zinc-400 hover:text-amber-300 transition-colors"
+                            >
+                              {s.author}
+                            </Link>
+                          </div>
+                        ) : null}
                       </td>
                     </tr>
                   ))}

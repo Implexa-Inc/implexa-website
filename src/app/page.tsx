@@ -36,6 +36,7 @@ type ToolMatch = {
   description?: string;
   fit_reason?: string;
   score?: number;
+  author?: string | null;
 };
 
 const BACKEND = process.env.IMPLEXA_API_URL ?? "https://core.implexa.ai";
@@ -92,7 +93,10 @@ async function fetchHomeSkills(seed: string, count: number): Promise<SkillCardDa
       title: String(m.name ?? m.slug ?? ""),
       description: String(m.description ?? m.fit_reason ?? "").slice(0, 200),
       tag: m.score ? `${(m.score * 100).toFixed(0)}% match` : "popular",
-      author: String(m.source ?? ""),
+      // Use the real author the recommender now forwards. If the row
+      // doesn't have an author yet (clawhub backlog), fall back to empty
+      // string so the card just hides the byline.
+      author: m.author ? String(m.author) : "",
     }));
   } catch {
     return [];

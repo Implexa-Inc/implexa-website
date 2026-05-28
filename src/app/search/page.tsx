@@ -18,6 +18,7 @@ type ToolMatch = {
   fit_reason?: string;
   score?: number;
   install_hint?: string;
+  author?: string | null;
 };
 
 const BACKEND = process.env.IMPLEXA_API_URL ?? "https://core.implexa.ai";
@@ -85,15 +86,17 @@ async function fetchSearchResults(q: string): Promise<SkillCardData[]> {
     const parsed: { matches?: ToolMatch[] } = JSON.parse(raw);
     const matches = Array.isArray(parsed?.matches) ? parsed.matches : [];
 
-    // Map to SkillCard shape. Defaults for fields the recommender doesn't
-    // currently return (tag, author) until we wire those through the index.
+    // Map to SkillCard shape. The recommender now forwards `author` (since
+    // 2026-05-27); we use it directly and fall back to empty string for the
+    // ~70% of clawhub rows that don't have author yet (backfill chip
+    // handles the rest).
     return matches.map((m) => ({
       slug: String(m.slug ?? ""),
       source: String(m.source ?? ""),
       title: String(m.name ?? m.slug ?? ""),
       description: String(m.fit_reason ?? m.description ?? ""),
       tag: m.score ? `${(m.score * 100).toFixed(0)}% match` : "match",
-      author: String(m.source ?? ""),
+      author: m.author ? String(m.author) : "",
     }));
   } catch {
     return [];

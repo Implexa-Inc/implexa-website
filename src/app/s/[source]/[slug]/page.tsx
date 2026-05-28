@@ -292,13 +292,16 @@ export default async function SkillDetailPage(props: {
           >
             {source}
           </Badge>
+          {/* author byline. Linked to /u/<author> so each skill detail
+              page becomes an inbound anchor to its author page, building
+              a navigable graph instead of a flat list. */}
           {skill.author ? (
-            <Badge
-              variant="outline"
-              className="text-[10px] border-zinc-800 text-zinc-500"
+            <Link
+              href={`/u/${encodeURIComponent(skill.author)}`}
+              className="inline-flex items-center text-[10px] uppercase tracking-wider border border-zinc-800 text-zinc-400 hover:text-amber-300 hover:border-amber-500/40 rounded-full px-2.5 py-0.5 transition-colors"
             >
               by @{skill.author}
-            </Badge>
+            </Link>
           ) : null}
         </div>
 

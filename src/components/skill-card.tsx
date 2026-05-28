@@ -9,12 +9,22 @@ export function SkillCard({ skill }: { skill: SkillCardData }) {
   // entirely below 5 (don't shame). Returns null for the hide case.
   const badge = scoreBadgeStyle(skill.score);
 
+  // 2026-05-27: restructured to have TWO independent links inside the card:
+  //   - main body (header + title + description) → /s/<source>/<slug>
+  //   - author byline → /u/<author>
+  // The old version wrapped everything in one parent <Link>, which made the
+  // author byline navigate to the skill page instead of the author page. We
+  // can't nest <Link> (invalid HTML), so the card is a styled div + the
+  // children are independent Links. The "group" hover semantics are now
+  // owned by the inner body Link, not the card itself, which is fine
+  // because the byline shouldn't share that hover state anyway (different
+  // destination).
   return (
-    <Link
-      href={`/s/${skill.source}/${skill.slug}`}
-      className="group block focus:outline-none focus-visible:ring-2 focus-visible:ring-zinc-500 rounded-lg"
-    >
-      <Card className="h-full bg-zinc-950 border-zinc-900 hover:border-zinc-700 transition-colors">
+    <Card className="h-full bg-zinc-950 border-zinc-900 hover:border-zinc-700 transition-colors">
+      <Link
+        href={`/s/${skill.source}/${skill.slug}`}
+        className="group block focus:outline-none focus-visible:ring-2 focus-visible:ring-zinc-500 rounded-t-lg"
+      >
         <CardHeader className="pb-2">
           <div className="flex items-center justify-between gap-2 mb-1">
             <Badge
@@ -48,9 +58,18 @@ export function SkillCard({ skill }: { skill: SkillCardData }) {
           <p className="text-sm text-zinc-400 line-clamp-3">
             {skill.description}
           </p>
-          <p className="mt-3 text-xs text-zinc-500">by @{skill.author}</p>
         </CardContent>
-      </Card>
-    </Link>
+      </Link>
+      {skill.author ? (
+        <div className="px-6 pb-4 -mt-2">
+          <Link
+            href={`/u/${encodeURIComponent(skill.author)}`}
+            className="text-xs text-zinc-500 hover:text-amber-300 transition-colors"
+          >
+            by @{skill.author}
+          </Link>
+        </div>
+      ) : null}
+    </Card>
   );
 }
