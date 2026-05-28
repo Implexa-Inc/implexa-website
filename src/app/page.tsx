@@ -44,9 +44,10 @@ const TOKEN = process.env.IMPLEXA_PUBLIC_SEARCH_TOKEN ?? "";
 
 // Fetch N skills from the prod index via recommend_skills_for_context in
 // explicit-search mode. We use a seed query that's broad enough to return
-// diverse results across sources. Tagged with `revalidate: 600` so the
-// homepage data refreshes every 10 minutes at the edge without slamming
-// the backend on every visitor.
+// diverse results across sources. Tagged with `revalidate: 3600` (1 hr)
+// since launching — the homepage's trending/fresh rails don't need
+// finer granularity than that. Bumped from 600s 2026-05-28 after Vercel
+// free-tier warning.
 async function fetchHomeSkills(seed: string, count: number): Promise<SkillCardData[]> {
   if (!TOKEN) return [];
 
@@ -73,7 +74,7 @@ async function fetchHomeSkills(seed: string, count: number): Promise<SkillCardDa
         },
       }),
       signal: AbortSignal.timeout(10000),
-      next: { revalidate: 600 },
+      next: { revalidate: 3600 },
     });
 
     if (!upstream.ok) return [];

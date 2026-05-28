@@ -72,9 +72,13 @@ async function fetchAuthorSkills(handle: string): Promise<AuthorSkill[]> {
         },
       }),
       signal: AbortSignal.timeout(10_000),
-      // Cache author pages for 10 min — the SkillRank scores re-rank daily,
-      // so finer granularity buys nothing and burns egress.
-      next: { revalidate: 600 },
+      // Cache author pages for 24h. SkillRank re-ranks daily; author
+      // composition (which skills a person has authored) changes at most
+      // daily once the catalog stabilizes. Author pages are 11k+ surfaces
+      // and were the biggest single contributor to Vercel Fluid CPU burn
+      // when ISR was at 10 min. Bumped to 86400 (24h) 2026-05-28 after
+      // free-tier 50% warning.
+      next: { revalidate: 86400 },
     });
     if (!upstream.ok) return [];
     const text = await upstream.text();

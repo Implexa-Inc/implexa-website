@@ -74,7 +74,10 @@ async function fetchScoredSkills(
       }),
       signal: AbortSignal.timeout(10000),
       // Cache for 5 min at edge; scores are batched in not per-request.
-      next: { revalidate: 300 },
+      // Bumped 2026-05-28 from 300s → 3600s (5 min → 1 hr) after Vercel
+      // free-tier CPU warning. /scores re-ranks daily so an hour of
+      // staleness is invisible; cuts function invocations by 12x.
+      next: { revalidate: 3600 },
     });
     if (!upstream.ok) return [];
 

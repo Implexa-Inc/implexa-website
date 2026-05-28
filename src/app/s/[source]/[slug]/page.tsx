@@ -74,9 +74,12 @@ async function fetchAggregatedSkill(
         },
       }),
       signal: AbortSignal.timeout(10000),
-      // Cache at the edge for 5 min. Detail page content rarely changes; the
-      // crawler refreshes nightly. Revalidating per request would be wasteful.
-      next: { revalidate: 300 },
+      // Cache at the edge for 6 hours. Detail page content rarely changes
+      // (crawler refreshes nightly), and there are 40k+ such pages — at 5 min
+      // ISR they were the second-biggest Fluid CPU consumer after author
+      // pages. Bumped 2026-05-28 from 300s → 21600s after Vercel free-tier
+      // warning. Cuts function invocations on this route by 72x.
+      next: { revalidate: 21600 },
     });
 
     if (!upstream.ok) return null;
