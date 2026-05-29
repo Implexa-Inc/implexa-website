@@ -27,6 +27,12 @@ export function SiteFooter() {
             install
           </Link>
           <Link
+            href="/developers"
+            className="hover:text-white transition-colors"
+          >
+            developers
+          </Link>
+          <Link
             href="https://github.com/Implexa-Inc"
             target="_blank"
             rel="noopener noreferrer"

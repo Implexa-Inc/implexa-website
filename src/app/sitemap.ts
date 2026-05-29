@@ -78,6 +78,16 @@ function staticPages(now: Date): MetadataRoute.Sitemap {
       priority: 0.8,
     },
     {
+      // /developers — the builder-facing API + MCP surface (2026-05-28).
+      // Static-ish (revalidate 86400), low churn (catalog changes when
+      // we add a tool). Priority high enough to crawl on day 1 since
+      // every partner outreach links here.
+      url: absoluteUrl("/developers"),
+      lastModified: now,
+      changeFrequency: "monthly",
+      priority: 0.8,
+    },
+    {
       url: absoluteUrl("/contact"),
       lastModified: now,
       changeFrequency: "yearly",
