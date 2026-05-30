@@ -265,7 +265,76 @@ export function scoresPageSchema(
   };
 }
 
-// ── Graph assembler ────────────────────────────────────────────────────────
+// ── SoftwareSourceCode for future module pages ─────────────────────────────
+//
+// Forward-compat helper. Module pages (/m/[ecosystem]/[package]) wrap an
+// npm/pypi/cargo module behind an implexa skill manifest. SoftwareSourceCode
+// is the schema.org type Google + AI engines use to identify code packages
+// with semantic version + license + repo. Consumed by the module detail page
+// (/m/[ecosystem]/[...package]); kept here so future package surfaces reuse
+// one canonical builder instead of hand-rolling the node.
+
+export type SoftwareSourceCodeInput = {
+  name: string;
+  description?: string;
+  url?: string;             // canonical page on implexa.ai
+  version?: string;         // semver (omitted from output when absent)
+  programmingLanguage: string; // TypeScript, Python, Go, Rust, etc.
+  license?: string;         // SPDX id (MIT, Apache-2.0, etc.)
+  codeRepository?: string;  // github / gitlab / etc. URL
+  author?: { name: string; url?: string };
+  // Optional: the ecosystem package registry URL (npmjs.com, pypi.org).
+  // Schema.org has no first-class field for this; we map it onto sameAs.
+  registryUrl?: string;
+  // Optional date last modified (ISO 8601).
+  dateModified?: string;
+};
+
+/**
+ * SoftwareSourceCode schema for a module page. The Google Rich Results Test
+ * validates this against the SoftwareApplication ruleset — close enough for
+ * AEO grounding even though it's a distinct schema type.
+ *
+ * License is emitted as an SPDX-style URL string per schema.org guidance
+ * (https://schema.org/license), with a fallback to the raw identifier if the
+ * caller passes a non-SPDX string.
+ */
+export function softwareSourceCodeSchema(
+  input: SoftwareSourceCodeInput,
+): JsonLdNode {
+  const node: JsonLdNode = {
+    "@type": "SoftwareSourceCode",
+    name: input.name,
+    programmingLanguage: input.programmingLanguage,
+    publisher: { "@id": ORG_ID },
+    isPartOf: { "@id": WEBSITE_ID },
+  };
+  if (input.version) node.version = input.version;
+  if (input.description) node.description = input.description;
+  if (input.url) {
+    node.url = input.url;
+    node["@id"] = input.url;
+  }
+  if (input.license) {
+    // SPDX identifiers resolve at spdx.org/licenses/<id>. Pass the resolved
+    // URL when input matches a known shape; fall back to the raw string.
+    const SPDX = /^[A-Za-z0-9.+-]+$/;
+    node.license = SPDX.test(input.license)
+      ? `https://spdx.org/licenses/${input.license}`
+      : input.license;
+  }
+  if (input.codeRepository) node.codeRepository = input.codeRepository;
+  if (input.author) {
+    node.author = {
+      "@type": "Person",
+      name: input.author.name,
+      ...(input.author.url ? { url: input.author.url } : {}),
+    };
+  }
+  if (input.registryUrl) node.sameAs = [input.registryUrl];
+  if (input.dateModified) node.dateModified = input.dateModified;
+  return node;
+}
 
 // ── HowTo for skill detail pages ───────────────────────────────────────────
 //
@@ -352,77 +421,6 @@ export function howToSchema(input: HowToInput): JsonLdNode | null {
       name: s,
     }));
   }
-  return node;
-}
-
-// ── SoftwareSourceCode for future module pages ─────────────────────────────
-//
-// Forward-compat helper. Module pages (/m/[ecosystem]/[package]) wrap an
-// npm/pypi/cargo module behind an implexa skill manifest. SoftwareSourceCode
-// is the schema.org type Google + AI engines use to identify code packages
-// with semantic version + license + repo. Consumed by the module detail page
-// (/m/[ecosystem]/[...package]); kept here so future package surfaces reuse
-// one canonical builder instead of hand-rolling the node.
-
-export type SoftwareSourceCodeInput = {
-  name: string;
-  description?: string;
-  url?: string;             // canonical page on implexa.ai
-  version?: string;         // semver (omitted from output when absent)
-  programmingLanguage: string; // TypeScript, Python, Go, Rust, etc.
-  license?: string;         // SPDX id (MIT, Apache-2.0, etc.)
-  codeRepository?: string;  // github / gitlab / etc. URL
-  author?: { name: string; url?: string };
-  // Optional: the ecosystem package registry URL (npmjs.com, pypi.org).
-  // Schema.org has no first-class field for this; we map it onto sameAs.
-  registryUrl?: string;
-  // Optional date last modified (ISO 8601).
-  dateModified?: string;
-};
-
-/**
- * SoftwareSourceCode schema for a module page. The Google Rich Results Test
- * validates this against the SoftwareApplication ruleset — close enough for
- * AEO grounding even though it's a distinct schema type.
- *
- * License is emitted as an SPDX-style URL string per schema.org guidance
- * (https://schema.org/license), with a fallback to the raw identifier if the
- * caller passes a non-SPDX string.
- */
-export function softwareSourceCodeSchema(
-  input: SoftwareSourceCodeInput,
-): JsonLdNode {
-  const node: JsonLdNode = {
-    "@type": "SoftwareSourceCode",
-    name: input.name,
-    programmingLanguage: input.programmingLanguage,
-    publisher: { "@id": ORG_ID },
-    isPartOf: { "@id": WEBSITE_ID },
-  };
-  if (input.version) node.version = input.version;
-  if (input.description) node.description = input.description;
-  if (input.url) {
-    node.url = input.url;
-    node["@id"] = input.url;
-  }
-  if (input.license) {
-    // SPDX identifiers resolve at spdx.org/licenses/<id>. Pass the resolved
-    // URL when input matches a known shape; fall back to the raw string.
-    const SPDX = /^[A-Za-z0-9.+-]+$/;
-    node.license = SPDX.test(input.license)
-      ? `https://spdx.org/licenses/${input.license}`
-      : input.license;
-  }
-  if (input.codeRepository) node.codeRepository = input.codeRepository;
-  if (input.author) {
-    node.author = {
-      "@type": "Person",
-      name: input.author.name,
-      ...(input.author.url ? { url: input.author.url } : {}),
-    };
-  }
-  if (input.registryUrl) node.sameAs = [input.registryUrl];
-  if (input.dateModified) node.dateModified = input.dateModified;
   return node;
 }
 
