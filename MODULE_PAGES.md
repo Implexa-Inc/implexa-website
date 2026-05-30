@@ -45,43 +45,44 @@ carries the separate AEO foundation chip — see "relationship to AEO" below).
 - `declared` → green-600 (tier-2)
 - `unverified` → amber (tier-3)
 
-## visual-dev fixtures (REMOVE when backend lands)
+## visual-dev fixtures (REMOVED)
 
-local dev has no `IMPLEXA_PUBLIC_SEARCH_TOKEN`, so every backend MCP call 401s.
-to keep the surfaces reviewable end-to-end before `feat/module-verification`
-merges, three fixtures stand in. each is gated so production is never affected:
+the three visual-dev fixtures have been removed now that the backend chip
+(`feat/module-verification`) ships the real tools. both fetchers + the skill
+page now degrade to `null` / `[]` when `IMPLEXA_PUBLIC_SEARCH_TOKEN` is unset,
+so a tokenless local dev renders the 404 / no-rail fallback rather than fake
+data. to review against real data, set `IMPLEXA_PUBLIC_SEARCH_TOKEN` (and
+optionally `IMPLEXA_API_URL`) in a website `.env.local`.
 
-1. `VISUAL_DEV_FIXTURES` in `module-verification.ts` — hand-shaped
-   `verify_module` response for `npm/@stripe/stripe-node`, returned only when
-   the real tool returns nothing.
-2. paired-skills fallback in `fetchPairedSkills()` — two plausible callers for
-   the same module, same condition.
-3. `devSkillFixture()` in the skill page — a minimal skill body (+ a declared
-   `@stripe/stripe-node` module) for `implexa/stripe-best-practices` and
-   `implexa/stripe-projects`, **gated on `NODE_ENV !== "production"`** so a real
-   prod backend outage can never serve a fake skill. `withModulesFixture()`
-   attaches the module declaration to a real skill row when the backend hasn't
-   surfaced `modules:` yet.
+> **merge ordering:** this branch now hard-depends on the backend tools being
+> live on whatever `IMPLEXA_API_URL` resolves to in prod (`core.implexa.ai`).
+> merge + deploy `feat/module-verification` first (or together); otherwise
+> `/m/*` pages 404 and skill rails stay hidden until the backend is up.
 
-to verify against real data instead: set `IMPLEXA_PUBLIC_SEARCH_TOKEN` (and
-optionally `IMPLEXA_API_URL`) in a website `.env.local`, then drop all three
-fixtures once `verify_module`, `list_skills_for_module`, and the `modules`
-field on `get_aggregated_skill` are live.
+## backend contract (resolved)
 
-## open questions for the backend chip
+answers to the original open questions, against what `feat/module-verification`
+actually shipped:
 
-- **tool names / shapes** assumed here: `verify_module(ecosystem, package,
-  version?)` and `list_skills_for_module(ecosystem, package)`. confirm names +
-  response envelope match what `feat/module-verification` ships.
-- **paired skills source**: the website calls `list_skills_for_module`. the
-  task floated an alternative (JSONB containment query on `aggregated_skills`).
-  whichever the backend exposes, only `fetchPairedSkills()` needs to change.
-- **`modules` on `get_aggregated_skill`**: the rail expects the frontmatter
-  `modules:` array surfaced verbatim on the aggregated skill row. confirm the
-  field name and that `trust_tier` is one of `signed | declared | unverified`.
-- **editorial field**: editorial copy is read from `verification.editorial`
-  (pick_summary / why / caveats / curated_by). the plan calls it
-  `frontmatter.editorial_pick` — confirm where curated copy actually lives.
+- **tool names / shapes**: `verify_module({ package, ecosystem })` returns a
+  nested `{ ok, card: {...} }` envelope (NOT the flat shape this branch first
+  assumed). `fetchModuleVerification()` maps it via `mapBackendCard()`. the
+  backend has no `version` argument — `version_range` is a per-skill frontmatter
+  concept, left null on the standalone `/m` page.
+- **paired skills source**: backend ships `list_skills_for_module({ ecosystem,
+  package })` (a JSONB containment query under the hood) returning
+  `{ ok, count, rows: [{ source, slug, name, description, author,
+  display_score }] }`. matches `fetchPairedSkills()` as-is.
+- **`modules` on `get_aggregated_skill`**: backend lifts the frontmatter
+  `modules:` array to a top-level `modules` field on the response. `trust_tier`
+  enum confirmed `signed | declared | unverified`.
+- **editorial field**: NOT shipped by the backend in v1 — the `verify_module`
+  card carries no editorial copy, so `editorial` stays null and the page hides
+  the section. revisit if/when curated copy lands (likely a separate column or a
+  `frontmatter.editorial_pick` surfacing).
+- **fields the card omits** (page hides each when null): `source_url`,
+  `homepage`, `scorecard_url`. `programming_language` is derived client-side via
+  `ecosystemLanguage()`; `license_url` from a clean SPDX id only.
 
 ## relationship to AEO
 
@@ -92,8 +93,8 @@ field on `get_aggregated_skill` are live.
 - module files + the skill-page modules rail
 - of the shared `src/lib/jsonld.ts`, only `softwareSourceCodeSchema` (the module
   page's JSON-LD); `howToSchema` stays on `feat/aeo-foundation`
-- of the shared skill `page.tsx`, only the rail + module fixtures; the HowTo
-  schema block stays on `feat/aeo-foundation`
+- of the shared skill `page.tsx`, only the modules rail; the HowTo schema
+  block stays on `feat/aeo-foundation`
 
 ## verify locally
 

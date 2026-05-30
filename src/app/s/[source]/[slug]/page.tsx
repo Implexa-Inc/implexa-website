@@ -30,8 +30,8 @@ import { fetchRelatedSkills } from "@/lib/skill-catalog";
 type RouteParams = { source: string; slug: string };
 
 // Module entry as declared by SKILL.md frontmatter, surfaced verbatim by the
-// backend's get_aggregated_skill tool when the v1 module-verification chip
-// is merged. Until then the field is absent and the modules rail no-ops.
+// backend's get_aggregated_skill tool (lifted out of frontmatter). Absent on
+// legacy / procedure-only skills, where the modules rail no-ops.
 // Shape mirrors the verify_module output we render on /m/<ecosystem>/<pkg>.
 type SkillModuleDeclaration = {
   ecosystem: string;
@@ -72,7 +72,7 @@ async function fetchAggregatedSkill(
   source: string,
   slug: string,
 ): Promise<AggregatedSkill | null> {
-  if (!TOKEN) return devSkillFixture(source, slug);
+  if (!TOKEN) return null;
 
   try {
     const upstream = await fetch(`${BACKEND}/api/v2/mcp`, {
@@ -100,7 +100,7 @@ async function fetchAggregatedSkill(
       next: { revalidate: 21600 },
     });
 
-    if (!upstream.ok) return devSkillFixture(source, slug);
+    if (!upstream.ok) return null;
 
     const text = await upstream.text();
     const dataLine = text.split("\n").find((ln) => ln.startsWith("data: "));
@@ -109,79 +109,13 @@ async function fetchAggregatedSkill(
       JSON.parse(jsonStr);
     const raw = body?.result?.content?.[0]?.text ?? "{}";
     const parsed: AggregatedSkill = JSON.parse(raw);
-    if (!parsed?.ok) return devSkillFixture(source, slug);
-    return withModulesFixture(source, slug, parsed);
+    if (!parsed?.ok) return null;
+    // modules[] arrives directly off get_aggregated_skill (the backend lifts
+    // it out of frontmatter); the rail reads skill.modules verbatim.
+    return parsed;
   } catch {
-    return devSkillFixture(source, slug);
+    return null;
   }
-}
-
-// Visual-dev fixture for the skill BODY. Local dev has no
-// IMPLEXA_PUBLIC_SEARCH_TOKEN, so get_aggregated_skill 401s and the page would
-// 404 — making the modules rail impossible to review locally. This returns a
-// minimal believable skill (with modules already attached) for the two stripe
-// slugs, but ONLY outside production so a real prod backend outage can never
-// serve a fake skill. Drop this alongside withModulesFixture once the backend
-// chip lands and local dev can point at a real token.
-function devSkillFixture(source: string, slug: string): AggregatedSkill | null {
-  if (process.env.NODE_ENV === "production") return null;
-  if (source !== "implexa") return null;
-  const bodies: Record<string, AggregatedSkill> = {
-    "stripe-best-practices": {
-      ok: true,
-      source: "implexa",
-      slug: "stripe-best-practices",
-      name: "stripe best practices",
-      description:
-        "guardrails and idempotent patterns for any stripe integration. covers webhooks, retries, and test-mode hygiene.",
-      content:
-        "## procedure\n\n1. scope api keys to test mode in non-prod environments.\n2. verify every webhook signature before trusting its payload.\n3. attach an idempotency key to all write requests so retries are safe.\n4. reconcile against the dashboard before shipping to live mode.\n",
-      author: "implexa",
-      install_count: 0,
-      star_count: 0,
-    },
-    "stripe-projects": {
-      ok: true,
-      source: "implexa",
-      slug: "stripe-projects",
-      name: "stripe projects",
-      description:
-        "scaffolds a fresh stripe-backed project with sensible defaults — env vars, webhook routing, test-mode keys.",
-      content:
-        "## procedure\n\n1. provision test-mode keys and store them in env vars.\n2. wire a webhook route and register the events you handle.\n3. add a checkout flow against the test catalog.\n4. promote to live mode once reconciliation passes.\n",
-      author: "implexa",
-      install_count: 0,
-      star_count: 0,
-    },
-  };
-  const body = bodies[slug];
-  return body ? withModulesFixture(source, slug, body) : null;
-}
-
-// Visual-dev fixture: until the backend's frontmatter parser surfaces the
-// `modules:` array on get_aggregated_skill, hard-pair two existing implexa
-// skills to @stripe/stripe-node so the modules rail is visible end-to-end
-// for review. Drop this once the backend chip lands.
-function withModulesFixture(
-  source: string,
-  slug: string,
-  skill: AggregatedSkill,
-): AggregatedSkill {
-  if (Array.isArray(skill.modules) && skill.modules.length > 0) return skill;
-  const stripeNode: SkillModuleDeclaration = {
-    ecosystem: "npm",
-    package: "@stripe/stripe-node",
-    version_range: "^15.0.0",
-    license_spdx: "MIT",
-    trust_tier: "signed",
-  };
-  if (
-    source === "implexa" &&
-    (slug === "stripe-best-practices" || slug === "stripe-projects")
-  ) {
-    return { ...skill, modules: [stripeNode] };
-  }
-  return skill;
 }
 
 export async function generateMetadata(props: {
