@@ -265,6 +265,94 @@ export function scoresPageSchema(
   };
 }
 
+// ── HowTo for skill detail pages ───────────────────────────────────────────
+//
+// AI-engine angle: HowTo is the schema.org type Perplexity / ChatGPT Search /
+// Google AI Overviews preferentially surface for procedural queries (how do I
+// X, what's the workflow for Y). SKILL.md procedures map directly to HowTo:
+// each step gets a name + a one-line text body. The "tool" array lets us tag
+// the MCP tools each step invokes so an AI engine reasoning about "which MCP
+// tools handle a sales-call brief" can pull the right skill straight from
+// structured data without parsing prose.
+
+export type HowToStepInput = {
+  name: string;
+  description?: string;
+};
+
+export type HowToToolInput = {
+  name: string;
+  url?: string;
+};
+
+export type HowToInput = {
+  name: string;
+  description?: string;
+  url?: string;
+  totalTime?: string;       // ISO 8601 duration (PT5M, PT1H30M, etc.)
+  steps: HowToStepInput[];
+  tools?: HowToToolInput[]; // MCP tools, runtimes, etc.
+  supplies?: string[];      // wrapped modules, deps — for future module pages
+};
+
+/**
+ * HowTo schema for a procedural SKILL.md. Pair with SoftwareApplication +
+ * BreadcrumbList in jsonLdGraph(). Validates against the Rich Results Test
+ * when name + ≥2 steps are present, which is what we require below.
+ *
+ * Steps with no name or only whitespace are dropped; we never emit an
+ * empty HowToStep because that fails schema.org validation.
+ */
+export function howToSchema(input: HowToInput): JsonLdNode | null {
+  const cleanSteps = input.steps
+    .map((s) => ({ ...s, name: s.name.trim() }))
+    .filter((s) => s.name.length > 0)
+    .map((s, i) => {
+      const node: JsonLdNode = {
+        "@type": "HowToStep",
+        position: i + 1,
+        name: s.name,
+        // schema.org requires text (machine-readable) — when no separate
+        // description is supplied, the step name doubles as the text.
+        text: s.description?.trim() || s.name,
+      };
+      if (s.description && s.description.trim() !== s.name) {
+        node.itemListElement = [
+          {
+            "@type": "HowToDirection",
+            text: s.description.trim(),
+          },
+        ];
+      }
+      return node;
+    });
+
+  if (cleanSteps.length < 2) return null;
+
+  const node: JsonLdNode = {
+    "@type": "HowTo",
+    name: input.name,
+    step: cleanSteps,
+  };
+  if (input.description) node.description = input.description;
+  if (input.url) node.url = input.url;
+  if (input.totalTime) node.totalTime = input.totalTime;
+  if (input.tools && input.tools.length > 0) {
+    node.tool = input.tools.map((t) => {
+      const tn: JsonLdNode = { "@type": "HowToTool", name: t.name };
+      if (t.url) tn.url = t.url;
+      return tn;
+    });
+  }
+  if (input.supplies && input.supplies.length > 0) {
+    node.supply = input.supplies.map((s) => ({
+      "@type": "HowToSupply",
+      name: s,
+    }));
+  }
+  return node;
+}
+
 // ── Graph assembler ────────────────────────────────────────────────────────
 
 /**

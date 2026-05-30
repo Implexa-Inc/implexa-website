@@ -1,0 +1,3460 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "implexa MCP tool catalog",
+    "description": "machine-readable catalog of the implexa MCP server. implexa is google + wikipedia for SKILL.md, cross-vendor. these tools run over a single streamable-http MCP endpoint, not as separate REST routes. each path below documents one MCP tool: its name (operationId), what it does (description), and its input shape (requestBody). call them through an MCP client (claude code, codex, cursor, gemini cli) or the claude.ai connector, not as plain HTTP POSTs.",
+    "version": "0.1.0",
+    "contact": {
+      "name": "implexa",
+      "email": "founder@implexa.ai",
+      "url": "https://implexa.ai/developers"
+    },
+    "license": {
+      "name": "proprietary"
+    }
+  },
+  "servers": [
+    {
+      "url": "https://core.implexa.ai/api/v2/mcp",
+      "description": "implexa MCP server (streamable-http transport)"
+    }
+  ],
+  "externalDocs": {
+    "description": "implexa developers + MCP integration",
+    "url": "https://implexa.ai/developers"
+  },
+  "tags": [
+    {
+      "name": "mcp-tools",
+      "description": "tools exposed over the implexa MCP server. invoke via an MCP client, not raw HTTP."
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "rvk_live_*",
+        "description": "bearer token. format: Authorization: Bearer rvk_live_.... get a key at app.implexa.ai. a subset of read-only tools (recommend_skills_for_context, get_aggregated_skill, list_aggregated_skills, get_related_skills, get_skill_score, get_skill_content, count_skills) work without auth."
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "paths": {
+    "/start_demonstration": {
+      "post": {
+        "operationId": "start_demonstration",
+        "summary": "Open a \"watch me do this once\" recording session.",
+        "description": "Open a \"watch me do this once\" recording session. From this moment until end_demonstration, every Implexa tool call is recorded with rich context. REQUIRED: pass initialIntent (one sentence of what the user is about to do). Returns demoId for the next steps. PATTERN — \"fork + re-record\" via demo: if the user just forked a skill and wants to re-record into it (instead of typing edits), start a demo here normally, do the work, end_demonstration, then call interview_for_skill(step=\"finalize\", replacingSkillId=\"<fork-id>\"). The captured content will REPLACE the fork's content rather than creating a new orphan skill. Free.",
+        "tags": [
+          "mcp-tools"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "initialIntent": {
+                    "type": "string",
+                    "description": "REQUIRED in practice — one-sentence statement of what the user is about to demonstrate. Without it the resulting skill has no purpose anchor."
+                  },
+                  "proposedName": {
+                    "type": "string",
+                    "description": "Optional skill name suggestion. Confirmed/refined at finalize."
+                  },
+                  "sessionId": {
+                    "type": "string",
+                    "description": "Current session ID (auto-injected by host typically)."
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Tool result envelope. Most tools return { ok: boolean, ... }; shape varies per tool.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/end_demonstration": {
+      "post": {
+        "operationId": "end_demonstration",
+        "summary": "Close the active \"watch me do this once\" recording session.",
+        "description": "Close the active \"watch me do this once\" recording session. Moves the demonstration into the interview phase. Pass demoId for a specific session, or omit to end the user's most recent active recording. Free.",
+        "tags": [
+          "mcp-tools"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "demoId": {
+                    "type": "string",
+                    "description": "DemoId to close. Omit to close the user's most recent active recording."
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Tool result envelope. Most tools return { ok: boolean, ... }; shape varies per tool.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/record_demo_note": {
+      "post": {
+        "operationId": "record_demo_note",
+        "summary": "Log a non-Implexa action mid-demo so the resulting skill includes it.",
+        "description": "Log a non-Implexa action mid-demo so the resulting skill includes it. WHEN: any time during an active \"watch me once\" recording, you (the LLM) used a tool NOT prefixed mcp__ (WebSearch, Read, Bash, Write, browser MCPs, computer-use, any file I/O) OR the user pasted data OR you made a non-obvious decision. Silently no-ops outside recording. Free.",
+        "tags": [
+          "mcp-tools"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "toolName": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 64,
+                    "description": "Short identifier — 'web_search', 'file_read', 'manual_paste', 'reasoning_decision', etc."
+                  },
+                  "noteText": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 2048,
+                    "description": "One-sentence summary of the action."
+                  },
+                  "contextHint": {
+                    "type": "string",
+                    "maxLength": 256,
+                    "description": "Optional URL, filename, or partial query."
+                  }
+                },
+                "required": [
+                  "toolName",
+                  "noteText"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Tool result envelope. Most tools return { ok: boolean, ... }; shape varies per tool.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/record_demo_freetext": {
+      "post": {
+        "operationId": "record_demo_freetext",
+        "summary": "Save the user's \"anything else?\" free-text capture.",
+        "description": "Save the user's \"anything else?\" free-text capture. Call AFTER end_demonstration and BEFORE interview_for_skill — only when the user actually mentioned out-of-Claude activity. The skill author uses this alongside the tool trace and interview answers. Free.",
+        "tags": [
+          "mcp-tools"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "demoId": {
+                    "type": "string",
+                    "description": "The demoId returned by start_demonstration."
+                  },
+                  "text": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 8192,
+                    "description": "Free-form text — actions taken outside Claude (manual analysis, decisions in your head, things looked at). One paragraph is plenty."
+                  }
+                },
+                "required": [
+                  "demoId",
+                  "text"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Tool result envelope. Most tools return { ok: boolean, ... }; shape varies per tool.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/interview_for_skill": {
+      "post": {
+        "operationId": "interview_for_skill",
+        "summary": "Structured Haiku-powered interview that turns a demonstration into a 6-component skill (intent + inputs + procedure + tools + output contrac",
+        "description": "Structured Haiku-powered interview that turns a demonstration into a 6-component skill (intent + inputs + procedure + tools + output contract + outcome signal). Multi-step: step=\"generate\" → 2-4 questions; step=\"answer\" → record one user answer per call; step=\"finalize\" → run skill author with the trace + answers, persist the skill. For step=answer pass {question, answer}. For step=finalize optionally pass {finalName, finalIntent, scope, activate}. Idempotent: re-finalizing a captured demo just re-applies activate. Free.",
+        "tags": [
+          "mcp-tools"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "demoId": {
+                    "type": "string",
+                    "description": "DemoId from start_demonstration."
+                  },
+                  "step": {
+                    "type": "string",
+                    "enum": [
+                      "generate",
+                      "answer",
+                      "finalize"
+                    ],
+                    "description": "Which interview step to execute."
+                  },
+                  "question": {
+                    "type": "string",
+                    "description": "Verbatim question text — required for step='answer'."
+                  },
+                  "answer": {
+                    "type": "string",
+                    "description": "User's reply — required for step='answer'."
+                  },
+                  "finalName": {
+                    "type": "string",
+                    "description": "Confirmed skill name — used at step='finalize'."
+                  },
+                  "finalIntent": {
+                    "type": "string",
+                    "description": "Optionally refined intent — defaults to initialIntent."
+                  },
+                  "scope": {
+                    "type": "string",
+                    "enum": [
+                      "org",
+                      "private"
+                    ],
+                    "description": "Skill scope — default 'org'."
+                  },
+                  "activate": {
+                    "type": "boolean",
+                    "description": "If true, activate immediately. Default false (saves as draft)."
+                  },
+                  "replacingSkillId": {
+                    "type": "string",
+                    "description": "If set at step='finalize', the captured content REPLACES this existing skill's content (used for the 'fork + re-record' flow). Otherwise a new skill is created. Pass the fork's skill ID here when the user said 'fork this and customize via new recording'. The target skill is updated (version bumps, history records, auto-activates if it was a draft) and the demo is linked to it."
+                  },
+                  "replacingSkillSlug": {
+                    "type": "string",
+                    "description": "Alternative to replacingSkillId — pass the slug instead."
+                  }
+                },
+                "required": [
+                  "demoId",
+                  "step"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Tool result envelope. Most tools return { ok: boolean, ... }; shape varies per tool.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/list_org_skills": {
+      "post": {
+        "operationId": "list_org_skills",
+        "summary": "List skills your org has captured (plus system-scope base Playbooks visible to every install).",
+        "description": "List skills your org has captured (plus system-scope base Playbooks visible to every install). Each skill is a reusable workflow. CRITICAL: call this BEFORE doing complex multi-step work — your org may have already encoded the pattern as a skill. Returns name, description, trigger phrases, usage count, attributed outcomes, status (active/draft), scope (private/org/system/universal), and forked-from lineage. Pass `includeUniversal: true` to ALSO search the public/Trending Globally library when the user's org has no match — use this as a fallback in fuzzy-match flows like /implexa:run before declaring \"no skill found.\" Draft skills are visible only to their creator + org admins. Free.",
+        "tags": [
+          "mcp-tools"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "query": {
+                    "type": "string",
+                    "description": "Optional substring search across name, description, slug, triggers."
+                  },
+                  "tags": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "Filter by tags (any-match)."
+                  },
+                  "limit": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 100,
+                    "description": "Max skills (1-100, default 25)."
+                  },
+                  "includePrivate": {
+                    "type": "boolean",
+                    "description": "DEPRECATED — currently a no-op. The caller's own private skills are ALWAYS included in results (you can only see your own privates anyway, by RLS). Reserved for future cross-user private discovery."
+                  },
+                  "createdByMe": {
+                    "type": "boolean",
+                    "description": "If true, return ONLY skills the caller authored (their personal library). Powers /implexa:my-skills. Excludes base Playbooks (scope=system) — those aren't authored by the caller. Forks count as authored if the caller is the forker. Default false."
+                  },
+                  "includeUniversal": {
+                    "type": "boolean",
+                    "description": "If true, ALSO include universal-scope (publicly shared) skills from any org in the results. Use this as a fallback when the user's library has no match for their query — instead of failing, offer matching public skills they might want to fork or invoke directly. Powers the 'try the public library too' branch of /implexa:run. Default false (keeps standard library views uncluttered)."
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Tool result envelope. Most tools return { ok: boolean, ... }; shape varies per tool.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/apply_org_skill": {
+      "post": {
+        "operationId": "apply_org_skill",
+        "summary": "Invoke an org skill by skillId or skillSlug.",
+        "description": "Invoke an org skill by skillId or skillSlug. Returns the SKILL.md content for you to follow as instructions. Logs the invocation with attribution keys (accountId, opportunityId, candidateId, etc.) so future outcome events from CRM/ATS/calendar can attribute back. Pass any entity identifiers you have in attributionKeys — the more you pass, the better the attribution. Free.",
+        "tags": [
+          "mcp-tools"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "skillId": {
+                    "type": "string",
+                    "description": "Mongo-style id of the skill. Either skillId or skillSlug is required."
+                  },
+                  "skillSlug": {
+                    "type": "string",
+                    "description": "Slug of the skill. Either skillId or skillSlug is required."
+                  },
+                  "invocationArgs": {
+                    "type": "object",
+                    "additionalProperties": {},
+                    "description": "Arguments to forward to the skill — entity IDs, parameters, etc."
+                  },
+                  "attributionKeys": {
+                    "type": "object",
+                    "additionalProperties": {},
+                    "description": "Entity IDs (accountId, opportunityId, candidateId, threadId) for outcome attribution."
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Tool result envelope. Most tools return { ok: boolean, ... }; shape varies per tool.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/fork_org_skill": {
+      "post": {
+        "operationId": "fork_org_skill",
+        "summary": "Clone any skill — system Playbook, your own org's skill, or another org's skill via a share token — into a new draft skill in the caller's o",
+        "description": "Clone any skill — system Playbook, your own org's skill, or another org's skill via a share token — into a new draft skill in the caller's org. Lineage is recorded for the dashboard. Pass sourceSkillId OR sourceSkillSlug (with optional sourceOrgId for cross-org via share token; defaults to current org or system for Playbooks). Optional newName, scope (default \"private\"), personalizations. Free.",
+        "tags": [
+          "mcp-tools"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "sourceSkillId": {
+                    "type": "string",
+                    "description": "Source skill id. Either sourceSkillId or sourceSkillSlug required."
+                  },
+                  "sourceSkillSlug": {
+                    "type": "string",
+                    "description": "Source skill slug."
+                  },
+                  "sourceOrgId": {
+                    "type": "string",
+                    "description": "Source org id (only when forking cross-org via share token; defaults to caller's org or system)."
+                  },
+                  "newName": {
+                    "type": "string",
+                    "description": "New name for the forked copy. Defaults to source name."
+                  },
+                  "scope": {
+                    "type": "string",
+                    "enum": [
+                      "org",
+                      "private"
+                    ],
+                    "description": "Scope for the fork — 'private' (default) or 'org'."
+                  },
+                  "personalizations": {
+                    "type": "string",
+                    "description": "Optional notes about what the user plans to change."
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Tool result envelope. Most tools return { ok: boolean, ... }; shape varies per tool.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/update_org_skill": {
+      "post": {
+        "operationId": "update_org_skill",
+        "summary": "TEXT-EDIT an existing skill — modify SKILL.md content, name, description, trigger phrases, or tags.",
+        "description": "TEXT-EDIT an existing skill — modify SKILL.md content, name, description, trigger phrases, or tags. Bumps version + records history. Use ONLY for non-behavioral changes: typos, renames, copy polish, restructuring existing content, refining notes-for-the-model, adding error handling rows. Cannot edit system Playbooks or other orgs' universal skills (fork first). QUOTA: first edit to a fork (v1 → v2) counts as 1 capture against Free-plan 5/month cap. CRITICAL — if the user wants to ADD A NEW PROCEDURAL STEP, ADD A NEW TOOL CALL, ADD A NEW DECISION BRANCH, or CHANGE WORKFLOW BEHAVIOR, DO NOT use this tool. Instead, suggest the re-record path: \"For adding new behavior, /implexa:record-skill is the right path — you demonstrate the new step and we capture the real tool sequence. Text-editing would just have me imagine what the step should do, which is risky.\" Then route through /implexa:record-skill which has a Phase 0 \"update existing\" branch that passes replacingSkillId to interview_for_skill at finalize. Use update_org_skill ONLY when the user is doing text-level surgery on an already-correct skill, never when they're trying to teach Implexa NEW behavior.",
+        "tags": [
+          "mcp-tools"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "skillId": {
+                    "type": "string",
+                    "description": "Skill id. Either skillId or skillSlug required."
+                  },
+                  "skillSlug": {
+                    "type": "string",
+                    "description": "Skill slug."
+                  },
+                  "content": {
+                    "type": "string",
+                    "description": "Full new SKILL.md content (markdown). When provided, replaces the existing content entirely. To make small tweaks, read the existing content first via list_org_skills or apply_org_skill, then pass the modified version."
+                  },
+                  "name": {
+                    "type": "string",
+                    "description": "Updated display name."
+                  },
+                  "description": {
+                    "type": "string",
+                    "description": "Updated short description (1-2 sentences for the skill row in /skills)."
+                  },
+                  "triggerPhrases": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "Updated set of natural-language phrases that should trigger this skill."
+                  },
+                  "tags": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "Updated tag set (used for filter pills on the dashboard)."
+                  },
+                  "changeNote": {
+                    "type": "string",
+                    "description": "Brief note explaining what changed — gets stored in version history. e.g. 'Added Twitter signal check', 'Refined Step 2 to handle empty results'."
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Tool result envelope. Most tools return { ok: boolean, ... }; shape varies per tool.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/activate_skill": {
+      "post": {
+        "operationId": "activate_skill",
+        "summary": "Activate a skill so it can be invoked.",
+        "description": "Activate a skill so it can be invoked. Handles two transitions: (1) draft → active (the \"publish my draft\" case) and (2) archived → active (the \"restore this skill\" case — when user says \"restore [skill]\", \"bring back [skill]\", \"unarchive\", \"I want this in my library again\"). Does NOT change scope (use create_share_link for that). Idempotent on already-active skills (no-op + confirms state). System Playbooks are always active — no-op. Free.",
+        "tags": [
+          "mcp-tools"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "skillId": {
+                    "type": "string",
+                    "description": "Skill id. Either skillId or skillSlug required."
+                  },
+                  "skillSlug": {
+                    "type": "string",
+                    "description": "Skill slug."
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Tool result envelope. Most tools return { ok: boolean, ... }; shape varies per tool.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/archive_skill": {
+      "post": {
+        "operationId": "archive_skill",
+        "summary": "Archive a skill — hides it from listings (list_org_skills + dashboard /skills) but preserves the data.",
+        "description": "Archive a skill — hides it from listings (list_org_skills + dashboard /skills) but preserves the data. Reversible via activate_skill or update_org_skill. Use when the user says \"archive [skill]\", \"hide this skill\", \"remove from my library but keep it\", \"I don't use this anymore\". For PERMANENT deletion that can't be undone, use delete_skill instead. Only the skill's creator (or any org admin for org-scoped skills) can archive. Cannot archive system Playbooks or other orgs' public skills. Free.",
+        "tags": [
+          "mcp-tools"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "skillId": {
+                    "type": "string",
+                    "description": "Skill id. Either skillId or skillSlug required."
+                  },
+                  "skillSlug": {
+                    "type": "string",
+                    "description": "Skill slug."
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Tool result envelope. Most tools return { ok: boolean, ... }; shape varies per tool.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/delete_skill": {
+      "post": {
+        "operationId": "delete_skill",
+        "summary": "PERMANENTLY DELETE a skill — removes the skill row, version history, share tokens, and any attribution data.",
+        "description": "PERMANENTLY DELETE a skill — removes the skill row, version history, share tokens, and any attribution data. IRREVERSIBLE. Only the skill's creator can call this (not org admins). For \"remove from my library but keep the data\" use archive_skill instead (reversible). Two-step confirmation: first call returns a confirmation prompt the user must explicitly confirm; second call with confirm=true executes. If FK constraints block the hard delete (rare — happens for skills with heavy invocation history), the tool suggests archive as a fallback.",
+        "tags": [
+          "mcp-tools"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "skillId": {
+                    "type": "string",
+                    "description": "Skill id. Either skillId or skillSlug required."
+                  },
+                  "skillSlug": {
+                    "type": "string",
+                    "description": "Skill slug."
+                  },
+                  "confirm": {
+                    "type": "boolean",
+                    "description": "Set true to confirm the user actually wants permanent deletion. Without this, the tool returns a confirmation prompt instead of deleting."
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Tool result envelope. Most tools return { ok: boolean, ... }; shape varies per tool.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/capture_workflow_as_skill": {
+      "post": {
+        "operationId": "capture_workflow_as_skill",
+        "summary": "Save the current Claude workflow as a reusable, structured skill — without going through the demonstration interview flow.",
+        "description": "Save the current Claude workflow as a reusable, structured skill — without going through the demonstration interview flow. Use when the user says \"save this\", \"save what we just did\", \"remember this for next time\". REQUIRED: `intent` (one-sentence statement of what the user was doing). Optionally pass toolsUsed/traceShape/traceSummary/exampleArgs/triggerPhrases to give Haiku more context. Stored as draft by default — caller activates separately. PII is scrubbed. Free.",
+        "tags": [
+          "mcp-tools"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "intent": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "One-sentence statement of what the user was trying to accomplish. REQUIRED."
+                  },
+                  "name": {
+                    "type": "string",
+                    "description": "Skill name. Defaults to slug-friendly from intent."
+                  },
+                  "toolsUsed": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "Distinct tool names from the conversation."
+                  },
+                  "traceShape": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "Ordered tool sequence."
+                  },
+                  "traceSummary": {
+                    "type": "string",
+                    "description": "One-paragraph narrative of what happened."
+                  },
+                  "exampleArgs": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "Example arg values for context."
+                  },
+                  "triggerPhrases": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "Phrases users might type to invoke this skill."
+                  },
+                  "scope": {
+                    "type": "string",
+                    "enum": [
+                      "org",
+                      "private"
+                    ],
+                    "description": "Scope. Default 'private'."
+                  },
+                  "activate": {
+                    "type": "boolean",
+                    "description": "Activate immediately. Default false (draft)."
+                  }
+                },
+                "required": [
+                  "intent"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Tool result envelope. Most tools return { ok: boolean, ... }; shape varies per tool.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/attribute_skill_outcome": {
+      "post": {
+        "operationId": "attribute_skill_outcome",
+        "summary": "Two modes.",
+        "description": "Two modes. mode=\"roi\" (default) returns the per-skill outcome rollup — usage, attributed outcomes, attributed dollar value. Use when the user asks \"which skills are working\" or \"show skill ROI\". mode=\"write\" records a new outcome event (last-touch attribution within 30 days). Production webhooks call this directly. Free.",
+        "tags": [
+          "mcp-tools"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "mode": {
+                    "type": "string",
+                    "enum": [
+                      "roi",
+                      "write"
+                    ],
+                    "description": "'roi' (default) returns the per-skill ROI rollup. 'write' records a new outcome event."
+                  },
+                  "source": {
+                    "type": "string",
+                    "description": "Required for mode='write' — 'salesforce' | 'hubspot' | 'bullhorn' | 'calendar' | 'manual' | ..."
+                  },
+                  "eventType": {
+                    "type": "string",
+                    "description": "'opportunity_closed_won' | 'meeting_booked' | 'placement_created' | 'reply_received' | ..."
+                  },
+                  "entityType": {
+                    "type": "string",
+                    "description": "'opportunity' | 'meeting' | 'placement' | 'thread' | ..."
+                  },
+                  "entityId": {
+                    "type": "string",
+                    "description": "External-system primary key."
+                  },
+                  "eventOccurredAt": {
+                    "type": "string",
+                    "description": "ISO timestamp of when the outcome happened."
+                  },
+                  "attributedValueUsd": {
+                    "type": "number",
+                    "description": "Optional revenue/value if applicable."
+                  },
+                  "attributionHints": {
+                    "type": "object",
+                    "additionalProperties": {},
+                    "description": "{ accountId, opportunityId, ... } — joined against recent skill_invocations.attribution_keys to attribute."
+                  },
+                  "rawEvent": {
+                    "type": "object",
+                    "additionalProperties": {},
+                    "description": "Optional raw event payload for audit."
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Tool result envelope. Most tools return { ok: boolean, ... }; shape varies per tool.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/create_share_link": {
+      "post": {
+        "operationId": "create_share_link",
+        "summary": "Generate a share URL for any of your skills.",
+        "description": "Generate a share URL for any of your skills. Two modes: shareMode=\"team\" (gated to creator's email domain — only @yourdomain.com can install, perfect for sending to teammates) or shareMode=\"public\" (anyone with the link can install — perfect for LinkedIn / Twitter / Slack distribution; PII has been removed). Recipients preview at implexa.ai/s/<token> WITHOUT signing in, install in 1 click after login. Personal-email domains (gmail/outlook/yahoo) cannot create team shares — catch the error and offer public mode instead. SIDE EFFECTS (important for relaying to the user): (1) any draft skill being shared is auto-activated (draft → active) since sharing is the commitment signal, (2) shareMode=\"public\" also promotes the skill's scope from 'org'/'private' to 'universal' — making it discoverable in the Trending Globally section of every user's dashboard, (3) shareMode=\"public\" ALSO publishes the skill into the public marketing-site catalog (aggregated_skills with source='community') so it appears on implexa.ai/scores (the SkillRank leaderboard), in /search results, and on the author's /u/<handle> page within ~30 min after tier-1 scoring runs — every public share grows the catalog and adds a new SEO surface tied to the author. Catalog slug is auto-prefixed with the author's handle to avoid collisions. So a single call with shareMode=\"public\" can turn a private draft into a publicly-discoverable, leaderboard-eligible, catalog-indexed skill in one shot. Revoking a public share also soft-deletes the catalog row (is_active=false). Tell the user explicitly when these side effects fire. Free.",
+        "tags": [
+          "mcp-tools"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "skillId": {
+                    "type": "string",
+                    "description": "Skill id. Either skillId or skillSlug required."
+                  },
+                  "skillSlug": {
+                    "type": "string",
+                    "description": "Skill slug."
+                  },
+                  "shareMode": {
+                    "type": "string",
+                    "enum": [
+                      "team",
+                      "public"
+                    ],
+                    "description": "\"team\" (gated to your email domain) or \"public\" (anyone can install; PII removed). Default \"public\". Personal-email domains cannot create team shares."
+                  },
+                  "expiresInDays": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 365,
+                    "description": "Optional expiry. Default: never."
+                  },
+                  "shareMessage": {
+                    "type": "string",
+                    "description": "Optional 1-2 sentence message in the preview."
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Tool result envelope. Most tools return { ok: boolean, ... }; shape varies per tool.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/orchestrate_skills": {
+      "post": {
+        "operationId": "orchestrate_skills",
+        "summary": "Chain multiple existing skills into one user-facing run.",
+        "description": "Chain multiple existing skills into one user-facing run. Called by /implexa:morning and future /implexa:* slash commands. Input: command (string, telemetry label) + chain (ordered array of skill slugs, 1-10). Resolves each slug via the same path as activate_skill, logs skill_invocations + run karma per step, captures per-step status, and writes an orchestrations row. Returns each step's SKILL.md content for the agent to execute in order. Terminal status: completed (all resolved), partial (some failed to resolve), failed (none resolved). DOES NOT execute the skill bodies itself — the agent reads each step's content and executes it like any other skill invocation. Free.",
+        "tags": [
+          "mcp-tools"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "command": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "The slash command that triggered this orchestration (e.g. 'morning', 'end-of-day'). Free-form text for telemetry; no validation against a fixed list."
+                  },
+                  "chain": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "minItems": 1,
+                    "maxItems": 10,
+                    "description": "Ordered array of skill slugs to invoke. Each slug is resolved via the same path as activate_skill / apply_org_skill (own-org + system + universal + active installs). 1-10 slugs. Order is preserved."
+                  },
+                  "context": {
+                    "type": "object",
+                    "additionalProperties": {},
+                    "description": "Free-form context passed to the chain (date range, user preferences, etc.). Stored in orchestrations.metadata; not interpreted by the tool."
+                  }
+                },
+                "required": [
+                  "command",
+                  "chain"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Tool result envelope. Most tools return { ok: boolean, ... }; shape varies per tool.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/recommend_skills": {
+      "post": {
+        "operationId": "recommend_skills",
+        "summary": "Suggest follow-up skills for the user (\"what should I run next?\").",
+        "description": "Suggest follow-up skills for the user (\"what should I run next?\"). v0 of the Skill Graph recommender. Two modes: context='for_user' uses the user's recent runs to seed co-occurrence; context='for_skill' uses a single focus skill slug. Both fall back to org-popularity for sparse-data orgs. Returns up to 20 recommendations as { skillId, slug, name, score, reason } sorted by score descending. Free, read-only. Use after a skill finishes to surface a discovery rail, or on a skill detail surface to suggest siblings.",
+        "tags": [
+          "mcp-tools"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "context": {
+                    "type": "string",
+                    "enum": [
+                      "for_user",
+                      "for_skill"
+                    ],
+                    "description": "Recommendation mode. 'for_user' suggests skills based on the calling user's recent runs (or the org's popular skills if the user is new). 'for_skill' suggests skills that co-occur with a specific focus skill — pass the slug in skillSlug."
+                  },
+                  "skillSlug": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Required when context='for_skill'. The slug of the focus skill — recommendations will be 'what else do people run alongside this.' Ignored when context='for_user'."
+                  },
+                  "limit": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 20,
+                    "description": "Maximum number of recommendations to return. Default 5. Caller-side trimming: surfaces typically render 3-5."
+                  }
+                },
+                "required": [
+                  "context"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Tool result envelope. Most tools return { ok: boolean, ... }; shape varies per tool.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/recommend_skills_for_context": {
+      "post": {
+        "operationId": "recommend_skills_for_context",
+        "summary": "Ambient recommender for the P2 wedge.",
+        "description": "Ambient recommender for the P2 wedge. Called by the plugin's UserPromptSubmit hook on every prompt the user types. Semantic-matches the last 1-5 user messages against the cross-vendor aggregated_skills index (Anthropic skills + ClawHub + Skills.sh + Smithery + GitHub + more). Returns 0..topN matches sorted by score. CRITICAL: prompts that don't produce a meaningful match (max similarity below min_score) are DISCARDED. No DB insert, no log. This is the privacy promise made source-of-truth. Each match includes a 15-word lowercase fit_reason explaining WHY it matches the prompt, and an install_hint with the source URL.",
+        "tags": [
+          "mcp-tools"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "messages": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "minItems": 1,
+                    "maxItems": 5,
+                    "description": "Last 1-5 user messages from the session, most recent LAST. The recommender weights the last message 2x in semantic match, so order matters. Anything shorter than ~6 chars is auto-filtered."
+                  },
+                  "topN": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 50,
+                    "description": "Maximum number of recommendations to return. Default 1 (ambient surface, one suggestion is less intrusive than three). Bump to 3-5 for non-ambient surfaces like the dashboard."
+                  },
+                  "minScore": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 0.99,
+                    "description": "Hard cosine-similarity floor (0..1). Matches below this score are pre-filtered at pgvector and never considered. Default 0.20 because the relative gap gate (top1 vs top2) is what actually governs surfacing. Tune up only if the index grows large enough that 0.20 returns noise."
+                  },
+                  "excludeAlreadyInstalled": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "description": "Slugs the user has already installed. We exclude these BEFORE applying the score threshold (so a perfect match the user already has results in a clean no-match response with backoff hint, not an awkward suggestion of something they already own)."
+                  },
+                  "sessionId": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Plugin-generated ephemeral session id (any opaque string). Used for cooldown attribution and to group recommendations in a single Claude Code session. Never link this to a stable identifier, it should rotate per session."
+                  },
+                  "skipGates": {
+                    "type": "boolean",
+                    "description": "Explicit-search mode. Set true when the user is EXPLICITLY querying (search bar, /implexa:run, etc.) rather than ambient observation. Bypasses the relative-gap gate AND the Haiku-negation filter. Returns raw top-N ranked results above the hard floor. Default false: ambient surfaces should be high-precision; explicit surfaces should be high-recall. Explicit calls ARE logged to recommendation_events (tagged source=explicit) so /implexa-suggest can show them in the pull buffer."
+                  },
+                  "source": {
+                    "type": "string",
+                    "enum": [
+                      "ambient",
+                      "explicit",
+                      "periodic"
+                    ],
+                    "description": "Override the event source tag. Normally derived from skipGates (ambient default, explicit when skipGates=true). Callers can force 'periodic' for server-side pre-staging. Migration 0034 enforces the enum."
+                  }
+                },
+                "required": [
+                  "messages"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Tool result envelope. Most tools return { ok: boolean, ... }; shape varies per tool.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/apply_recommended_skill": {
+      "post": {
+        "operationId": "apply_recommended_skill",
+        "summary": "P2.2 — Inline-apply a skill the ambient recommender surfaced.",
+        "description": "P2.2 — Inline-apply a skill the ambient recommender surfaced. Fetches the full SKILL.md content from the cross-vendor aggregated_skills index (Anthropic + ClawHub + Smithery + Skills.sh + GitHub + more), returns it for immediate execution in the current session, and records the conversion. The user never leaves the chat and never installs anything. Inputs: slug (from a recent recommendation), source (which aggregator the skill lives in), and optional recommendation_event_id (to attribute the run back to the surfacing event for the install-rate metric). Returns { ok, skill_content, skill_metadata: { name, slug, source, source_url, description, author, contributor_attribution }, execution_instruction, applied_skill_event_id }. The model is expected to execute the returned SKILL.md immediately against the user's current request, not summarize it.",
+        "tags": [
+          "mcp-tools"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "slug": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Skill slug from a recent recommendation. Comes from recommendation_events.recommended[].slug or the local pull-buffer entry the ambient hook wrote. Case-sensitive — some external sources have case-sensitive slugs."
+                  },
+                  "source": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Source aggregator the skill lives in. One of: anthropic | clawhub | smithery | skills.sh | agentskills | github | cursor | continue | implexa | community. Tells the lookup which row to fetch from aggregated_skills (the (slug, source) tuple is unique per crawled skill)."
+                  },
+                  "recommendation_event_id": {
+                    "type": "string",
+                    "format": "uuid",
+                    "description": "recommendation_events.id from the surfacing event. When present, the tool patches that row's ran_slug + resolved_at columns so the recommender-to-apply conversion is attributable. Omit on direct-apply paths where no surfacing event preceded the call."
+                  },
+                  "session_id": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Plugin-generated ephemeral session id (any opaque string). Mirrored into applied_skill_events.session_id so per-session conversion metrics work without a stable identifier."
+                  }
+                },
+                "required": [
+                  "slug",
+                  "source"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Tool result envelope. Most tools return { ok: boolean, ... }; shape varies per tool.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/get_aggregated_skill": {
+      "post": {
+        "operationId": "get_aggregated_skill",
+        "summary": "Fetch a single aggregated_skills row by (source, slug).",
+        "description": "Fetch a single aggregated_skills row by (source, slug). Returns full SKILL.md content + metadata. Read-only, no side effects. Used by the implexa.ai skill detail pages for SSR rendering. Returns { ok, name, slug, source, content, description, author, source_url, ... } on success, or { ok: false, error } on lookup failure.",
+        "tags": [
+          "mcp-tools"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "slug": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Skill slug as crawled. Case-sensitive. The (source, slug) tuple is unique in aggregated_skills."
+                  },
+                  "source": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Source aggregator: anthropic | agentskills | clawhub | skills.sh | smithery | github | cursor | continue | implexa | community."
+                  }
+                },
+                "required": [
+                  "slug",
+                  "source"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Tool result envelope. Most tools return { ok: boolean, ... }; shape varies per tool.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/list_aggregated_skills": {
+      "post": {
+        "operationId": "list_aggregated_skills",
+        "summary": "Paginated list of (source, slug, last_seen_at) tuples over the aggregated_skills index.",
+        "description": "Paginated list of (source, slug, last_seen_at) tuples over the aggregated_skills index. Filters to is_active=true + embedding_status='ok'. Used by the implexa.ai dynamic sitemap. Returns { ok, rows, nextCursor, count }. Pass nextCursor back as `cursor` to fetch the next page; nextCursor=null means end-of-list. Read-only, no side effects.",
+        "tags": [
+          "mcp-tools"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "pageSize": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 5000,
+                    "description": "Rows per page. Defaults to 1000. Cap is 5000 to stay inside Supabase Free Plan egress per call."
+                  },
+                  "cursor": {
+                    "type": "string",
+                    "description": "Opaque keyset cursor returned from a previous call. Pass null/omit for the first page. The cursor is the id of the last row from the previous response."
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Tool result envelope. Most tools return { ok: boolean, ... }; shape varies per tool.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/count_skills": {
+      "post": {
+        "operationId": "count_skills",
+        "summary": "Fast counts of the aggregated_skills catalog.",
+        "description": "Fast counts of the aggregated_skills catalog. Returns { ok, vetted, total }. `vetted` filters to is_active=true AND embedding_status='ok' (rows safe to surface to users with real content + embedding). `total` is the absolute table count, no filter. Used by the implexa.ai homepage to drive the 'Access N+ vetted AI skills' headline (vetted) and the live pill counter (total). Read-only, no side effects.",
+        "tags": [
+          "mcp-tools"
+        ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {},
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Tool result envelope. Most tools return { ok: boolean, ... }; shape varies per tool.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/list_skills_by_author": {
+      "post": {
+        "operationId": "list_skills_by_author",
+        "summary": "List every active skill credited to a given author handle, ranked by SkillRank display_score (scored first, then unscored by recency).",
+        "description": "List every active skill credited to a given author handle, ranked by SkillRank display_score (scored first, then unscored by recency). Returns { ok, count, rows: [{ id, source, slug, name, description, author, source_url, install_count, star_count, last_seen_at, display_score, tier_1_summary }, ...] }. Powers implexa.ai/u/<author> pages. Read-only.",
+        "tags": [
+          "mcp-tools"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "author": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 120,
+                    "description": "Author handle to look up. Matched exactly (case-sensitive). e.g. \"davila7\", \"anthropics\", \"kennan\"."
+                  }
+                },
+                "required": [
+                  "author"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Tool result envelope. Most tools return { ok: boolean, ... }; shape varies per tool.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/get_related_skills": {
+      "post": {
+        "operationId": "get_related_skills",
+        "summary": "Top-N semantically related skills for a given (source, slug) pair, ranked by cosine similarity of stored embeddings.",
+        "description": "Top-N semantically related skills for a given (source, slug) pair, ranked by cosine similarity of stored embeddings. Used by the implexa.ai detail page's related-skills rail to build the internal link graph (the long-tail SEO ranking signal). Returns { ok, related, count } where related is an array of { source, slug, name, description, author, source_url, install_count, star_count, similarity }. Read-only, no side effects.",
+        "tags": [
+          "mcp-tools"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "slug": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Source skill's slug (case-sensitive). The (source, slug) tuple is unique in aggregated_skills."
+                  },
+                  "source": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Source aggregator: anthropic | agentskills | clawhub | skills.sh | smithery | github | cursor | continue | implexa | community."
+                  },
+                  "limit": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 20,
+                    "description": "Maximum related skills to return. Defaults to 5. The detail page renders 3-5."
+                  }
+                },
+                "required": [
+                  "slug",
+                  "source"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Tool result envelope. Most tools return { ok: boolean, ... }; shape varies per tool.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/schedule_skill": {
+      "post": {
+        "operationId": "schedule_skill",
+        "summary": "Register a recurring skill run.",
+        "description": "Register a recurring skill run. Parses natural-language schedule (e.g. \"daily at 8:55am\") into cron, validates the destination (dashboard always-on; optional Slack webhook), and returns the literal prompt string the agent should pass to create_scheduled_task. The agent's next step after this tool returns ok=true is to call create_scheduled_task with the returned prompt + cron + tz. Used by /implexa:schedule. Free.",
+        "tags": [
+          "mcp-tools"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "skillSlug": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "The slug of the skill to schedule. Must already exist in the user's library (own org, system Playbooks, or active universal)."
+                  },
+                  "scheduleNl": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Natural-language schedule. Supported patterns: \"daily at 8:55am\", \"every weekday at 9am\", \"every monday at 9am\", \"every hour\", \"every 30 minutes\". Raw 5-field cron expressions also accepted."
+                  },
+                  "destination": {
+                    "type": "object",
+                    "properties": {
+                      "type": {
+                        "type": "string",
+                        "enum": [
+                          "dashboard",
+                          "slack-webhook",
+                          "slack-plugin"
+                        ],
+                        "description": "\"dashboard\" persists to app.implexa.ai/runs only (always-on). \"slack-webhook\" also POSTs to a Slack incoming-webhook URL (backend-side, cross-vendor). \"slack-plugin\" delivers via Claude Code's connected Slack plugin (mcp__plugin_engineering_slack__send_message) in the same session — zero setup if the plugin is already connected, but only works when Claude Code is the executing agent."
+                      },
+                      "target": {
+                        "type": "string",
+                        "description": "When type=slack-webhook: a hooks.slack.com URL. When type=slack-plugin: a channel name (\"#standup\") or channel/DM ID (\"C012345...\" or \"D0...\"). Not used when type=dashboard."
+                      }
+                    },
+                    "required": [
+                      "type"
+                    ],
+                    "additionalProperties": false,
+                    "description": "Optional. Defaults to { type: \"dashboard\" }. See type for delivery semantics."
+                  },
+                  "timezone": {
+                    "type": "string",
+                    "description": "IANA timezone name (e.g. \"America/Los_Angeles\"). Defaults to UTC. The cron expression is interpreted in this timezone."
+                  }
+                },
+                "required": [
+                  "skillSlug",
+                  "scheduleNl"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Tool result envelope. Most tools return { ok: boolean, ... }; shape varies per tool.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/pause_scheduled_skill": {
+      "post": {
+        "operationId": "pause_scheduled_skill",
+        "summary": "Pause a scheduled skill so it stops firing.",
+        "description": "Pause a scheduled skill so it stops firing. Flip is instant — Claude Code's underlying cron task still fires but the wrapper /implexa:run-scheduled short-circuits when status=paused. Idempotent: calling on an already-paused schedule returns ok=true with a no-op confirmation. Auth: row must belong to the caller. Free.",
+        "tags": [
+          "mcp-tools"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "scheduledSkillId": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "UUID of the scheduled_skills row to pause. Get this from list_scheduled_skills or the schedule_skill return value."
+                  }
+                },
+                "required": [
+                  "scheduledSkillId"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Tool result envelope. Most tools return { ok: boolean, ... }; shape varies per tool.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/resume_scheduled_skill": {
+      "post": {
+        "operationId": "resume_scheduled_skill",
+        "summary": "Resume a paused (or failed) scheduled skill.",
+        "description": "Resume a paused (or failed) scheduled skill. Flip is instant — next cron fire executes normally. Idempotent: calling on an already-active schedule returns ok=true with the next-run readback. Also accepts 'failed' rows for best-effort recovery (no re-attempt fires here). Auth: row must belong to the caller. Free.",
+        "tags": [
+          "mcp-tools"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "scheduledSkillId": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "UUID of the scheduled_skills row to resume. Works on paused OR failed schedules — failed is best-effort recovery."
+                  }
+                },
+                "required": [
+                  "scheduledSkillId"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Tool result envelope. Most tools return { ok: boolean, ... }; shape varies per tool.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/delete_scheduled_skill": {
+      "post": {
+        "operationId": "delete_scheduled_skill",
+        "summary": "Hard-delete a scheduled_skills manifest.",
+        "description": "Hard-delete a scheduled_skills manifest. Historical skill_runs rows survive (FK SET NULL) — output stays available at app.implexa.ai/runs. Does NOT tear down Claude Code's scheduled-task; that task will fire once after delete and dormant out. nextAction tells the user how to fully clean up. Auth: row must belong to the caller. Free.",
+        "tags": [
+          "mcp-tools"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "scheduledSkillId": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "UUID of the scheduled_skills row to delete. Hard delete — historical runs survive (FK is ON DELETE SET NULL) but the manifest is gone."
+                  }
+                },
+                "required": [
+                  "scheduledSkillId"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Tool result envelope. Most tools return { ok: boolean, ... }; shape varies per tool.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/list_scheduled_skills": {
+      "post": {
+        "operationId": "list_scheduled_skills",
+        "summary": "List the caller's scheduled skills.",
+        "description": "List the caller's scheduled skills. Each row includes humanizedSchedule (natural prose from cron), nextRunInfo (approximate when-it-fires-next string), destinationLabel, and recent-run telemetry (runCount, lastRunAt). Filters: includePaused (default true), includeFailed (default false), limit (default 50). Auth: scoped to the caller via service layer .eq('user_id', userId). Free.",
+        "tags": [
+          "mcp-tools"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "includePaused": {
+                    "type": "boolean",
+                    "description": "Include paused schedules. Defaults true so users see the full picture (pause is reversible)."
+                  },
+                  "includeFailed": {
+                    "type": "boolean",
+                    "description": "Include failed schedules (target skill archived, etc.). Defaults false because failed rows are noise unless the user is debugging."
+                  },
+                  "limit": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 100,
+                    "description": "Max rows to return. Defaults 50."
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Tool result envelope. Most tools return { ok: boolean, ... }; shape varies per tool.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/get_scheduled_skill_payload": {
+      "post": {
+        "operationId": "get_scheduled_skill_payload",
+        "summary": "Resolve a scheduled_skill_id to the SKILL.md content the agent should execute.",
+        "description": "Resolve a scheduled_skill_id to the SKILL.md content the agent should execute. Called by /implexa:run-scheduled when Claude's scheduled-task fires. Returns the target skill's slug, name, and full content (same shape as orchestrate_skills steps), plus the destination metadata for delivery. The agent's next step after this returns ok=true is to follow the returned skill.content as instructions, then call record_scheduled_run with the output. Free.",
+        "tags": [
+          "mcp-tools"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "scheduledSkillId": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "UUID of the scheduled_skills row to resolve."
+                  }
+                },
+                "required": [
+                  "scheduledSkillId"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Tool result envelope. Most tools return { ok: boolean, ... }; shape varies per tool.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/record_scheduled_run": {
+      "post": {
+        "operationId": "record_scheduled_run",
+        "summary": "Persist the output of a scheduled-skill run + deliver to the configured destination.",
+        "description": "Persist the output of a scheduled-skill run + deliver to the configured destination. Called by /implexa:run-scheduled after the agent finishes executing the resolved skill content. Inserts a skill_runs row, attempts Slack-webhook delivery if configured, and bumps the parent scheduled_skill's run_count + last_run_at. Returns a delivery receipt with run id, status, and per-destination outcome. Always inserts the run even if external delivery fails (so the user can re-deliver from the dashboard). Free.",
+        "tags": [
+          "mcp-tools"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "scheduledSkillId": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "UUID of the parent scheduled_skill that this run belongs to. Should match the id passed into get_scheduled_skill_payload."
+                  },
+                  "outputMarkdown": {
+                    "type": "string",
+                    "description": "The synthesized markdown output of the run. This is what gets persisted to skill_runs.output_markdown and posted to Slack (if configured)."
+                  },
+                  "status": {
+                    "type": "string",
+                    "enum": [
+                      "completed",
+                      "failed",
+                      "partial"
+                    ],
+                    "description": "Terminal status of the run. Default \"completed\". Use \"failed\" if the underlying skill threw / could not produce output. Use \"partial\" if some sub-steps failed but a usable output was produced."
+                  },
+                  "durationMs": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "description": "Wall-clock duration of the run in ms (from get_scheduled_skill_payload to here). Optional but useful for the dashboard."
+                  },
+                  "orchestrationId": {
+                    "type": "string",
+                    "description": "If the run executed an orchestrate_skills chain internally, the orchestrationId from that call. Stored for cross-table joins. Optional."
+                  },
+                  "pluginDelivery": {
+                    "type": "object",
+                    "properties": {
+                      "delivered": {
+                        "type": "boolean",
+                        "description": "true if the Slack plugin call succeeded."
+                      },
+                      "channel": {
+                        "type": "string",
+                        "description": "Channel name or ID the message landed in (e.g. \"#standup\" or \"C012345\")."
+                      },
+                      "messageTs": {
+                        "type": "string",
+                        "description": "Slack ts of the posted message, if available. Useful for thread replies later."
+                      },
+                      "error": {
+                        "type": "string",
+                        "description": "Error string from the Slack plugin call if delivered=false."
+                      }
+                    },
+                    "required": [
+                      "delivered"
+                    ],
+                    "additionalProperties": false,
+                    "description": "REQUIRED when destination.type=slack-plugin. The agent already posted to Slack via mcp__plugin_engineering_slack__send_message BEFORE calling this tool; pass the outcome here so we can record it on the skill_runs row. Ignored for slack-webhook (backend handles delivery itself) and dashboard destinations."
+                  }
+                },
+                "required": [
+                  "scheduledSkillId",
+                  "outputMarkdown"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Tool result envelope. Most tools return { ok: boolean, ... }; shape varies per tool.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/get_skill_content": {
+      "post": {
+        "operationId": "get_skill_content",
+        "summary": "Fetch the full SKILL.md content + metadata for one skill by slug or id.",
+        "description": "Fetch the full SKILL.md content + metadata for one skill by slug or id. Powers /implexa:publish-to-clawhub (stage the SKILL.md before clawhub publish) and other flows that need the markdown body, not just metadata. Differs from list_org_skills which omits content for payload size. Returns { ok, name, slug, content, version, scope, status, tags, triggerPhrases }. Free.",
+        "tags": [
+          "mcp-tools"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "slug": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Skill slug (kebab-case) OR skill UUID. Resolves against the caller's org, system Playbooks, and universal-scope skills the caller can see."
+                  }
+                },
+                "required": [
+                  "slug"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Tool result envelope. Most tools return { ok: boolean, ... }; shape varies per tool.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/record_work_signature": {
+      "post": {
+        "operationId": "record_work_signature",
+        "summary": "SkillRank phase A — record one anonymized work-signature row for the cohort-similarity algorithm.",
+        "description": "SkillRank phase A — record one anonymized work-signature row for the cohort-similarity algorithm. Called by the plugin hook after a recommendation cycle, ONLY when the user has opted in via users.work_signature_optin. Silently no-ops (returns { ok: true, stored: false, reason: \"opted out\" }) when the user has not opted in — never throws. Inputs: session_id (required), installed_tools, used_tools, prompt_categories, applied_skills (all optional, the hook only sends what the user opted into). Stores nothing identifying the user: row carries an anon_id = sha256(user_id || monthly rotating salt), so signatures cannot be re-linked to a current user_id after the salt rotates. Returns { ok, stored, signature_id? }.",
+        "tags": [
+          "mcp-tools"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "session_id": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Plugin-generated ephemeral session id (any opaque string). Mirrors recommendation_events.session_id and applied_skill_events.session_id so per-session signatures join back to the apply / recommendation log."
+                  },
+                  "installed_tools": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "name": {
+                          "type": "string"
+                        },
+                        "server": {
+                          "type": "string"
+                        },
+                        "type": {
+                          "type": "string",
+                          "enum": [
+                            "mcp",
+                            "plugin",
+                            "slash_command"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "name"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "description": "User's installed tool inventory at session start. Extracted from ~/.claude/settings.json mcpServers + the plugin manifest. Always safe to send when tool_inventory_optin = true."
+                  },
+                  "used_tools": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "name": {
+                          "type": "string"
+                        },
+                        "call_count": {
+                          "type": "integer",
+                          "minimum": 0
+                        }
+                      },
+                      "required": [
+                        "name",
+                        "call_count"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "description": "Tools actually called in this session (subset of installed). Captures intent better than installed inventory alone. Populated by PostToolUse hook tracking in phase A.1; in initial phase A the hook may pass an empty array."
+                  },
+                  "prompt_categories": {
+                    "type": "object",
+                    "additionalProperties": {
+                      "type": "number"
+                    },
+                    "description": "Aggregated category vector (NOT raw prompts). Map of category -> weight, e.g. { coding: 0.4, sales: 0.1 }. Empty in initial phase A; phase B adds the classifier."
+                  },
+                  "applied_skills": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "Skills applied in this session (slugs from applied_skill_events). Sourced from the plugin local state file ~/.claude/plugins/implexa/recent-applies.json."
+                  }
+                },
+                "required": [
+                  "session_id"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Tool result envelope. Most tools return { ok: boolean, ... }; shape varies per tool.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/record_consent": {
+      "post": {
+        "operationId": "record_consent",
+        "summary": "SkillRank phase A — persist the user's three data-collection opt-in flags into the users table.",
+        "description": "SkillRank phase A — persist the user's three data-collection opt-in flags into the users table. Called by the install script after the user accepts defaults or customizes (and by the dashboard /settings/data page when they toggle a flag later). Inputs are three booleans: tool_inventory_optin (default true), outcome_tracking_optin (default true), work_signature_optin (default FALSE, strict opt-in for cohort matching). Returns { ok, consent: {three booleans}, message }. The users table is the backend source of truth for the record_work_signature gate; the plugin keeps a local mirror at ~/.claude/plugins/implexa/consent.json so the hook doesn't need to round-trip on every prompt.",
+        "tags": [
+          "mcp-tools"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "tool_inventory_optin": {
+                    "type": "boolean",
+                    "description": "Track which MCP servers + plugins + slash commands the user has installed. Defaults to true at install time. Low sensitivity — needed for any useful skill ranking (\"does the user have the tools this skill needs?\")."
+                  },
+                  "outcome_tracking_optin": {
+                    "type": "boolean",
+                    "description": "Track whether applied skills solved the task (\"completed\" vs \"abandoned\"). Defaults to true. Powers the outcome-attribution weight in SkillRank. Just a boolean per apply, no payload contents."
+                  },
+                  "work_signature_optin": {
+                    "type": "boolean",
+                    "description": "Strict opt-in for the cohort-matching feature. Defaults to FALSE at install time. When true, anonymized session signatures (installed tools + used tools + prompt categories + applied skills) are stored under a rotating-salt hash for the SkillRank gamma/delta weights."
+                  }
+                },
+                "required": [
+                  "tool_inventory_optin",
+                  "outcome_tracking_optin",
+                  "work_signature_optin"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Tool result envelope. Most tools return { ok: boolean, ... }; shape varies per tool.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/get_skill_score": {
+      "post": {
+        "operationId": "get_skill_score",
+        "summary": "Fetch the SkillScore evaluation for one aggregated skill by (source, slug).",
+        "description": "Fetch the SkillScore evaluation for one aggregated skill by (source, slug). Returns tier-1 structural scoring (5 dimensions + summary + strengths/weaknesses) and tier-2 dry-run scoring (3 dimensions + review paragraph + simulated inputs) when present. Read-only, public. Used by implexa.ai/s/<source>/<slug> for the score panel + JSON-LD Review schema. Returns { ok: true, scored: boolean, ... } on success.",
+        "tags": [
+          "mcp-tools"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "slug": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Skill slug as crawled. Case-sensitive. Must match an existing aggregated_skills row."
+                  },
+                  "source": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Source aggregator: anthropic | agentskills | clawhub | skills.sh | smithery | github | cursor | continue | implexa | community."
+                  }
+                },
+                "required": [
+                  "slug",
+                  "source"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Tool result envelope. Most tools return { ok: boolean, ... }; shape varies per tool.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/list_skill_scores": {
+      "post": {
+        "operationId": "list_skill_scores",
+        "summary": "Paginated list of scored skills for the implexa.ai/scores leaderboard.",
+        "description": "Paginated list of scored skills for the implexa.ai/scores leaderboard. Joins aggregated_skills for one-shot rendering. Filters by source + min display_score; sorts by display_score (default) or tier_2_overall. Read-only, public. Returns { ok: true, count, rows: [...] }.",
+        "tags": [
+          "mcp-tools"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "source": {
+                    "type": "string",
+                    "description": "Optional source filter: anthropic | agentskills | clawhub | skills.sh | smithery | github | cursor | continue | implexa | community."
+                  },
+                  "minScore": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 10,
+                    "description": "Optional minimum display_score. Default 0."
+                  },
+                  "offset": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "description": "Pagination offset. Default 0."
+                  },
+                  "limit": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 200,
+                    "description": "Page size. Default 50. Capped at 200."
+                  },
+                  "sort": {
+                    "type": "string",
+                    "enum": [
+                      "display_score",
+                      "tier_2_overall"
+                    ],
+                    "description": "Sort column. Default display_score."
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Tool result envelope. Most tools return { ok: boolean, ... }; shape varies per tool.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/get_skill_enrichment": {
+      "post": {
+        "operationId": "get_skill_enrichment",
+        "summary": "Fetch the Tier B Implexa-authored canonical SKILL.md for one aggregated skill by (source, slug).",
+        "description": "Fetch the Tier B Implexa-authored canonical SKILL.md for one aggregated skill by (source, slug). Returns enriched_content (full markdown body), enrichment_summary (what changed), components_present (per-component 1-10 scores for the 6 required components), source_fingerprint, enriched_at, and enriched_by_model. Read-only, public. Used by implexa.ai/s/<source>/<slug> for the canonical content panel + CreativeWork JSON-LD. Returns { ok: true, enriched: boolean, ... } on success; enriched: false means the skill exists but hasn't been enriched yet (caller should render the original SKILL.md).",
+        "tags": [
+          "mcp-tools"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "source": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Source aggregator: anthropic | agentskills | clawhub | skills.sh | smithery | github | cursor | continue | implexa | community."
+                  },
+                  "slug": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Skill slug as crawled. Case-sensitive. Must match an existing aggregated_skills row."
+                  }
+                },
+                "required": [
+                  "source",
+                  "slug"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Tool result envelope. Most tools return { ok: boolean, ... }; shape varies per tool.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/list_recent_recommendations": {
+      "post": {
+        "operationId": "list_recent_recommendations",
+        "summary": "Pull the calling user's recent skill recommendations (ambient hook fires + explicit searches + future periodic worker output).",
+        "description": "Pull the calling user's recent skill recommendations (ambient hook fires + explicit searches + future periodic worker output). Used by /implexa-suggest to show 'what implexa noticed in your recent prompts'. Returns a deduped list of unique skills with the prompt excerpt that triggered each match. Runtime-agnostic: works in claude code, codex, and any future MCP-compatible host.",
+        "tags": [
+          "mcp-tools"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "limit": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 50,
+                    "description": "Max recommendations to return. Default 20."
+                  },
+                  "maxAgeHours": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 720,
+                    "description": "Only include events from the last N hours. Default 24 (matches the original local-file TTL)."
+                  },
+                  "sources": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "enum": [
+                        "ambient",
+                        "explicit",
+                        "periodic"
+                      ]
+                    },
+                    "description": "Filter by event source. Defaults to all three. Useful when /suggest should show only 'what i searched for' (explicit) vs 'what implexa noticed' (ambient)."
+                  },
+                  "dedupePerSkill": {
+                    "type": "boolean",
+                    "description": "When true (default), collapse repeated matches of the same skill across events into one entry (newest wins). Set false to see the raw chronological event stream including duplicates."
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Tool result envelope. Most tools return { ok: boolean, ... }; shape varies per tool.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/submit_skill_feedback": {
+      "post": {
+        "operationId": "submit_skill_feedback",
+        "summary": "Record post-run user feedback on a skill (like / dislike / improve).",
+        "description": "Record post-run user feedback on a skill (like / dislike / improve). Like + dislike feed SkillRank. Improve also writes a row (with required comment) and signals the plugin to chain into update-skill. One row per user per skill per run; re-running and re-rating is allowed and informative.",
+        "tags": [
+          "mcp-tools"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "aggregated_skill_id": {
+                    "type": "string",
+                    "format": "uuid",
+                    "description": "UUID of the aggregated_skills row this feedback is for. Use when the user ran a public/indexed skill. Exactly one of aggregated_skill_id or org_skill_id must be set."
+                  },
+                  "org_skill_id": {
+                    "type": "string",
+                    "format": "uuid",
+                    "description": "UUID of the org_skills row this feedback is for. Use when the user ran a private org skill. Does NOT affect public SkillRank."
+                  },
+                  "rating": {
+                    "type": "string",
+                    "enum": [
+                      "like",
+                      "dislike",
+                      "improve"
+                    ],
+                    "description": "User's reaction: like (positive SkillRank signal), dislike (negative), improve (user wants to edit the skill — write the comment, then chain into update-skill on the plugin side)."
+                  },
+                  "comment": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 2000,
+                    "description": "Free-text comment. REQUIRED when rating='improve' (used as starting context for update-skill). Optional for like/dislike."
+                  },
+                  "applied_skill_event_id": {
+                    "type": "string",
+                    "format": "uuid",
+                    "description": "UUID of the applied_skill_events row that triggered this feedback prompt. Lets us tie ratings back to a specific run for downstream analytics. Optional but strongly recommended."
+                  }
+                },
+                "required": [
+                  "rating"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Tool result envelope. Most tools return { ok: boolean, ... }; shape varies per tool.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/prepare_fusion": {
+      "post": {
+        "operationId": "prepare_fusion",
+        "summary": "Prepare a skill-remix attempt.",
+        "description": "Prepare a skill-remix attempt. Takes 2-3 aggregated_skills UUIDs in rank order (top first) and returns the source SKILL.md bodies plus the fusion instruction prompt the user's agent uses to merge them. All synthesis happens on the user's model + tokens — implexa returns data + prompt only. Inserts a fusion_attempts telemetry row with status='prepared' and returns a fusion_id for downstream attribution (apply_recommended_skill with fusion_of, save-as-remix promotion). Returns { ok, fusion_id, instruction, components: [{ id, source, slug, name, description, author, source_url, content }] }. Free.",
+        "tags": [
+          "mcp-tools"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "skill_ids": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "minItems": 2,
+                    "maxItems": 3,
+                    "description": "Ordered array of aggregated_skills UUIDs in rank order. Index 0 is the top-ranked skill the fusion must outperform to pass the honesty gate. Capped at 3 because larger merges reliably produce slop in v1 testing."
+                  },
+                  "context_hint": {
+                    "type": "string",
+                    "maxLength": 500,
+                    "description": "Optional 1-line summary of the user's stated intent for this fusion (the recommend_skills query string or a short description of the task). Used for popular-pattern telemetry: same {skill_ids} set with similar context_hint across multiple users is the strongest signal that this remix deserves a named catalog entry."
+                  }
+                },
+                "required": [
+                  "skill_ids"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Tool result envelope. Most tools return { ok: boolean, ... }; shape varies per tool.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/record_fusion_run": {
+      "post": {
+        "operationId": "record_fusion_run",
+        "summary": "Close the lifecycle on a skill-remix run started by prepare_fusion.",
+        "description": "Close the lifecycle on a skill-remix run started by prepare_fusion. Advances fusion_attempts.status (prepared → accepted → executed, or → rejected if the user declined). On status='executed', inserts an applied_skill_events row for EACH component skill so source authors receive invocation credit (a fusion run is a real use of each component). Should be called by the agent immediately after the merged procedure produces its deliverable. Returns { ok, fusion_id, status, components_credited }. Free.",
+        "tags": [
+          "mcp-tools"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "fusion_id": {
+                    "type": "string",
+                    "format": "uuid",
+                    "description": "The fusion_id returned by prepare_fusion. The lifecycle anchor — every call to this tool references the same fusion_id throughout a remix run."
+                  },
+                  "status": {
+                    "type": "string",
+                    "enum": [
+                      "accepted",
+                      "executed",
+                      "rejected"
+                    ],
+                    "description": "Lifecycle status to advance to. Defaults to 'executed' (the most common call site — agent rings this tool right after the merged procedure produces its deliverable). Use 'accepted' if the user confirmed the merged steps but execution hasn't happened yet. Use 'rejected' if the user declined the merge or the honesty gate aborted."
+                  },
+                  "session_id": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Plugin-generated ephemeral session id. Mirrored into applied_skill_events.session_id so per-session conversion metrics work without a stable identifier."
+                  }
+                },
+                "required": [
+                  "fusion_id"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Tool result envelope. Most tools return { ok: boolean, ... }; shape varies per tool.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/save_fusion_as_remix": {
+      "post": {
+        "operationId": "save_fusion_as_remix",
+        "summary": "Promote a successfully-executed fusion into a named, catalog-visible aggregated_skills row with source='user-remix'.",
+        "description": "Promote a successfully-executed fusion into a named, catalog-visible aggregated_skills row with source='user-remix'. Required when the user says 'save this' after running a merged procedure. Takes fusion_id + name/slug/description/content (the merged SKILL.md body the agent produced) + optional author_handle. Auto-prefixes the slug with the author handle to avoid collisions across users. Advances fusion_attempts.status to 'saved' and links saved_as to the new row. Returns { ok, saved_as, source, slug, public_url, author }. The user can then share this remix or it can be ranked alongside other catalog skills.",
+        "tags": [
+          "mcp-tools"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "fusion_id": {
+                    "type": "string",
+                    "format": "uuid",
+                    "description": "fusion_id returned by prepare_fusion. The fusion must already be in status='executed' — this tool refuses to save un-run attempts because there's no useful artifact yet."
+                  },
+                  "name": {
+                    "type": "string",
+                    "minLength": 3,
+                    "maxLength": 100,
+                    "description": "Human-readable name for the remix, e.g. 'PR review with security focus'. Shown in /scores and recommendation surfaces."
+                  },
+                  "slug": {
+                    "type": "string",
+                    "minLength": 3,
+                    "maxLength": 80,
+                    "pattern": "^[a-z0-9][a-z0-9-]*[a-z0-9]$",
+                    "description": "URL-safe slug (lowercase, letters/digits/hyphens, no leading/trailing hyphen). Will be auto-prefixed with the author's handle to avoid collisions across users (e.g. user 'alice' saving slug 'pr-review' becomes /s/user-remix/alice-pr-review)."
+                  },
+                  "description": {
+                    "type": "string",
+                    "minLength": 10,
+                    "maxLength": 500,
+                    "description": "One-paragraph description of what this remix does and when to use it. This is what /implexa:suggest will match against semantically when recommending the remix to future users."
+                  },
+                  "content": {
+                    "type": "string",
+                    "minLength": 50,
+                    "description": "The merged SKILL.md body the agent produced during PHASE 3 of the fusion instruction. Agents should pass the procedure verbatim — including the [from: author/slug] step tags so the attribution survives into the catalog row."
+                  },
+                  "author_handle": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 40,
+                    "pattern": "^[a-z0-9_-]+$",
+                    "description": "Optional author handle for public attribution. Falls back to 'user-<first-8-chars-of-user-id>' when omitted. Used in the slug prefix and the author field."
+                  }
+                },
+                "required": [
+                  "fusion_id",
+                  "name",
+                  "slug",
+                  "description",
+                  "content"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Tool result envelope. Most tools return { ok: boolean, ... }; shape varies per tool.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/verify_module": {
+      "post": {
+        "operationId": "verify_module",
+        "summary": "Fetch a verification card for a single package (npm | pypi | rubygems | cargo | maven | go | nuget).",
+        "description": "Fetch a verification card for a single package (npm | pypi | rubygems | cargo | maven | go | nuget). Aggregates license + provenance (sigstore) + popularity (deps.dev) + vulnerability (OSV) + maintainer activity into one card with a trust_tier enum the agent can decision on. Read-only, free, no telemetry. Use when re-verifying a module before install, when the user asks \"is this package safe\", or when surfacing module cards on a detail page. Returns { ok, card: { package, ecosystem, version, spdx, license_source, sigstore, deps_dev, osv, maintainer, trust_tier, verified_at } }.",
+        "tags": [
+          "mcp-tools"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "package": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Package name exactly as it appears in the upstream registry. Scoped npm names like \"@stripe/stripe-node\" work as-is. Case-sensitive — npm and PyPI both treat case differently for some packages."
+                  },
+                  "ecosystem": {
+                    "type": "string",
+                    "enum": [
+                      "npm",
+                      "pypi",
+                      "rubygems",
+                      "cargo",
+                      "maven",
+                      "go",
+                      "nuget"
+                    ],
+                    "description": "Which package ecosystem the module lives in. Determines which registries we query (npm registry for npm, PyPI for pypi, deps.dev system slug per ecosystem, OSV ecosystem identifier per ecosystem). rubygems is supported but deps.dev does not cover it — popularity signals will be null."
+                  }
+                },
+                "required": [
+                  "package",
+                  "ecosystem"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Tool result envelope. Most tools return { ok: boolean, ... }; shape varies per tool.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/revoke_share_link": {
+      "post": {
+        "operationId": "revoke_share_link",
+        "summary": "Revoke an active share link AND (for public shares) automatically undo the public visibility.",
+        "description": "Revoke an active share link AND (for public shares) automatically undo the public visibility. After revocation: (1) the share URL stops working — anyone hitting /s/<token> gets \"link revoked\"; (2) for PUBLIC shares, if this was the last active public share on the skill, the skill's scope reverts from \"universal\" back to its previous scope (org or private), removing it from Trending Globally + the public library. Existing forks teammates already installed continue to work — only future install attempts fail. Only the link creator (or an org admin) can revoke. Use when the user says \"undo public\", \"unshare publicly\", \"stop sharing this\", \"remove from trending\", or \"revoke this share link\". Free.",
+        "tags": [
+          "mcp-tools"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "token": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "The share token to revoke."
+                  }
+                },
+                "required": [
+                  "token"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Tool result envelope. Most tools return { ok: boolean, ... }; shape varies per tool.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/draft_message": {
+      "post": {
+        "operationId": "draft_message",
+        "summary": "Draft an email, LinkedIn post/DM/comment, SMS, Slack message, or general prose — direct Anthropic-SDK call (no saved-agent abstraction).",
+        "description": "Draft an email, LinkedIn post/DM/comment, SMS, Slack message, or general prose — direct Anthropic-SDK call (no saved-agent abstraction). Pass messageType + intent (what to say and why) + optional tone/length/context. Returns plain-text draft. Use any time the user says \"draft a message\", \"write me an email/post/DM/SMS\", \"what should I say to X\".",
+        "tags": [
+          "mcp-tools"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "messageType": {
+                    "type": "string",
+                    "enum": [
+                      "email",
+                      "linkedin_dm",
+                      "linkedin_post",
+                      "linkedin_comment",
+                      "sms",
+                      "slack",
+                      "general"
+                    ],
+                    "description": "What kind of message: email | linkedin_dm | linkedin_post | linkedin_comment | sms | slack | general."
+                  },
+                  "intent": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "What you want to say + why. Be specific. 'Cold email to a VP Sales at $COMPANY referencing their recent $TOPIC'"
+                  },
+                  "tone": {
+                    "type": "string",
+                    "enum": [
+                      "professional",
+                      "friendly",
+                      "direct",
+                      "casual",
+                      "formal"
+                    ],
+                    "description": "Voice. Default: 'professional'."
+                  },
+                  "length": {
+                    "type": "string",
+                    "enum": [
+                      "ultra_short",
+                      "short",
+                      "medium",
+                      "long"
+                    ],
+                    "description": "Length cap. Default 'short'."
+                  },
+                  "context": {
+                    "type": "string",
+                    "description": "Recipient info / situational context the model should weave in."
+                  },
+                  "audienceProfile": {
+                    "type": "string",
+                    "description": "Optional 1-2 sentence audience description."
+                  }
+                },
+                "required": [
+                  "messageType",
+                  "intent"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Tool result envelope. Most tools return { ok: boolean, ... }; shape varies per tool.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/get_credits": {
+      "post": {
+        "operationId": "get_credits",
+        "summary": "Return the caller's identity (email, display name, organization name), plan tier (free / pro / enterprise), Founding Creator status, and mon",
+        "description": "Return the caller's identity (email, display name, organization name), plan tier (free / pro / enterprise), Founding Creator status, and monthly skill creation quota. Implexa moved off metered credits — every plan has unlimited skill capture, fork, share, and runs. Use when the user asks \"what plan am I on\", \"what account am I logged in as\", \"who am I\", \"what email is connected\", or \"how many skills can I create this month.\" Also called by /implexa:setup to verify connection + display the authenticated identity. Free — DB lookup only.",
+        "tags": [
+          "mcp-tools"
+        ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {},
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Tool result envelope. Most tools return { ok: boolean, ... }; shape varies per tool.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/find_accounts": {
+      "post": {
+        "operationId": "find_accounts",
+        "summary": "PRIMARY account-search tool — cheap path via Fiber's /company-search with structured filters.",
+        "description": "PRIMARY account-search tool — cheap path via Fiber's /company-search with structured filters. Use this for \"find me companies\" prompts. Pass `industry`, `country`, `employeeCountRange`, `revenueRange`, `keywords`, optional `companyDomains`, `companyNames`. Returns a paginated rawList you can poll via get_lead_list.",
+        "tags": [
+          "mcp-tools"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "industry": {
+                    "type": "string"
+                  },
+                  "country": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "employeeCountRange": {
+                    "type": "array",
+                    "items": {
+                      "type": "number"
+                    },
+                    "minItems": 2,
+                    "maxItems": 2
+                  },
+                  "revenueRange": {
+                    "type": "array",
+                    "items": {
+                      "type": "number"
+                    },
+                    "minItems": 2,
+                    "maxItems": 2
+                  },
+                  "keywords": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "companyDomains": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "companyNames": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "limit": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 500
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Tool result envelope. Most tools return { ok: boolean, ... }; shape varies per tool.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/find_accounts_by_signals": {
+      "post": {
+        "operationId": "find_accounts_by_signals",
+        "summary": "Trigger signal-based account discovery — finds NEW companies whose web/news/hiring footprint matches the caller's tracked buying / hiring /",
+        "description": "Trigger signal-based account discovery — finds NEW companies whose web/news/hiring footprint matches the caller's tracked buying / hiring / fact signals. Async — returns rawListId; poll get_lead_list.",
+        "tags": [
+          "mcp-tools"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "signalType": {
+                    "type": "string"
+                  },
+                  "limit": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 200
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Tool result envelope. Most tools return { ok: boolean, ... }; shape varies per tool.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/find_prospects": {
+      "post": {
+        "operationId": "find_prospects",
+        "summary": "Find PEOPLE at target accounts via Fiber AI people search.",
+        "description": "Find PEOPLE at target accounts via Fiber AI people search. Pass companyDomains (preferred — from a previous find_accounts call) or companyNames. Optional title/role filters.",
+        "tags": [
+          "mcp-tools"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "companyDomains": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "companyNames": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "titles": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "seniorities": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "limit": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 200
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Tool result envelope. Most tools return { ok: boolean, ... }; shape varies per tool.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/find_prospects_by_career_history": {
+      "post": {
+        "operationId": "find_prospects_by_career_history",
+        "summary": "Deep people search filtering on BOTH current title AND career history via Coresignal.",
+        "description": "Deep people search filtering on BOTH current title AND career history via Coresignal. Examples: \"SDR Managers who used to be SDRs/AEs\", \"GTM leaders who came from IC sales\". Pass companyName/companyDomain + currentTitles + pastTitles.",
+        "tags": [
+          "mcp-tools"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "companyName": {
+                    "type": "string"
+                  },
+                  "companyDomain": {
+                    "type": "string"
+                  },
+                  "currentTitles": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "pastTitles": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "limit": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 100
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Tool result envelope. Most tools return { ok: boolean, ... }; shape varies per tool.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/find_person": {
+      "post": {
+        "operationId": "find_person",
+        "summary": "Look up a SPECIFIC named individual.",
+        "description": "Look up a SPECIFIC named individual. Pass `name` + (`company` or `domain`), or `linkedinUrl`. Apollo people/match runs first, Fiber falls back.",
+        "tags": [
+          "mcp-tools"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "company": {
+                    "type": "string"
+                  },
+                  "domain": {
+                    "type": "string"
+                  },
+                  "linkedinUrl": {
+                    "type": "string"
+                  },
+                  "email": {
+                    "type": "string"
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Tool result envelope. Most tools return { ok: boolean, ... }; shape varies per tool.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/find_job_postings": {
+      "post": {
+        "operationId": "find_job_postings",
+        "summary": "Search active job postings at a specific company via Coresignal's LinkedIn job database.",
+        "description": "Search active job postings at a specific company via Coresignal's LinkedIn job database. Strong buying-signal probe (\"Is Snowflake hiring GTM engineers?\"). Pass companyName, optional titleKeywords + locations + postedWithinDays.",
+        "tags": [
+          "mcp-tools"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "companyName": {
+                    "type": "string"
+                  },
+                  "titleKeywords": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "locations": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "postedWithinDays": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 180
+                  },
+                  "limit": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 100
+                  }
+                },
+                "required": [
+                  "companyName"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Tool result envelope. Most tools return { ok: boolean, ... }; shape varies per tool.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/lookup_company": {
+      "post": {
+        "operationId": "lookup_company",
+        "summary": "Flexible company lookup via Fiber.",
+        "description": "Flexible company lookup via Fiber. Pass ANY of (companyLinkedinSlug, companyLinkedinOrgId, companyName, companyDomain). Strictly more powerful than lookup_domain.",
+        "tags": [
+          "mcp-tools"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "companyLinkedinSlug": {
+                    "type": "string"
+                  },
+                  "companyLinkedinOrgId": {
+                    "type": "string"
+                  },
+                  "companyName": {
+                    "type": "string"
+                  },
+                  "companyDomain": {
+                    "type": "string"
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Tool result envelope. Most tools return { ok: boolean, ... }; shape varies per tool.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/lookup_domain": {
+      "post": {
+        "operationId": "lookup_domain",
+        "summary": "Identify the company that owns a given `domain`.",
+        "description": "Identify the company that owns a given `domain`. Returns canonical name + LinkedIn slug + employee count.",
+        "tags": [
+          "mcp-tools"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "domain": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "domain"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Tool result envelope. Most tools return { ok: boolean, ... }; shape varies per tool.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/lookup_email": {
+      "post": {
+        "operationId": "lookup_email",
+        "summary": "Identify the person behind a given `email`.",
+        "description": "Identify the person behind a given `email`. Returns name + LinkedIn URL + title where Fiber has data.",
+        "tags": [
+          "mcp-tools"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "email"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Tool result envelope. Most tools return { ok: boolean, ... }; shape varies per tool.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/lookup_person": {
+      "post": {
+        "operationId": "lookup_person",
+        "summary": "Flexible person lookup via Fiber.",
+        "description": "Flexible person lookup via Fiber. Pass ANY combination of identifiers (linkedinSlug, emailAddress, personName + companyName/Domain, jobTitle + linkedinHeadline + profileLocation).",
+        "tags": [
+          "mcp-tools"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "linkedinSlug": {
+                    "type": "string"
+                  },
+                  "emailAddress": {
+                    "type": "string"
+                  },
+                  "personName": {
+                    "type": "string"
+                  },
+                  "companyName": {
+                    "type": "string"
+                  },
+                  "companyDomain": {
+                    "type": "string"
+                  },
+                  "jobTitle": {
+                    "type": "string"
+                  },
+                  "linkedinHeadline": {
+                    "type": "string"
+                  },
+                  "profileLocation": {
+                    "type": "string"
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Tool result envelope. Most tools return { ok: boolean, ... }; shape varies per tool.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/lookup_linkedin_posts": {
+      "post": {
+        "operationId": "lookup_linkedin_posts",
+        "summary": "Pull a person's recent LinkedIn posts via Coresignal.",
+        "description": "Pull a person's recent LinkedIn posts via Coresignal. Pass `linkedinUrl`. Returns up to `maxPosts` posts (default 5, max 10) from the last `days` (default 90), including top comments.",
+        "tags": [
+          "mcp-tools"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "linkedinUrl": {
+                    "type": "string"
+                  },
+                  "maxPosts": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 10
+                  },
+                  "days": {
+                    "type": "integer",
+                    "minimum": 7,
+                    "maximum": 365
+                  }
+                },
+                "required": [
+                  "linkedinUrl"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Tool result envelope. Most tools return { ok: boolean, ... }; shape varies per tool.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/enrich_contacts": {
+      "post": {
+        "operationId": "enrich_contacts",
+        "summary": "Add verified work email and (optionally) personal email + phone to previously-found prospects.",
+        "description": "Add verified work email and (optionally) personal email + phone to previously-found prospects. Targets are addressed by `leadGenProspectId` (from find_prospects results). Already-enriched rows are skipped automatically — no double-charge.",
+        "tags": [
+          "mcp-tools"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "leadGenProspectIds": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "includePersonalEmail": {
+                    "type": "boolean"
+                  },
+                  "includePhone": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "leadGenProspectIds"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Tool result envelope. Most tools return { ok: boolean, ... }; shape varies per tool.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/get_enriched_contacts": {
+      "post": {
+        "operationId": "get_enriched_contacts",
+        "summary": "List contacts that have already been enriched (verified email / phone).",
+        "description": "List contacts that have already been enriched (verified email / phone). Useful BEFORE calling enrich_contacts so you don't double-charge.",
+        "tags": [
+          "mcp-tools"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "companyDomain": {
+                    "type": "string"
+                  },
+                  "limit": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 200
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Tool result envelope. Most tools return { ok: boolean, ... }; shape varies per tool.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/nl_combined_search": {
+      "post": {
+        "operationId": "nl_combined_search",
+        "summary": "EXPENSIVE — use ONLY for complex prompts needing Fiber's NL parser.",
+        "description": "EXPENSIVE — use ONLY for complex prompts needing Fiber's NL parser. Reserve for prompts mentioning funding stage, specific tech stacks, exotic seniority filters. For simpler \"find companies\" prompts use find_accounts directly.",
+        "tags": [
+          "mcp-tools"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "prompt": {
+                    "type": "string"
+                  },
+                  "limit": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 100
+                  }
+                },
+                "required": [
+                  "prompt"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Tool result envelope. Most tools return { ok: boolean, ... }; shape varies per tool.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
