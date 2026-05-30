@@ -24,8 +24,10 @@ import {
   jsonLdGraph,
   breadcrumbSchema,
   softwareApplicationSchema,
+  howToSchema,
 } from "@/lib/jsonld";
 import { fetchRelatedSkills } from "@/lib/skill-catalog";
+import { extractProcedure } from "@/lib/skill-procedure";
 
 type RouteParams = { source: string; slug: string };
 
@@ -285,10 +287,49 @@ export default async function SkillDetailPage(props: {
         ]
       : [];
 
+  // HowTo schema for the procedure encoded in the SKILL.md body. Parsed at
+  // request time from the markdown — most skills follow the agentskills.io
+  // convention of a "## Procedure" or "## Steps" section with a numbered
+  // list, which extractProcedure() pulls out. When the body doesn't carry an
+  // identifiable procedure, extractProcedure() returns null and we skip the
+  // HowTo node entirely (invalid structured data hurts AEO ranking more
+  // than missing structured data does).
+  //
+  // Prefer the enriched body when present — the Tier B enrichment normalizes
+  // step wording, which produces cleaner HowTo output.
+  const procedureSource =
+    enrichment?.enriched && enrichment.enriched_content
+      ? enrichment.enriched_content
+      : content;
+  const procedure = extractProcedure(
+    procedureSource,
+    // frontmatter from get_aggregated_skill is plain JSON, hand it through.
+    (skill as { frontmatter?: Record<string, unknown> }).frontmatter,
+  );
+  const howTo = procedure
+    ? howToSchema({
+        name: title,
+        description:
+          description ||
+          `How to use the ${title} skill from ${source}, indexed by implexa.`,
+        url: absoluteUrl(`/s/${source}/${slug}`),
+        totalTime: procedure.totalTime ?? undefined,
+        steps: procedure.steps,
+        // MCP tool references become HowToTool. We link each one to its
+        // OpenAPI descriptor on /developers/openapi.json so an AI engine
+        // following the graph can find the tool's machine-readable contract.
+        tools: procedure.tools.map((t) => ({
+          name: t,
+          url: `${absoluteUrl("/developers/openapi.json")}#/paths/~1${t}`,
+        })),
+      })
+    : null;
+
   const ldJson = jsonLdGraph(
     ...baseSchemas,
     ...reviewSchemas,
     ...enrichmentSchemas,
+    howTo,
   );
 
   const hasEnrichment =

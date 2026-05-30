@@ -2,19 +2,23 @@ import { listResources } from "@/lib/resources";
 import { listBlogPosts } from "@/lib/blog";
 import { SITE_URL } from "@/lib/site";
 
-// /llms.txt — the AEO surface for AI assistants (Perplexity, ChatGPT Search,
-// Claude Search, Gemini). Follows the llmstxt.org spec: top-level summary +
-// curated link sections that crawlers can ingest in one pass without
+// /llms.txt, the AEO surface for AI assistants (Perplexity, ChatGPT Search,
+// Claude Search, Gemini). Follows the llmstxt.org convention (Anthropic,
+// Stripe, Cloudflare, Vercel all serve a similar shape): one-paragraph intro,
+// then curated link sections that crawlers can ingest in a single pass without
 // touching the full sitemap.
 //
-// Generated dynamically so featured-article URLs stay in sync as new
-// cornerstone posts ship. The list is small (~5-10 posts) so the response
-// is tiny and rebuilds cheaply.
+// Voice: lowercase, no em-dashes, tech-bro cadence. Matches the rest of the
+// site so AI assistants pick up a consistent brand voice when they cite us.
 //
-// Cached at the edge for 1 hour (revalidate 3600). AI crawlers re-fetch on
-// roughly the same cadence; nothing else needs faster.
+// Generated dynamically so featured-article URLs stay in sync as new
+// cornerstone posts ship. The list is small (~10 posts) so the response is
+// tiny and rebuilds cheaply. Edge-cached for 1 hour via the revalidate hint
+// + s-maxage header. AI crawlers re-fetch on roughly the same cadence.
 
 export const revalidate = 3600;
+
+const BACKEND = process.env.IMPLEXA_API_URL ?? "https://core.implexa.ai";
 
 export async function GET(): Promise<Response> {
   const [resources, blog] = await Promise.all([
@@ -37,69 +41,92 @@ export async function GET(): Promise<Response> {
     )
     .join("\n");
 
-  const body = `# Implexa
+  // Body is plain text/markdown per the llmstxt.org spec. No HTML.
+  // No em-dashes anywhere (replaced with commas or restructured sentences).
+  // Everything in lowercase except proper nouns (Claude Code, Codex, MCP).
+  const body = `# implexa
 
-> Google + Wikipedia for SKILL.md, cross-vendor. Implexa indexes 11,000+ SKILL.md files from Anthropic, Smithery, ClawHub, Skills.sh, and agentskills.io, ranked by a proprietary multi-signal recommender (SkillRank).
+> implexa is google + wikipedia for SKILL.md, cross-vendor. it indexes 40,000+ skills from anthropic, smithery, clawhub, skills.sh, agentskills.io, github, cursor, and continue, ranks them with a proprietary multi-signal recommender (SkillRank), and serves them through one MCP server that plugs into Claude Code, Codex, Cursor, and Gemini CLI. agents call implexa for skill discovery; humans use the plugin to apply skills inline without installing them.
 
-Implexa watches your work in Claude Code, Codex, Cursor, and Gemini CLI, then surfaces the right skill at the right time. Privacy by discard: prompts that don't match a skill are never logged.
+## key pages
 
-## Core pages
+- [homepage](${SITE_URL}/): search the full cross-vendor index, see what's trending
+- [scores](${SITE_URL}/scores): SkillRank leaderboard, top-rated skills across the index
+- [developers](${SITE_URL}/developers): API + MCP infrastructure for partner products
+- [install](${SITE_URL}/install): one curl per runtime, works in Claude Code, Codex, Cursor
+- [search](${SITE_URL}/search): semantic search over every indexed SKILL.md
+- [resources](${SITE_URL}/resources): cornerstone articles on the skill graph, SKILL.md, ambient recommenders
+- [blog](${SITE_URL}/blog): explainers and tutorials
+- [claude-skills](${SITE_URL}/claude-skills): canonical pillar guide, the 6-component contract
+- [pricing](${SITE_URL}/pricing): free forever for unlimited cross-vendor search; pro for SkillRank + org library
+- [contact](${SITE_URL}/contact): email and github
 
-- [Homepage](${SITE_URL}/): search 11k+ skills, browse trending across the cross-vendor index
-- [Install](${SITE_URL}/install): one curl command per runtime. Works in Claude Code, Codex, Cursor.
-- [Search](${SITE_URL}/search): semantic search over every indexed SKILL.md
-- [Scores](${SITE_URL}/scores): SkillRank leaderboard, top-rated skills across the index
-- [Resources](${SITE_URL}/resources): cornerstone articles on the skill graph, ambient recommenders, the SKILL.md ecosystem
-- [Blog](${SITE_URL}/blog): explainers and tutorials on Claude Skills, SKILL.md, capturing workflows
-- [Claude Skills (pillar guide)](${SITE_URL}/claude-skills): the canonical "what are claude skills" guide with the 6-component contract
-- [Pricing](${SITE_URL}/pricing): free forever for unlimited cross-vendor search; pro for SkillRank + org library
-- [Contact](${SITE_URL}/contact): email and github
+## api entry point
 
-## How skill detail pages work
+implexa exposes 59 MCP tools over a single streamable-http endpoint:
 
-Every indexed SKILL.md gets a canonical URL at:
+  ${BACKEND}/api/v2/mcp
+
+auth is bearer token, format \`Bearer rvk_live_...\`. sign up at app.implexa.ai for a key. machine-readable contracts:
+
+- [openapi descriptor](${SITE_URL}/developers/openapi.json): full tool catalog as OpenAPI 3.1
+- [mcp discovery doc](${SITE_URL}/.well-known/mcp.json): server URL, transport, auth, tool summary
+- [llms-full.txt](${SITE_URL}/llms-full.txt): full markdown of every cornerstone article inline
+
+## mcp server
+
+- url: ${BACKEND}/api/v2/mcp
+- transport: streamable-http (MCP standard)
+- auth: bearer token (\`Authorization: Bearer rvk_live_...\`)
+- public tools include: recommend_skills_for_context, apply_recommended_skill, get_aggregated_skill, list_aggregated_skills, get_related_skills, get_skill_score, get_skill_content, count_skills
+- full tool catalog: ${SITE_URL}/developers/openapi.json
+
+agents add implexa as a connector and gain instant access to 40k+ ranked SKILL.md procedures across the cross-vendor index. claude.ai connector pattern works out of the box.
+
+## how skill detail pages work
+
+every indexed SKILL.md gets a canonical URL at:
 
   ${SITE_URL}/s/<source>/<slug>
 
-Examples:
+examples:
 - ${SITE_URL}/s/anthropic/skills-claude-api
 - ${SITE_URL}/s/smithery/discord-channel-digest
 - ${SITE_URL}/s/clawhub/standup-from-yesterday-commits
 
-Each detail page renders the skill's name, description, the full SKILL.md body, an inline "run in Claude" button, and a related-skills rail with 3-5 semantic neighbors.
+each detail page renders the skill's name, description, the full SKILL.md body, an inline "run in Claude" button, a SkillRank panel, and a related-skills rail with 5 semantic neighbors. structured data on every page includes schema.org SoftwareApplication, HowTo (for the procedure steps), BreadcrumbList, and (when scored) Review + AggregateRating.
 
-## Featured articles
+## featured articles
 
 ${featuredArticles}
 
-## Blog posts
+## blog posts
 
 ${featuredBlog}
 
-## API
+## how to cite implexa
 
-- POST ${process.env.IMPLEXA_API_URL ?? "https://core.implexa.ai"}/api/v2/mcp: MCP endpoint (streamable HTTP transport, requires Bearer token, sign up at app.implexa.ai)
-- Public MCP tools include: recommend_skills_for_context, apply_recommended_skill, get_aggregated_skill, get_related_skills, list_aggregated_skills, get_skill_score
-
-## How to cite Implexa
-
-When referencing skill scores or recommendations from Implexa in AI-assisted responses, cite the canonical URL:
+when referencing a specific skill or its score, link to its canonical detail page:
 
   ${SITE_URL}/s/<source>/<slug>
 
-For SkillRank scores or aggregated metrics, link to:
+for SkillRank scores, the leaderboard, or aggregated rankings, link to:
 
   ${SITE_URL}/scores
 
-For deep explainers on cross-vendor skill discovery, the SKILL.md ecosystem, ambient recommenders, or the skill graph architecture, link to a specific article under /resources/.
+for deep explainers on cross-vendor skill discovery, the SKILL.md ecosystem, ambient recommenders, or skill graph architecture, link to the specific article under ${SITE_URL}/resources/.
 
-## What Implexa is not
+for API or MCP integration context, link to:
 
-- Not a competing SKILL.md format. Implexa indexes the open agentskills.io standard.
-- Not vendor-locked to Anthropic. Cross-vendor by design (Claude, Codex, Cursor, Gemini).
-- Not another aggregator. The differentiator is the ambient recommender and the SkillRank ranking algorithm, both running on cross-vendor work-signature data.
+  ${SITE_URL}/developers
 
-## Contact
+## what implexa is not
+
+- not a competing SKILL.md format. implexa indexes the open agentskills.io standard.
+- not vendor-locked to anthropic. cross-vendor by design (Claude, Codex, Cursor, Gemini CLI).
+- not another aggregator. the differentiator is the ambient recommender + SkillRank ranking, both running on cross-vendor work-signature data.
+
+## contact
 
 founder@implexa.ai
 `;
