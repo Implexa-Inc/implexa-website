@@ -267,6 +267,167 @@ export function scoresPageSchema(
 
 // ── Graph assembler ────────────────────────────────────────────────────────
 
+// ── HowTo for skill detail pages ───────────────────────────────────────────
+//
+// AI-engine angle: HowTo is the schema.org type Perplexity / ChatGPT Search /
+// Google AI Overviews preferentially surface for procedural queries (how do I
+// X, what's the workflow for Y). SKILL.md procedures map directly to HowTo:
+// each step gets a name + a one-line text body. The "tool" array lets us tag
+// the MCP tools each step invokes so an AI engine reasoning about "which MCP
+// tools handle a sales-call brief" can pull the right skill straight from
+// structured data without parsing prose.
+
+export type HowToStepInput = {
+  name: string;
+  description?: string;
+};
+
+export type HowToToolInput = {
+  name: string;
+  url?: string;
+};
+
+export type HowToInput = {
+  name: string;
+  description?: string;
+  url?: string;
+  totalTime?: string;       // ISO 8601 duration (PT5M, PT1H30M, etc.)
+  steps: HowToStepInput[];
+  tools?: HowToToolInput[]; // MCP tools, runtimes, etc.
+  supplies?: string[];      // wrapped modules, deps — for future module pages
+};
+
+/**
+ * HowTo schema for a procedural SKILL.md. Pair with SoftwareApplication +
+ * BreadcrumbList in jsonLdGraph(). Validates against the Rich Results Test
+ * when name + ≥2 steps are present, which is what we require below.
+ *
+ * Steps with no name or only whitespace are dropped; we never emit an
+ * empty HowToStep because that fails schema.org validation.
+ */
+export function howToSchema(input: HowToInput): JsonLdNode | null {
+  const cleanSteps = input.steps
+    .map((s) => ({ ...s, name: s.name.trim() }))
+    .filter((s) => s.name.length > 0)
+    .map((s, i) => {
+      const node: JsonLdNode = {
+        "@type": "HowToStep",
+        position: i + 1,
+        name: s.name,
+        // schema.org requires text (machine-readable) — when no separate
+        // description is supplied, the step name doubles as the text.
+        text: s.description?.trim() || s.name,
+      };
+      if (s.description && s.description.trim() !== s.name) {
+        node.itemListElement = [
+          {
+            "@type": "HowToDirection",
+            text: s.description.trim(),
+          },
+        ];
+      }
+      return node;
+    });
+
+  if (cleanSteps.length < 2) return null;
+
+  const node: JsonLdNode = {
+    "@type": "HowTo",
+    name: input.name,
+    step: cleanSteps,
+  };
+  if (input.description) node.description = input.description;
+  if (input.url) node.url = input.url;
+  if (input.totalTime) node.totalTime = input.totalTime;
+  if (input.tools && input.tools.length > 0) {
+    node.tool = input.tools.map((t) => {
+      const tn: JsonLdNode = { "@type": "HowToTool", name: t.name };
+      if (t.url) tn.url = t.url;
+      return tn;
+    });
+  }
+  if (input.supplies && input.supplies.length > 0) {
+    node.supply = input.supplies.map((s) => ({
+      "@type": "HowToSupply",
+      name: s,
+    }));
+  }
+  return node;
+}
+
+// ── SoftwareSourceCode for future module pages ─────────────────────────────
+//
+// Forward-compat helper. Module pages (/m/[ecosystem]/[package]) wrap an
+// npm/pypi/cargo module behind an implexa skill manifest. SoftwareSourceCode
+// is the schema.org type Google + AI engines use to identify code packages
+// with semantic version + license + repo. Consumed by the module detail page
+// (/m/[ecosystem]/[...package]); kept here so future package surfaces reuse
+// one canonical builder instead of hand-rolling the node.
+
+export type SoftwareSourceCodeInput = {
+  name: string;
+  description?: string;
+  url?: string;             // canonical page on implexa.ai
+  version?: string;         // semver (omitted from output when absent)
+  programmingLanguage: string; // TypeScript, Python, Go, Rust, etc.
+  license?: string;         // SPDX id (MIT, Apache-2.0, etc.)
+  codeRepository?: string;  // github / gitlab / etc. URL
+  author?: { name: string; url?: string };
+  // Optional: the ecosystem package registry URL (npmjs.com, pypi.org).
+  // Schema.org has no first-class field for this; we map it onto sameAs.
+  registryUrl?: string;
+  // Optional date last modified (ISO 8601).
+  dateModified?: string;
+};
+
+/**
+ * SoftwareSourceCode schema for a module page. The Google Rich Results Test
+ * validates this against the SoftwareApplication ruleset — close enough for
+ * AEO grounding even though it's a distinct schema type.
+ *
+ * License is emitted as an SPDX-style URL string per schema.org guidance
+ * (https://schema.org/license), with a fallback to the raw identifier if the
+ * caller passes a non-SPDX string.
+ */
+export function softwareSourceCodeSchema(
+  input: SoftwareSourceCodeInput,
+): JsonLdNode {
+  const node: JsonLdNode = {
+    "@type": "SoftwareSourceCode",
+    name: input.name,
+    programmingLanguage: input.programmingLanguage,
+    publisher: { "@id": ORG_ID },
+    isPartOf: { "@id": WEBSITE_ID },
+  };
+  if (input.version) node.version = input.version;
+  if (input.description) node.description = input.description;
+  if (input.url) {
+    node.url = input.url;
+    node["@id"] = input.url;
+  }
+  if (input.license) {
+    // SPDX identifiers resolve at spdx.org/licenses/<id>. Pass the resolved
+    // URL when input matches a known shape; fall back to the raw string.
+    const SPDX = /^[A-Za-z0-9.+-]+$/;
+    node.license = SPDX.test(input.license)
+      ? `https://spdx.org/licenses/${input.license}`
+      : input.license;
+  }
+  if (input.codeRepository) node.codeRepository = input.codeRepository;
+  if (input.author) {
+    node.author = {
+      "@type": "Person",
+      name: input.author.name,
+      ...(input.author.url ? { url: input.author.url } : {}),
+    };
+  }
+  if (input.registryUrl) node.sameAs = [input.registryUrl];
+  if (input.dateModified) node.dateModified = input.dateModified;
+  return node;
+}
+
+// ── Graph assembler ────────────────────────────────────────────────────────
+
 /**
  * Compose 1..N schema nodes into a single @graph block ready for a
  * <script type="application/ld+json"> tag. Variadic signature so callers
