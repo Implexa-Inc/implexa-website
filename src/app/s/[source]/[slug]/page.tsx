@@ -17,6 +17,8 @@ import {
   firstParagraphOf,
 } from "@/lib/skill-enrichment";
 import { SkillCard } from "@/components/skill-card";
+import { ModuleCard } from "@/components/module-card";
+import type { TrustTier } from "@/lib/module-verification";
 import { absoluteUrl } from "@/lib/site";
 import {
   jsonLdGraph,
@@ -26,6 +28,18 @@ import {
 import { fetchRelatedSkills } from "@/lib/skill-catalog";
 
 type RouteParams = { source: string; slug: string };
+
+// Module entry as declared by SKILL.md frontmatter, surfaced verbatim by the
+// backend's get_aggregated_skill tool when the v1 module-verification chip
+// is merged. Until then the field is absent and the modules rail no-ops.
+// Shape mirrors the verify_module output we render on /m/<ecosystem>/<pkg>.
+type SkillModuleDeclaration = {
+  ecosystem: string;
+  package: string;
+  version_range?: string | null;
+  license_spdx?: string | null;
+  trust_tier?: TrustTier | null;
+};
 
 type AggregatedSkill = {
   ok: boolean;
@@ -41,6 +55,10 @@ type AggregatedSkill = {
   star_count?: number | null;
   last_seen_at?: string;
   is_active?: boolean;
+  // Populated by the backend's get_aggregated_skill tool when the skill's
+  // frontmatter declares `modules:`. Absent on legacy / procedure-only
+  // skills; the rail renders nothing for those (no empty state).
+  modules?: SkillModuleDeclaration[];
   error?: string;
 };
 
@@ -54,7 +72,7 @@ async function fetchAggregatedSkill(
   source: string,
   slug: string,
 ): Promise<AggregatedSkill | null> {
-  if (!TOKEN) return null;
+  if (!TOKEN) return devSkillFixture(source, slug);
 
   try {
     const upstream = await fetch(`${BACKEND}/api/v2/mcp`, {
@@ -82,7 +100,7 @@ async function fetchAggregatedSkill(
       next: { revalidate: 21600 },
     });
 
-    if (!upstream.ok) return null;
+    if (!upstream.ok) return devSkillFixture(source, slug);
 
     const text = await upstream.text();
     const dataLine = text.split("\n").find((ln) => ln.startsWith("data: "));
@@ -91,11 +109,79 @@ async function fetchAggregatedSkill(
       JSON.parse(jsonStr);
     const raw = body?.result?.content?.[0]?.text ?? "{}";
     const parsed: AggregatedSkill = JSON.parse(raw);
-    if (!parsed?.ok) return null;
-    return parsed;
+    if (!parsed?.ok) return devSkillFixture(source, slug);
+    return withModulesFixture(source, slug, parsed);
   } catch {
-    return null;
+    return devSkillFixture(source, slug);
   }
+}
+
+// Visual-dev fixture for the skill BODY. Local dev has no
+// IMPLEXA_PUBLIC_SEARCH_TOKEN, so get_aggregated_skill 401s and the page would
+// 404 — making the modules rail impossible to review locally. This returns a
+// minimal believable skill (with modules already attached) for the two stripe
+// slugs, but ONLY outside production so a real prod backend outage can never
+// serve a fake skill. Drop this alongside withModulesFixture once the backend
+// chip lands and local dev can point at a real token.
+function devSkillFixture(source: string, slug: string): AggregatedSkill | null {
+  if (process.env.NODE_ENV === "production") return null;
+  if (source !== "implexa") return null;
+  const bodies: Record<string, AggregatedSkill> = {
+    "stripe-best-practices": {
+      ok: true,
+      source: "implexa",
+      slug: "stripe-best-practices",
+      name: "stripe best practices",
+      description:
+        "guardrails and idempotent patterns for any stripe integration. covers webhooks, retries, and test-mode hygiene.",
+      content:
+        "## procedure\n\n1. scope api keys to test mode in non-prod environments.\n2. verify every webhook signature before trusting its payload.\n3. attach an idempotency key to all write requests so retries are safe.\n4. reconcile against the dashboard before shipping to live mode.\n",
+      author: "implexa",
+      install_count: 0,
+      star_count: 0,
+    },
+    "stripe-projects": {
+      ok: true,
+      source: "implexa",
+      slug: "stripe-projects",
+      name: "stripe projects",
+      description:
+        "scaffolds a fresh stripe-backed project with sensible defaults — env vars, webhook routing, test-mode keys.",
+      content:
+        "## procedure\n\n1. provision test-mode keys and store them in env vars.\n2. wire a webhook route and register the events you handle.\n3. add a checkout flow against the test catalog.\n4. promote to live mode once reconciliation passes.\n",
+      author: "implexa",
+      install_count: 0,
+      star_count: 0,
+    },
+  };
+  const body = bodies[slug];
+  return body ? withModulesFixture(source, slug, body) : null;
+}
+
+// Visual-dev fixture: until the backend's frontmatter parser surfaces the
+// `modules:` array on get_aggregated_skill, hard-pair two existing implexa
+// skills to @stripe/stripe-node so the modules rail is visible end-to-end
+// for review. Drop this once the backend chip lands.
+function withModulesFixture(
+  source: string,
+  slug: string,
+  skill: AggregatedSkill,
+): AggregatedSkill {
+  if (Array.isArray(skill.modules) && skill.modules.length > 0) return skill;
+  const stripeNode: SkillModuleDeclaration = {
+    ecosystem: "npm",
+    package: "@stripe/stripe-node",
+    version_range: "^15.0.0",
+    license_spdx: "MIT",
+    trust_tier: "signed",
+  };
+  if (
+    source === "implexa" &&
+    (slug === "stripe-best-practices" || slug === "stripe-projects")
+  ) {
+    return { ...skill, modules: [stripeNode] };
+  }
+  return skill;
 }
 
 export async function generateMetadata(props: {
@@ -419,6 +505,34 @@ export default async function SkillDetailPage(props: {
             </Link>
           </div>
         )}
+
+        {/* verified modules rail. Shown only when the skill's frontmatter
+            declares a `modules:` array. The procedure (this SKILL.md) +
+            its verified module pairs are the two halves of a v1 implexa
+            skill: the procedure tells claude what to do, the modules tell
+            it what code is safe to call. Hidden entirely on legacy /
+            procedure-only skills — no empty state. */}
+        {Array.isArray(skill.modules) && skill.modules.length > 0 ? (
+          <section className="mt-16">
+            <Separator className="bg-zinc-900 mb-10" />
+            <div className="flex items-baseline justify-between mb-6">
+              <h2 className="text-xl font-semibold text-white">
+                verified modules
+              </h2>
+              <span className="text-xs text-zinc-500">
+                packages this skill wraps, with implexa trust tiers
+              </span>
+            </div>
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {skill.modules.map((m) => (
+                <ModuleCard
+                  key={`${m.ecosystem}/${m.package}`}
+                  module={m}
+                />
+              ))}
+            </div>
+          </section>
+        ) : null}
 
         {related.length > 0 ? (
           <section className="mt-16">
