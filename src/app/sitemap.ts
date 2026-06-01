@@ -4,6 +4,7 @@ import { absoluteUrl } from "@/lib/site";
 import { listResources } from "@/lib/resources";
 import { listBlogPosts } from "@/lib/blog";
 import { listAllSkillsForSitemap } from "@/lib/skill-catalog";
+import { listWorkflows } from "@/lib/workflow-catalog";
 import { submitToIndexNow } from "@/lib/indexnow";
 
 // Dynamic sitemap for the SEO surface. Lists:
@@ -52,6 +53,15 @@ function staticPages(now: Date): MetadataRoute.Sitemap {
       lastModified: now,
       changeFrequency: "weekly",
       priority: 0.7,
+    },
+    {
+      // /workflows — the whole-job workflow catalog (the AEO + distribution
+      // surface). High priority: every workflow detail page is a unique
+      // indexable URL and the install funnel for that workflow.
+      url: absoluteUrl("/workflows"),
+      lastModified: now,
+      changeFrequency: "weekly",
+      priority: 0.8,
     },
     {
       url: absoluteUrl("/resources"),
@@ -126,16 +136,33 @@ async function skillPages(): Promise<MetadataRoute.Sitemap> {
   }));
 }
 
+async function workflowPages(): Promise<MetadataRoute.Sitemap> {
+  const entries = await listWorkflows();
+  return entries.map<SitemapEntry>((w) => ({
+    url: absoluteUrl(`/workflows/${w.slug}`),
+    lastModified: w.last_seen_at ? new Date(w.last_seen_at) : undefined,
+    changeFrequency: "weekly",
+    priority: 0.7,
+  }));
+}
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const now = new Date();
   // Parallel: independent IO, makes a real difference when the skill catalog
   // pagination walks 11 pages.
-  const [resources, blog, skills] = await Promise.all([
+  const [resources, blog, skills, workflows] = await Promise.all([
     resourcePages(),
     blogPages(),
     skillPages(),
+    workflowPages(),
   ]);
-  const entries = [...staticPages(now), ...resources, ...blog, ...skills];
+  const entries = [
+    ...staticPages(now),
+    ...resources,
+    ...blog,
+    ...skills,
+    ...workflows,
+  ];
 
   // Side-effect: ping IndexNow with anything modified in the last 24h so
   // Bing pulls it out of "discovered but not crawled" within minutes
