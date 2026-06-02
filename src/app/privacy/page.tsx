@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import { ArrowLeft } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
-import { absoluteUrl } from "@/lib/site";
+import { absoluteUrl, DEFAULT_OG_IMAGE } from "@/lib/site";
 
 // /privacy. Required for marketplace listings (Anthropic plugin store,
 // future App Store, Chrome Web Store, etc.) and just generally good
@@ -35,6 +35,7 @@ export const metadata: Metadata = {
     title: "privacy policy | implexa",
     description:
       "what implexa collects, how we use it, who we share with, and how to get your data back.",
+    images: [DEFAULT_OG_IMAGE],
   },
   robots: { index: true, follow: true },
 };

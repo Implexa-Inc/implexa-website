@@ -5,6 +5,7 @@ import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { Badge } from "@/components/ui/badge";
 import { listGuides } from "@/lib/guides";
+import { DEFAULT_OG_IMAGE } from "@/lib/site";
 
 export const metadata: Metadata = {
   title: "guides · build a product solo with claude code",
@@ -19,6 +20,7 @@ export const metadata: Metadata = {
     title: "guides · build a product solo with claude code | implexa",
     description:
       "the long-form companion to the @ImplexaAI daily series. prompts, gotchas, and the mental models behind shipping a product solo with claude code.",
+    images: [DEFAULT_OG_IMAGE],
   },
 };
 

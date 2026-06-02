@@ -36,8 +36,9 @@ export async function generateMetadata(props: {
   const { title, description } = post.frontmatter;
   const canonicalPath = `/blog/${slug}`;
   const url = absoluteUrl(canonicalPath);
-  const ogImage = `/og-blog-${slug}.png`;
 
+  // og:image / twitter:image are injected automatically from the colocated
+  // opengraph-image.tsx (the dynamic card generator) — no images field here.
   return {
     title,
     description,
@@ -50,14 +51,12 @@ export async function generateMetadata(props: {
       siteName: "implexa",
       publishedTime: post.frontmatter.publishedAt,
       tags: post.frontmatter.tags,
-      images: [{ url: ogImage, width: 1200, height: 630, alt: title }],
     },
     twitter: {
       card: "summary_large_image",
       site: "@ImplexaAI",
       title,
       description,
-      images: [ogImage],
     },
   };
 }
@@ -93,7 +92,9 @@ export default async function BlogPostPage(props: {
   // just emit a fresh node here mirroring articleSchema's shape but pointed
   // at /blog/. We keep the breadcrumb composition identical for parity.
   const articleUrl = absoluteUrl(`/blog/${slug}`);
-  const ogImage = absoluteUrl(`/og-blog-${slug}.png`);
+  // Dynamic OG card served by the colocated opengraph-image.tsx, replacing
+  // the former static /og-blog-<slug>.png path (which 404'd).
+  const ogImage = absoluteUrl(`/blog/${slug}/opengraph-image`);
   const articleNode = {
     "@type": "Article",
     "@id": articleUrl,

@@ -45,14 +45,6 @@ export const metadata: Metadata = {
     title: "claude skills marketplace: 40,000+ ranked & runnable | implexa",
     description:
       "browse + run any of 40,000+ ranked claude skills inline, no install per skill. cross-vendor index across anthropic, smithery, clawhub, skills.sh, github.",
-    images: [
-      {
-        url: "/og-claude-skills.png",
-        width: 1200,
-        height: 630,
-        alt: "what are claude skills?",
-      },
-    ],
   },
   twitter: {
     card: "summary_large_image",
@@ -60,8 +52,9 @@ export const metadata: Metadata = {
     title: "what are claude skills?",
     description:
       "the pillar guide: SKILL.md anatomy + the 6-component contract.",
-    images: ["/og-claude-skills.png"],
   },
+  // og:image / twitter:image are injected automatically from the colocated
+  // opengraph-image.tsx (the dynamic card generator) — no images field above.
 };
 
 // Table of contents entries, kept in one array so both the sticky sidebar
@@ -111,7 +104,7 @@ export default function ClaudeSkillsPage() {
       "what are claude skills? (and the right way to build them)",
     description:
       "Claude Skills are reusable instructions Claude loads on demand. the 6-component contract, two ways to build, and how skills run.",
-    image: absoluteUrl("/og-claude-skills.png"),
+    image: absoluteUrl("/claude-skills/opengraph-image"),
     datePublished: PUBLISHED_AT,
     dateModified: PUBLISHED_AT,
     author: { "@id": `${absoluteUrl("/")}#organization` },

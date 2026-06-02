@@ -32,8 +32,9 @@ export async function generateMetadata(props: {
   const { title, description } = guide.frontmatter;
   const canonicalPath = `/guides/${slug}`;
   const url = absoluteUrl(canonicalPath);
-  const ogImage = `/og-guides-${slug}.png`;
 
+  // og:image / twitter:image are injected automatically from the colocated
+  // opengraph-image.tsx (the dynamic card generator) — no images field here.
   return {
     title,
     description,
@@ -46,14 +47,12 @@ export async function generateMetadata(props: {
       siteName: "implexa",
       publishedTime: guide.frontmatter.publishedAt,
       tags: guide.frontmatter.tags,
-      images: [{ url: ogImage, width: 1200, height: 630, alt: title }],
     },
     twitter: {
       card: "summary_large_image",
       site: "@ImplexaAI",
       title,
       description,
-      images: [ogImage],
     },
   };
 }

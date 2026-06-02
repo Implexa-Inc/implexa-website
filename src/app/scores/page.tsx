@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import { ArrowLeft, BarChart3, TrendingUp } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
-import { absoluteUrl } from "@/lib/site";
+import { absoluteUrl, DEFAULT_OG_IMAGE } from "@/lib/site";
 import { jsonLdGraph, breadcrumbSchema, scoresPageSchema } from "@/lib/jsonld";
 
 // /scores is the public leaderboard of SkillScore display scores. Renders a
@@ -114,6 +114,7 @@ export async function generateMetadata(props: {
         : "top-rated skills, ranked by SkillRank | implexa",
       description:
         "the SkillRank leaderboard across the cross-vendor skill graph. multi-signal ranking for every AI skill in the index.",
+      images: [DEFAULT_OG_IMAGE],
     },
   };
 }

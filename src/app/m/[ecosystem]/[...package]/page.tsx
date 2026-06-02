@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { SkillCard } from "@/components/skill-card";
-import { absoluteUrl } from "@/lib/site";
+import { absoluteUrl, DEFAULT_OG_IMAGE } from "@/lib/site";
 import {
   jsonLdGraph,
   breadcrumbSchema,
@@ -77,11 +77,13 @@ export async function generateMetadata(props: {
       url: absoluteUrl(canonicalPath),
       title: `${titleBase} | implexa`,
       description,
+      images: [DEFAULT_OG_IMAGE],
     },
     twitter: {
       card: "summary_large_image",
       title: `${titleBase} | implexa`,
       description,
+      images: [DEFAULT_OG_IMAGE.url],
     },
   };
 }

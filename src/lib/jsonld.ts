@@ -204,7 +204,11 @@ export type ResourceForSchema = {
 export function articleSchema(post: ResourceForSchema): JsonLdNode {
   const section = post.section ?? "resources";
   const url = `${SITE_URL}/${section}/${post.slug}`;
-  const ogImage = `${SITE_URL}/og-${section}-${post.slug}.png`;
+  // Dynamically generated OG card served by the route's opengraph-image.tsx
+  // (e.g. /resources/<slug>/opengraph-image). Replaces the former static
+  // /og-<section>-<slug>.png path, which 404'd and disqualified the Article
+  // rich result (Google requires a resolvable image).
+  const ogImage = `${url}/opengraph-image`;
 
   return {
     "@type": "Article",

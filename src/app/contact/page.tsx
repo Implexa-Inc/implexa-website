@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import { ArrowLeft, Mail, MessageCircle } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
-import { absoluteUrl } from "@/lib/site";
+import { absoluteUrl, DEFAULT_OG_IMAGE } from "@/lib/site";
 
 // /contact. Deliberately simple: no form, no backend handler. v1 is just
 // an email address + a few alternate channels. We restored this route
@@ -24,6 +24,7 @@ export const metadata: Metadata = {
     title: "contact | implexa",
     description:
       "get in touch with the implexa team via email or github.",
+    images: [DEFAULT_OG_IMAGE],
   },
 };
 

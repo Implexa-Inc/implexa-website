@@ -4,7 +4,7 @@ import { Check, Sparkles } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
-import { absoluteUrl } from "@/lib/site";
+import { absoluteUrl, DEFAULT_OG_IMAGE } from "@/lib/site";
 
 const DASHBOARD_URL = "https://app.implexa.ai";
 
@@ -55,6 +55,7 @@ export const metadata: Metadata = {
     title: "pricing | implexa",
     description:
       "free forever for cross-vendor skill search + inline-apply. pro for SkillRank + org library.",
+    images: [DEFAULT_OG_IMAGE],
   },
 };
 

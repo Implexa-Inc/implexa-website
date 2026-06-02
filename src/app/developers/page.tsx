@@ -4,7 +4,7 @@ import { ArrowLeft, Code2, Sparkles, Layers, Search, Clock } from "lucide-react"
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { Badge } from "@/components/ui/badge";
-import { absoluteUrl } from "@/lib/site";
+import { absoluteUrl, DEFAULT_OG_IMAGE } from "@/lib/site";
 import { jsonLdGraph, breadcrumbSchema } from "@/lib/jsonld";
 import { PartnerWaitlistForm } from "./waitlist-form";
 
@@ -35,11 +35,13 @@ export const metadata: Metadata = {
     url: absoluteUrl("/developers"),
     title: `${PAGE_TITLE} | implexa`,
     description: PAGE_DESCRIPTION,
+    images: [DEFAULT_OG_IMAGE],
   },
   twitter: {
     card: "summary_large_image",
     title: PAGE_TITLE,
     description: PAGE_DESCRIPTION,
+    images: [DEFAULT_OG_IMAGE.url],
   },
 };
 

@@ -9,7 +9,7 @@ import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { absoluteUrl } from "@/lib/site";
+import { absoluteUrl, DEFAULT_OG_IMAGE } from "@/lib/site";
 import { jsonLdGraph, breadcrumbSchema } from "@/lib/jsonld";
 import { aggregateRepoMetrics } from "@/lib/parent-repo";
 
@@ -134,11 +134,13 @@ export async function generateMetadata(props: {
       url: absoluteUrl(`/u/${handle}`),
       title: titleBase + " | implexa",
       description: descBase,
+      images: [DEFAULT_OG_IMAGE],
     },
     twitter: {
       card: "summary",
       title: titleBase,
       description: descBase,
+      images: [DEFAULT_OG_IMAGE.url],
     },
   };
 }
