@@ -32,6 +32,7 @@ export type WorkflowStep = {
   label: string;
   ref: { source: string; slug: string } | null;
   gap: boolean;
+  fallbacks: string[]; // tool-step manual paths when the integration is not connected
 };
 
 export type WorkflowDetail = {
@@ -154,6 +155,7 @@ export async function getWorkflow(
           label: s.label || "",
           ref: s.ref ?? null,
           gap: s.gap === true,
+          fallbacks: Array.isArray(s.fallbacks) ? s.fallbacks : [],
         }))
       : [],
     caveat: w.caveat ?? null,

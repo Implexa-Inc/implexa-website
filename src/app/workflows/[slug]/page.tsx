@@ -17,7 +17,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { CopyableInstall } from "@/components/copyable-install";
-import { absoluteUrl } from "@/lib/site";
+import { absoluteUrl, DEFAULT_OG_IMAGE } from "@/lib/site";
 import { jsonLdGraph, breadcrumbSchema, howToSchema } from "@/lib/jsonld";
 import { getWorkflow, type WorkflowDetail } from "@/lib/workflow-catalog";
 
@@ -57,11 +57,13 @@ export async function generateMetadata(props: {
       url: absoluteUrl(`/workflows/${slug}`),
       title: `${w.name} | implexa workflow`,
       description: desc,
+      images: [DEFAULT_OG_IMAGE],
     },
     twitter: {
       card: "summary_large_image",
       title: w.name,
       description: desc,
+      images: [DEFAULT_OG_IMAGE.url],
     },
   };
 }
@@ -104,11 +106,25 @@ function StepRow({
             uses verified skill: {step.ref.slug}
             <ExternalLink className="size-2.5" aria-hidden="true" />
           </Link>
+        ) : step.kind === "decision" ? (
+          <span className="mt-1 block text-xs text-zinc-600">
+            decision step
+          </span>
         ) : (
           <span className="mt-1 block text-xs text-zinc-600">
             your model fills this step
           </span>
         )}
+        {step.fallbacks.length > 0 ? (
+          <ul className="mt-1.5 space-y-0.5">
+            {step.fallbacks.map((fb) => (
+              <li key={fb} className="text-xs text-zinc-500">
+                <span className="text-zinc-600">no integration? </span>
+                {fb}
+              </li>
+            ))}
+          </ul>
+        ) : null}
       </div>
     </li>
   );
