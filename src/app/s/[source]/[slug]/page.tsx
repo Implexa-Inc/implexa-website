@@ -127,11 +127,20 @@ export async function generateMetadata(props: {
   // Enrichment fetched in parallel with the base skill. When an enriched
   // version exists, its first paragraph beats the raw description for SEO
   // (unique authored text > scraped upstream blurb).
-  const [skill, enrichment] = await Promise.all([
+  const [skill, enrichment, score] = await Promise.all([
     fetchAggregatedSkill(source, slug),
     fetchSkillEnrichment(source, slug),
+    fetchSkillScore(source, slug),
   ]);
   const title = skill?.name ?? slug.replace(/-/g, " ");
+  const scoreNum =
+    typeof score?.display_score === "number" ? score.display_score : null;
+  // SkillRank in the title is a CTR trust hook, but only when it is actually
+  // strong: a low score in the title would suppress clicks, not lift them.
+  const trust =
+    scoreNum !== null && scoreNum >= 7
+      ? `, SkillRank ${scoreNum.toFixed(1)}`
+      : "";
   const enrichedDesc =
     enrichment?.enriched && enrichment.enriched_content
       ? firstParagraphOf(enrichment.enriched_content, 200)
@@ -139,22 +148,29 @@ export async function generateMetadata(props: {
   const description =
     enrichedDesc ||
     skill?.description ||
-    `${title}, a SKILL.md from ${source}. one-click install to claude code, codex, or cursor via implexa.`;
+    `${title} is a Claude skill${
+      scoreNum !== null ? ` ranked ${scoreNum.toFixed(1)}/10 by SkillRank` : ""
+    }. install it to Claude Code, Codex, or Cursor in one click via implexa.`;
   const canonicalPath = `/s/${source}/${slug}`;
+  // Keyword-led, benefit + trust title. Replaces the low-CTR "(source)" suffix
+  // that wasted SERP pixels with a category + (for strong skills) a SkillRank
+  // proof point. The template appends " | implexa".
+  const pageTitle = `${title}: Claude skill${trust}`;
+  const socialTitle = `${pageTitle} | implexa`;
 
   return {
-    title: `${title} (${source})`,
+    title: pageTitle,
     description,
     alternates: { canonical: canonicalPath },
     openGraph: {
       type: "article",
       url: absoluteUrl(canonicalPath),
-      title: `${title} | implexa`,
+      title: socialTitle,
       description,
     },
     twitter: {
       card: "summary_large_image",
-      title: `${title} | implexa`,
+      title: socialTitle,
       description,
     },
   };
