@@ -145,8 +145,10 @@ export async function listWorkflows(): Promise<WorkflowCard[]> {
 }
 
 /**
- * getWorkflow(slug, source) — full detail for one workflow. Cached 1h. source
- * defaults to 'web-seed' (the only workflow source today).
+ * getWorkflow(slug, source) — full detail for one workflow. Cached 10m (the
+ * response now carries live-ish activity counts + last_run_at, so a 1h cache
+ * would show stale run counts; only ~12 workflow pages exist so the shorter
+ * window is negligible load). source defaults to 'web-seed'.
  */
 export async function getWorkflow(
   slug: string,
@@ -156,7 +158,7 @@ export async function getWorkflow(
   const resp = await callMcpTool<Resp>(
     "get_workflow",
     { slug, source },
-    3600,
+    600,
   );
   if (!resp?.ok || !resp.workflow) return null;
   const w = resp.workflow;
