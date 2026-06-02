@@ -134,13 +134,20 @@ function StepRow({
           ) : null}
         </div>
         <p className="text-sm text-zinc-200">{step.label}</p>
-        {/* inline the bound skill's real substance: what it does + a preview of
-            the procedure, so the step reads as actual work, not just a label */}
-        {bound && step.ref_summary?.description ? (
+        {/* workflow-specific substance: what this step does here + what good
+            looks like. Shown for every step, so the unbound tool/decision steps
+            read as real work instead of a bare label. Falls back to the bound
+            skill's generic description only when no detail was authored. */}
+        {step.detail ? (
+          <p className="mt-1 text-xs text-zinc-400 leading-relaxed">
+            {step.detail}
+          </p>
+        ) : bound && step.ref_summary?.description ? (
           <p className="mt-1 text-xs text-zinc-400 leading-relaxed">
             {step.ref_summary.description}
           </p>
         ) : null}
+        {/* the bound skill's actual procedure depth, one click of context inline */}
         {bound && step.ref_summary?.preview ? (
           <p className="mt-1.5 text-xs text-zinc-500 leading-relaxed border-l border-zinc-800 pl-3">
             {step.ref_summary.preview}

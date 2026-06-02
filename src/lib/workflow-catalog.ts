@@ -65,6 +65,10 @@ export type WorkflowStep = {
   order: number;
   kind: string; // 'skill' | 'tool' | 'decision'
   label: string;
+  // workflow-specific substance: what this step does here and what good looks
+  // like. Authored per workflow; gives the unbound tool/decision steps real
+  // depth instead of a bare label.
+  detail: string | null;
   ref: { source: string; slug: string } | null;
   ref_summary: WorkflowStepRefSummary | null;
   gap: boolean;
@@ -224,10 +228,12 @@ export async function getWorkflow(
             | { name?: unknown; description?: unknown; preview?: unknown }
             | null
             | undefined;
+          const detail = (s as { detail?: unknown }).detail;
           return {
             order: s.order,
             kind: s.kind || "skill",
             label: s.label || "",
+            detail: typeof detail === "string" && detail ? detail : null,
             ref: s.ref ?? null,
             ref_summary:
               rs && typeof rs === "object"
