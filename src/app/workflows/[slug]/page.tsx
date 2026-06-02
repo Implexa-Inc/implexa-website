@@ -214,7 +214,8 @@ export default async function WorkflowDetailPage(props: {
   const hasActivity =
     activity.run_count > 0 ||
     activity.scheduled_count > 0 ||
-    Boolean(updatedAt);
+    Boolean(updatedAt) ||
+    w.version != null;
 
   const ldJson = jsonLdGraph(
     howToSchema({
@@ -308,6 +309,11 @@ export default async function WorkflowDetailPage(props: {
             {updatedAt ? (
               <span className="inline-flex items-center gap-1.5 text-zinc-600">
                 updated {updatedAt}
+              </span>
+            ) : null}
+            {w.version != null ? (
+              <span className="inline-flex items-center gap-1.5 text-zinc-600">
+                v{w.version}
               </span>
             ) : null}
           </div>
@@ -467,6 +473,66 @@ export default async function WorkflowDetailPage(props: {
               <p className="mt-3 text-xs text-zinc-600">
                 implexa assembles public best-practice into runnable workflows
                 and credits the sources it drew from.
+              </p>
+            </div>
+          </>
+        ) : null}
+
+        {/* changelog: workflows are alive, this is how this one has evolved */}
+        {w.versions.length > 0 ? (
+          <>
+            <Separator className="bg-zinc-900 mb-6" />
+            <div className="mb-4">
+              <div className="flex flex-wrap items-center gap-2 mb-3">
+                <h2 className="text-xs font-medium text-zinc-500 uppercase tracking-wider">
+                  changelog
+                </h2>
+                {w.proposed_count > 0 ? (
+                  <Badge
+                    variant="outline"
+                    className="text-[10px] uppercase tracking-wider border-amber-500/30 text-amber-300/90"
+                  >
+                    {w.proposed_count} proposed{" "}
+                    {w.proposed_count === 1 ? "improvement" : "improvements"}
+                  </Badge>
+                ) : null}
+              </div>
+              <ol className="relative ml-1 space-y-3 border-l border-zinc-900">
+                {w.versions.map((v) => (
+                  <li key={v.version} className="relative pl-4">
+                    <span
+                      className="absolute -left-[5px] top-1.5 size-2 rounded-full bg-zinc-700"
+                      aria-hidden="true"
+                    />
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="text-xs font-medium text-zinc-300 tabular-nums">
+                        v{v.version}
+                      </span>
+                      {shortDate(v.at) ? (
+                        <span className="text-xs text-zinc-600">
+                          {shortDate(v.at)}
+                        </span>
+                      ) : null}
+                      <Badge
+                        variant="outline"
+                        className={`text-[9px] uppercase tracking-wider border-zinc-800 ${
+                          v.source === "feedback"
+                            ? "text-amber-300/90"
+                            : "text-zinc-500"
+                        }`}
+                      >
+                        {v.source}
+                      </Badge>
+                    </div>
+                    {v.summary ? (
+                      <p className="mt-0.5 text-xs text-zinc-500">{v.summary}</p>
+                    ) : null}
+                  </li>
+                ))}
+              </ol>
+              <p className="mt-3 text-xs text-zinc-600">
+                workflows are alive: every change is a version, and a run can
+                propose improvements that get reviewed and applied.
               </p>
             </div>
           </>

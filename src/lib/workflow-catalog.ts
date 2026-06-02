@@ -43,6 +43,15 @@ export type WorkflowActivity = {
   last_run_at: string | null;
 };
 
+// One applied entry in a workflow's changelog. Workflows are alive, not frozen:
+// each change to the steps is a version, surfaced as a Git-like history.
+export type WorkflowVersionEntry = {
+  version: number;
+  summary: string | null;
+  source: string; // seed | generated | feedback | manual
+  at: string;
+};
+
 // A one-glance summary of the verified skill a step is bound to. Lets the
 // workflow page show each step's real substance inline (name + what it does +
 // a content preview) instead of just a label and a link to /s/<source>/<slug>.
@@ -85,6 +94,9 @@ export type WorkflowDetail = {
   generated: boolean;
   unproven: boolean;
   activity: WorkflowActivity;
+  version: number | null; // current (newest applied) version number
+  versions: WorkflowVersionEntry[]; // applied changelog, newest first
+  proposed_count: number; // pending feedback-driven revisions
 };
 
 // Parse the SSE-wrapped MCP response. The backend wraps responses as
@@ -185,6 +197,14 @@ export async function getWorkflow(
       scheduled_count?: number;
       last_run_at?: string | null;
     };
+    version?: number | null;
+    versions?: Array<{
+      version?: number;
+      summary?: string | null;
+      source?: string;
+      at?: string;
+    }>;
+    proposed_count?: number;
   };
   const num = (v: unknown) => (typeof v === "number" && v >= 0 ? v : 0);
   return {
@@ -249,5 +269,17 @@ export async function getWorkflow(
       scheduled_count: num(raw.activity?.scheduled_count),
       last_run_at: raw.activity?.last_run_at ?? null,
     },
+    version: typeof raw.version === "number" ? raw.version : null,
+    versions: Array.isArray(raw.versions)
+      ? raw.versions
+          .filter((v) => v && typeof v.version === "number")
+          .map((v) => ({
+            version: v.version as number,
+            summary: typeof v.summary === "string" ? v.summary : null,
+            source: String(v.source ?? "manual"),
+            at: String(v.at ?? ""),
+          }))
+      : [],
+    proposed_count: num(raw.proposed_count),
   };
 }
