@@ -11,7 +11,9 @@ import {
   jsonLdGraph,
   breadcrumbSchema,
   articleSchema,
+  faqSchema,
 } from "@/lib/jsonld";
+import { extractFaq } from "@/lib/faq";
 
 // Mirror of /resources/[slug]/page.tsx in structure. The two surfaces
 // share Article + BreadcrumbList schema and prose styling so AI assistants
@@ -119,6 +121,10 @@ export default async function BlogPostPage(props: {
   // unused; touch this to avoid breaking the build.
   void articleSchema;
 
+  // FAQPage schema when the post has a FAQ section (answer-engine + Google
+  // rich-result lift). Drops out cleanly via jsonLdGraph when there are none.
+  const faqNode = faqSchema(extractFaq(post.raw));
+
   const ldJson = jsonLdGraph(
     articleNode,
     breadcrumbSchema([
@@ -126,6 +132,7 @@ export default async function BlogPostPage(props: {
       { name: "blog", url: absoluteUrl("/blog") },
       { name: title, url: articleUrl },
     ]),
+    faqNode,
   );
 
   return (

@@ -428,6 +428,29 @@ export function howToSchema(input: HowToInput): JsonLdNode | null {
   return node;
 }
 
+/**
+ * FAQPage schema from extracted question/answer pairs. Returns null when there
+ * are no usable items so jsonLdGraph drops it. Answers should already be plain
+ * text (see extractFaq in lib/faq.ts). Answer-engines and Google lift well-
+ * formed Q&A blocks, so this is a cheap AEO win on any post with a FAQ section.
+ */
+export function faqSchema(
+  items: Array<{ question: string; answer: string }>,
+): JsonLdNode | null {
+  const clean = items
+    .map((it) => ({ question: it.question.trim(), answer: it.answer.trim() }))
+    .filter((it) => it.question.length > 0 && it.answer.length > 0);
+  if (clean.length === 0) return null;
+  return {
+    "@type": "FAQPage",
+    mainEntity: clean.map((it) => ({
+      "@type": "Question",
+      name: it.question,
+      acceptedAnswer: { "@type": "Answer", text: it.answer },
+    })),
+  };
+}
+
 // ── Graph assembler ────────────────────────────────────────────────────────
 
 /**
