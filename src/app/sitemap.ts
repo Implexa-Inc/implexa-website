@@ -1,6 +1,6 @@
 import type { MetadataRoute } from "next";
 import { after } from "next/server";
-import { absoluteUrl } from "@/lib/site";
+import { absoluteUrl, SITE_URL } from "@/lib/site";
 import { listResources } from "@/lib/resources";
 import { listBlogPosts } from "@/lib/blog";
 import { listAllSkillsForSitemap } from "@/lib/skill-catalog";
@@ -31,7 +31,10 @@ function staticPages(now: Date): MetadataRoute.Sitemap {
   // If the page 404s temporarily the crawler will retry on the next pass.
   return [
     {
-      url: absoluteUrl("/"),
+      // Slash-less to match the homepage canonical (site.ts treats the
+      // no-trailing-slash form as canonical; absoluteUrl("/") would emit
+      // "https://implexa.ai/" and create a canonical-vs-sitemap mismatch).
+      url: SITE_URL,
       lastModified: now,
       changeFrequency: "weekly",
       priority: 1.0,

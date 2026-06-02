@@ -52,7 +52,7 @@ export async function generateMetadata(props: {
     (w.primary_outcome || w.job || w.description || "").slice(0, 200) ||
     "a whole-job AI workflow you can run on a schedule inside Claude.";
   return {
-    title: `${w.name} — a ${cadence}${vertical}workflow`,
+    title: `${w.name}: a ${cadence}${vertical}workflow`,
     description: desc,
     alternates: { canonical: `/workflows/${slug}` },
     openGraph: {
