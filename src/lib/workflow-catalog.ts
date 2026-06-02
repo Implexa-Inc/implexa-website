@@ -26,6 +26,13 @@ export type WorkflowCard = {
   last_seen_at: string | null;
 };
 
+export type WorkflowCapability = {
+  id: string;
+  name: string;
+  why: string;
+  install_hint: string;
+};
+
 export type WorkflowStep = {
   order: number;
   kind: string; // 'skill' | 'tool' | 'decision'
@@ -49,6 +56,7 @@ export type WorkflowDetail = {
   steps: WorkflowStep[];
   caveat: string | null;
   sources: string[];
+  capabilities: WorkflowCapability[];
   content: string | null;
   source_url: string | null;
   last_seen_at: string | null;
@@ -160,6 +168,14 @@ export async function getWorkflow(
       : [],
     caveat: w.caveat ?? null,
     sources: Array.isArray(w.sources) ? w.sources : [],
+    capabilities: Array.isArray(w.capabilities)
+      ? w.capabilities.map((c) => ({
+          id: String(c.id ?? ""),
+          name: String(c.name ?? ""),
+          why: String(c.why ?? ""),
+          install_hint: String(c.install_hint ?? ""),
+        }))
+      : [],
     content: w.content ?? null,
     source_url: w.source_url ?? null,
     last_seen_at: w.last_seen_at ?? null,

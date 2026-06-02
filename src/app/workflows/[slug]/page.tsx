@@ -10,6 +10,9 @@ import {
   AlertTriangle,
   ExternalLink,
   Workflow as WorkflowIcon,
+  Zap,
+  Globe,
+  Clock,
 } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
@@ -265,6 +268,47 @@ export default async function WorkflowDetailPage(props: {
                 </h2>
               </div>
               <p className="text-sm text-amber-100/80">{w.caveat}</p>
+            </CardContent>
+          </Card>
+        ) : null}
+
+        {/* runs best with — the capabilities that take it hands-free */}
+        {w.capabilities.length > 0 ? (
+          <Card className="bg-zinc-950 border-zinc-900 mb-8">
+            <CardContent className="p-5">
+              <div className="flex items-center gap-2 mb-3">
+                <Zap className="size-4 text-amber-300" aria-hidden="true" />
+                <h2 className="text-sm font-medium text-white uppercase tracking-wider">
+                  runs hands-free with
+                </h2>
+              </div>
+              <ul className="space-y-3">
+                {w.capabilities.map((cap) => (
+                  <li key={cap.id} className="flex gap-3">
+                    <div className="flex-none mt-0.5">
+                      {cap.id === "chrome-mcp" ? (
+                        <Globe
+                          className="size-4 text-emerald-400"
+                          aria-hidden="true"
+                        />
+                      ) : (
+                        <Clock
+                          className="size-4 text-emerald-400"
+                          aria-hidden="true"
+                        />
+                      )}
+                    </div>
+                    <div>
+                      <p className="text-sm text-zinc-200">{cap.name}</p>
+                      <p className="text-xs text-zinc-500">{cap.why}</p>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+              <p className="mt-3 text-xs text-zinc-600">
+                connect these and the workflow gathers its own data and delivers
+                on a schedule, instead of leaving you blanks to fill.
+              </p>
             </CardContent>
           </Card>
         ) : null}
