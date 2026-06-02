@@ -22,7 +22,11 @@ import { Separator } from "@/components/ui/separator";
 import { CopyableInstall } from "@/components/copyable-install";
 import { absoluteUrl } from "@/lib/site";
 import { jsonLdGraph, breadcrumbSchema, howToSchema } from "@/lib/jsonld";
-import { getWorkflow, type WorkflowDetail } from "@/lib/workflow-catalog";
+import {
+  getWorkflow,
+  listWorkflows,
+  type WorkflowDetail,
+} from "@/lib/workflow-catalog";
 
 type RouteParams = { slug: string };
 
@@ -166,8 +170,24 @@ export default async function WorkflowDetailPage(props: {
   params: Promise<RouteParams>;
 }) {
   const { slug } = await props.params;
-  const w = await getWorkflow(slug);
+  const [w, allWorkflows] = await Promise.all([
+    getWorkflow(slug),
+    listWorkflows(),
+  ]);
   if (!w) notFound();
+
+  // related workflows: prefer same-vertical siblings, fill with the rest, cap 4.
+  // interlinks the high-intent workflow pages with each other (internal linking
+  // for ranking, since these are the surface we lean into for higher-intent
+  // queries). listWorkflows is cached and tiny (~12 rows).
+  const otherWorkflows = allWorkflows.filter((x) => x.slug !== w.slug);
+  const sameVertical = otherWorkflows.filter(
+    (x) => w.vertical && x.vertical === w.vertical,
+  );
+  const relatedWorkflows = [
+    ...sameVertical,
+    ...otherWorkflows.filter((x) => !sameVertical.includes(x)),
+  ].slice(0, 4);
 
   const boundCount = w.steps.filter((s) => s.ref && !s.gap).length;
 
@@ -434,6 +454,53 @@ export default async function WorkflowDetailPage(props: {
                 implexa assembles public best-practice into runnable workflows
                 and credits the sources it drew from.
               </p>
+            </div>
+          </>
+        ) : null}
+
+        {/* related workflows: interlink the high-intent workflow pages */}
+        {relatedWorkflows.length > 0 ? (
+          <>
+            <Separator className="bg-zinc-900 mb-6" />
+            <div className="mb-4">
+              <h2 className="text-xs font-medium text-zinc-500 uppercase tracking-wider mb-3">
+                related workflows
+              </h2>
+              <ul className="grid gap-2 sm:grid-cols-2">
+                {relatedWorkflows.map((r) => (
+                  <li key={r.slug}>
+                    <Link
+                      href={`/workflows/${r.slug}`}
+                      className="group block rounded-lg border border-zinc-900 hover:border-zinc-700 bg-zinc-950 hover:bg-zinc-900/40 transition-colors p-4 h-full"
+                    >
+                      <div className="flex flex-wrap items-center gap-1.5 mb-1.5">
+                        {r.cadence ? (
+                          <Badge
+                            variant="outline"
+                            className="text-[10px] uppercase tracking-wider border-zinc-800 text-amber-300/90"
+                          >
+                            {r.cadence}
+                          </Badge>
+                        ) : null}
+                        {r.vertical ? (
+                          <Badge
+                            variant="outline"
+                            className="text-[10px] uppercase tracking-wider border-zinc-800 text-zinc-400"
+                          >
+                            {r.vertical}
+                          </Badge>
+                        ) : null}
+                      </div>
+                      <p className="text-sm text-zinc-200 lowercase group-hover:underline decoration-zinc-600">
+                        {r.name}
+                      </p>
+                      <p className="mt-1 text-xs text-zinc-500 line-clamp-2">
+                        {r.primary_outcome || r.description}
+                      </p>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
             </div>
           </>
         ) : null}
