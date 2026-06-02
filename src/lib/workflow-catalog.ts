@@ -33,6 +33,16 @@ export type WorkflowCapability = {
   install_hint: string;
 };
 
+// Aggregate usage signal for one workflow (counts only, never run content).
+// Drives the activity strip on the detail page: live social proof + an
+// "updated" freshness signal that doubles as an AEO ranking input.
+export type WorkflowActivity = {
+  run_count: number;
+  apply_count: number;
+  scheduled_count: number;
+  last_run_at: string | null;
+};
+
 export type WorkflowStep = {
   order: number;
   kind: string; // 'skill' | 'tool' | 'decision'
@@ -60,6 +70,11 @@ export type WorkflowDetail = {
   content: string | null;
   source_url: string | null;
   last_seen_at: string | null;
+  created_at: string | null;
+  updated_at: string | null;
+  generated: boolean;
+  unproven: boolean;
+  activity: WorkflowActivity;
 };
 
 // Parse the SSE-wrapped MCP response. The backend wraps responses as
@@ -145,6 +160,21 @@ export async function getWorkflow(
   );
   if (!resp?.ok || !resp.workflow) return null;
   const w = resp.workflow;
+  // New activity/version fields may be absent on older backends, read them off
+  // a loose view so the mapping stays defensive (the page renders without them).
+  const raw = w as unknown as {
+    created_at?: string | null;
+    updated_at?: string | null;
+    generated?: boolean;
+    unproven?: boolean;
+    activity?: {
+      run_count?: number;
+      apply_count?: number;
+      scheduled_count?: number;
+      last_run_at?: string | null;
+    };
+  };
+  const num = (v: unknown) => (typeof v === "number" && v >= 0 ? v : 0);
   return {
     source: w.source,
     slug: w.slug,
@@ -179,5 +209,15 @@ export async function getWorkflow(
     content: w.content ?? null,
     source_url: w.source_url ?? null,
     last_seen_at: w.last_seen_at ?? null,
+    created_at: raw.created_at ?? null,
+    updated_at: raw.updated_at ?? null,
+    generated: raw.generated === true,
+    unproven: raw.unproven === true,
+    activity: {
+      run_count: num(raw.activity?.run_count),
+      apply_count: num(raw.activity?.apply_count),
+      scheduled_count: num(raw.activity?.scheduled_count),
+      last_run_at: raw.activity?.last_run_at ?? null,
+    },
   };
 }

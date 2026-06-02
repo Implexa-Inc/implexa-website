@@ -34,6 +34,35 @@ function hostOf(url: string): string {
   }
 }
 
+// Compact relative time ("2h ago", "3d ago") for the activity strip. The page
+// is ISR-cached (~1h via the get_workflow fetch revalidate), so this is accurate
+// to within the cache window, which is fine for a social-proof signal.
+function timeAgo(iso: string | null): string | null {
+  if (!iso) return null;
+  const then = new Date(iso).getTime();
+  if (Number.isNaN(then)) return null;
+  const secs = Math.max(0, Math.floor((Date.now() - then) / 1000));
+  if (secs < 90) return "just now";
+  const mins = Math.floor(secs / 60);
+  if (mins < 60) return `${mins}m ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs}h ago`;
+  const days = Math.floor(hrs / 24);
+  if (days < 30) return `${days}d ago`;
+  const months = Math.floor(days / 30);
+  if (months < 12) return `${months}mo ago`;
+  return `${Math.floor(months / 12)}y ago`;
+}
+
+function shortDate(iso: string | null): string | null {
+  if (!iso) return null;
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return null;
+  return d
+    .toLocaleDateString("en-US", { month: "short", day: "numeric", timeZone: "UTC" })
+    .toLowerCase();
+}
+
 export async function generateMetadata(props: {
   params: Promise<RouteParams>;
 }): Promise<Metadata> {
@@ -142,6 +171,17 @@ export default async function WorkflowDetailPage(props: {
 
   const boundCount = w.steps.filter((s) => s.ref && !s.gap).length;
 
+  // Activity strip inputs. Show run/schedule counts only when > 0 (never a
+  // demoralizing "0 runs"), but always surface the "updated" date as a
+  // freshness signal. Aggregate counts only, never individual run content.
+  const activity = w.activity;
+  const lastRun = timeAgo(activity.last_run_at);
+  const updatedAt = shortDate(w.updated_at);
+  const hasActivity =
+    activity.run_count > 0 ||
+    activity.scheduled_count > 0 ||
+    Boolean(updatedAt);
+
   const ldJson = jsonLdGraph(
     howToSchema({
       name: w.name,
@@ -196,11 +236,48 @@ export default async function WorkflowDetailPage(props: {
               {w.cadence}
             </Badge>
           ) : null}
+          {w.unproven ? (
+            <Badge
+              variant="outline"
+              className="text-[10px] uppercase tracking-wider border-amber-500/30 text-amber-300/90"
+            >
+              auto-generated · unproven
+            </Badge>
+          ) : null}
         </div>
         <h1 className="text-3xl sm:text-4xl font-semibold tracking-tight text-white lowercase mb-3">
           {w.name}
         </h1>
-        <p className="text-lg text-zinc-400 mb-8">{w.job || w.description}</p>
+        <p className="text-lg text-zinc-400 mb-5">{w.job || w.description}</p>
+
+        {/* activity strip: live usage signal + freshness (aggregate only) */}
+        {hasActivity ? (
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-zinc-500 mb-8">
+            {activity.run_count > 0 ? (
+              <span className="inline-flex items-center gap-1.5">
+                <Zap className="size-3 text-amber-300/80" aria-hidden="true" />
+                {activity.run_count} {activity.run_count === 1 ? "run" : "runs"}
+              </span>
+            ) : null}
+            {activity.run_count > 0 && lastRun ? (
+              <span className="inline-flex items-center gap-1.5">
+                <Clock className="size-3" aria-hidden="true" />
+                last run {lastRun}
+              </span>
+            ) : null}
+            {activity.scheduled_count > 0 ? (
+              <span className="inline-flex items-center gap-1.5">
+                <Calendar className="size-3" aria-hidden="true" />
+                {activity.scheduled_count} on a schedule
+              </span>
+            ) : null}
+            {updatedAt ? (
+              <span className="inline-flex items-center gap-1.5 text-zinc-600">
+                updated {updatedAt}
+              </span>
+            ) : null}
+          </div>
+        ) : null}
 
         {/* what you get */}
         {w.primary_outcome ? (
