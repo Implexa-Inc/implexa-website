@@ -43,11 +43,21 @@ export type WorkflowActivity = {
   last_run_at: string | null;
 };
 
+// A one-glance summary of the verified skill a step is bound to. Lets the
+// workflow page show each step's real substance inline (name + what it does +
+// a content preview) instead of just a label and a link to /s/<source>/<slug>.
+export type WorkflowStepRefSummary = {
+  name: string;
+  description: string | null;
+  preview: string | null;
+};
+
 export type WorkflowStep = {
   order: number;
   kind: string; // 'skill' | 'tool' | 'decision'
   label: string;
   ref: { source: string; slug: string } | null;
+  ref_summary: WorkflowStepRefSummary | null;
   gap: boolean;
   fallbacks: string[]; // tool-step manual paths when the integration is not connected
 };
@@ -189,14 +199,32 @@ export async function getWorkflow(
     primary_outcome: w.primary_outcome ?? null,
     signals: Array.isArray(w.signals) ? w.signals : [],
     steps: Array.isArray(w.steps)
-      ? w.steps.map((s) => ({
-          order: s.order,
-          kind: s.kind || "skill",
-          label: s.label || "",
-          ref: s.ref ?? null,
-          gap: s.gap === true,
-          fallbacks: Array.isArray(s.fallbacks) ? s.fallbacks : [],
-        }))
+      ? w.steps.map((s) => {
+          const rs = (s as { ref_summary?: unknown }).ref_summary as
+            | { name?: unknown; description?: unknown; preview?: unknown }
+            | null
+            | undefined;
+          return {
+            order: s.order,
+            kind: s.kind || "skill",
+            label: s.label || "",
+            ref: s.ref ?? null,
+            ref_summary:
+              rs && typeof rs === "object"
+                ? {
+                    name: String(rs.name ?? ""),
+                    description:
+                      typeof rs.description === "string" ? rs.description : null,
+                    preview:
+                      typeof rs.preview === "string" && rs.preview
+                        ? rs.preview
+                        : null,
+                  }
+                : null,
+            gap: s.gap === true,
+            fallbacks: Array.isArray(s.fallbacks) ? s.fallbacks : [],
+          };
+        })
       : [],
     caveat: w.caveat ?? null,
     sources: Array.isArray(w.sources) ? w.sources : [],

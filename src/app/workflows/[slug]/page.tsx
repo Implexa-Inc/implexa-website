@@ -134,12 +134,26 @@ function StepRow({
           ) : null}
         </div>
         <p className="text-sm text-zinc-200">{step.label}</p>
+        {/* inline the bound skill's real substance: what it does + a preview of
+            the procedure, so the step reads as actual work, not just a label */}
+        {bound && step.ref_summary?.description ? (
+          <p className="mt-1 text-xs text-zinc-400 leading-relaxed">
+            {step.ref_summary.description}
+          </p>
+        ) : null}
+        {bound && step.ref_summary?.preview ? (
+          <p className="mt-1.5 text-xs text-zinc-500 leading-relaxed border-l border-zinc-800 pl-3">
+            {step.ref_summary.preview}
+          </p>
+        ) : null}
         {bound && step.ref ? (
           <Link
             href={`/s/${step.ref.source}/${step.ref.slug}`}
-            className="mt-1 inline-flex items-center gap-1 text-xs text-emerald-400/90 hover:text-emerald-300 transition-colors"
+            className="mt-1.5 inline-flex items-center gap-1 text-xs text-emerald-400/90 hover:text-emerald-300 transition-colors"
           >
-            uses verified skill: {step.ref.slug}
+            {step.ref_summary?.name
+              ? `full skill: ${step.ref_summary.name}`
+              : `uses verified skill: ${step.ref.slug}`}
             <ExternalLink className="size-2.5" aria-hidden="true" />
           </Link>
         ) : step.kind === "decision" ? (
