@@ -20,7 +20,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { CopyableInstall } from "@/components/copyable-install";
-import { absoluteUrl, DEFAULT_OG_IMAGE } from "@/lib/site";
+import { absoluteUrl } from "@/lib/site";
 import { jsonLdGraph, breadcrumbSchema, howToSchema } from "@/lib/jsonld";
 import { getWorkflow, type WorkflowDetail } from "@/lib/workflow-catalog";
 
@@ -55,18 +55,18 @@ export async function generateMetadata(props: {
     title: `${w.name}: a ${cadence}${vertical}workflow`,
     description: desc,
     alternates: { canonical: `/workflows/${slug}` },
+    // og:image / twitter:image are injected automatically from the colocated
+    // opengraph-image.tsx (the dynamic card generator), no images field here.
     openGraph: {
       type: "article",
       url: absoluteUrl(`/workflows/${slug}`),
       title: `${w.name} | implexa workflow`,
       description: desc,
-      images: [DEFAULT_OG_IMAGE],
     },
     twitter: {
       card: "summary_large_image",
       title: w.name,
       description: desc,
-      images: [DEFAULT_OG_IMAGE.url],
     },
   };
 }

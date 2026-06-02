@@ -5,7 +5,7 @@ import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { absoluteUrl, DEFAULT_OG_IMAGE } from "@/lib/site";
+import { absoluteUrl } from "@/lib/site";
 import { jsonLdGraph, breadcrumbSchema } from "@/lib/jsonld";
 import { listWorkflows, type WorkflowCard } from "@/lib/workflow-catalog";
 
@@ -35,13 +35,13 @@ export async function generateMetadata(props: {
     description:
       "Ready-made AI workflows that stitch verified skills into a whole recurring job, a daily content pack, a weekly market report, a morning build brief, and run on a schedule inside Claude. Install once, let it deliver.",
     alternates: { canonical: "/workflows" },
+    // og:image injected from the colocated opengraph-image.tsx.
     openGraph: {
       type: "website",
       url: absoluteUrl("/workflows"),
       title: `${title} | implexa`,
       description:
         "Whole-job AI workflows built from verified skills, runnable on a schedule. Browse the catalog and install in one line.",
-      images: [DEFAULT_OG_IMAGE],
     },
   };
 }
