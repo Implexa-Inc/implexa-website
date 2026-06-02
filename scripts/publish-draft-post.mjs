@@ -26,6 +26,8 @@
 //   - slug is kebab-case and matches the frontmatter slug
 //   - no em-dash anywhere (the house voice rule, enforced mechanically)
 //   - body is at least MIN_WORDS words (no thin-content stubs)
+//   - not degenerate/repetitive (no line repeated > 3x, sentence + vocabulary
+//     diversity floors — catches the "one sentence repeated 60x" failure mode)
 //   - markdown parses cleanly
 //   - content/blog/<slug>.md does not already exist (no clobber)
 
@@ -152,6 +154,40 @@ async function main() {
   const body = parsed.content.trim();
   const words = body.split(/\s+/).filter(Boolean).length;
   if (words < MIN_WORDS) fail(`body is ${words} words, under the ${MIN_WORDS}-word floor (no thin-content stubs)`);
+
+  // gate: reject degenerate / repetitive content. Word count alone let the
+  // "one sentence repeated ~60x" incident through (it cleared 400 words), so
+  // three cheap diversity checks back it up. Thresholds sit well below what
+  // real prose hits, so legit posts pass and degenerate drafts do not.
+  const contentLines = body
+    .split("\n")
+    .map((l) => l.trim())
+    .filter((l) => l.length > 0 && !l.startsWith("#") && l !== "---");
+  const lineCounts = new Map();
+  for (const l of contentLines) lineCounts.set(l, (lineCounts.get(l) || 0) + 1);
+  const maxLineRepeat = contentLines.length ? Math.max(...lineCounts.values()) : 0;
+  if (maxLineRepeat > 3) {
+    fail(`a single line repeats ${maxLineRepeat} times (max 3). reads as degenerate/repetitive content.`);
+  }
+  const sentences = body
+    .replace(/\s+/g, " ")
+    .split(/(?<=[.!?])\s+/)
+    .map((s) => s.trim().toLowerCase())
+    .filter((s) => s.length > 20);
+  if (sentences.length >= 8) {
+    const uniqueRatio = new Set(sentences).size / sentences.length;
+    if (uniqueRatio < 0.5) {
+      fail(`only ${Math.round(uniqueRatio * 100)}% of sentences are unique (min 50%). reads as repetitive content.`);
+    }
+  }
+  const tokens = body.toLowerCase().match(/[a-z0-9']+/g) || [];
+  if (tokens.length >= 200) {
+    const ttr = new Set(tokens).size / tokens.length;
+    if (ttr < 0.18) {
+      fail(`vocabulary diversity ${Math.round(ttr * 100)}% is below 18% (degenerate/repetitive text).`);
+    }
+  }
+
   try {
     marked.parse(body);
   } catch (e) {
