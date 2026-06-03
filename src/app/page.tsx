@@ -26,14 +26,14 @@ import { CATEGORIES } from "@/lib/placeholder-data";
 // Explicit canonical so the homepage is never indexed under a query-string
 // variant (e.g. ?utm=x). Title + description come from layout.tsx defaults.
 export const metadata: Metadata = {
-  title: "Implexa: AI that runs your recurring work for you",
+  title: "Implexa: Let AI run your business",
   description:
-    "Implexa learns what you repeat, builds a workflow from 40,000+ verified AI skills, runs it on a schedule, and emails you the result. Install one plugin in Claude Code or Codex.",
+    "Implexa watches your AI work and turns your routines into agentic workflows. Launch with one command, run on a schedule, track outcomes. For Claude Code and Codex.",
   alternates: { canonical: "/" },
   openGraph: {
-    title: "Implexa: AI that runs your recurring work for you",
+    title: "Implexa: Let AI run your business",
     description:
-      "It learns what you repeat, stitches the right skills and tools into a workflow, runs it on a schedule, and delivers the result. You approve once.",
+      "Implexa watches your AI work and turns your routines into agentic workflows. Launch with one command, run on a schedule, track outcomes.",
   },
 };
 
@@ -217,25 +217,22 @@ export default async function HomePage() {
               </div>
 
               <h1 className="text-4xl lg:text-5xl xl:text-6xl font-semibold tracking-tight text-white leading-[1.05] mb-5">
-                Implexa runs your{" "}
+                Let AI run your{" "}
                 <span className="underline decoration-amber-400 decoration-2 underline-offset-[6px]">
-                  recurring work
+                  business
                 </span>
-                <br />
-                <span className="text-zinc-400">for you.</span>
+                .
               </h1>
 
-              <p className="text-lg text-zinc-400 leading-relaxed mb-8 max-w-xl">
-                It learns what you repeat, builds a workflow from{" "}
-                {counts.vetted.toLocaleString()}+ verified AI skills (ranked by{" "}
-                <Link
-                  href="/resources/skill-rank"
-                  className="text-white underline decoration-amber-400 decoration-2 underline-offset-4 hover:decoration-amber-300 transition-colors"
-                >
-                  SkillRank
-                </Link>{" "}
-                for what actually works), runs it on a schedule, and emails you
-                the result. You approve once.
+              <p className="text-lg text-zinc-400 leading-relaxed mb-4 max-w-xl">
+                Implexa watches your AI work and turns your routines into{" "}
+                <span className="text-white">agentic workflows</span>.
+              </p>
+              <p className="text-base text-zinc-200 font-medium leading-relaxed mb-3 max-w-xl">
+                Launch with one command. Run on a schedule. Track outcomes.
+              </p>
+              <p className="text-sm text-zinc-500 mb-8">
+                Available for Claude Code and Codex.
               </p>
 
               {/* two CTAs, primary + secondary. install is the conversion;
