@@ -71,6 +71,9 @@ export type WorkflowStep = {
   detail: string | null;
   ref: { source: string; slug: string } | null;
   ref_summary: WorkflowStepRefSummary | null;
+  // W3: when this step's bound skill already appeared earlier in the chain,
+  // the earlier step's order (so the page renders "same skill as step N").
+  same_as_step: number | null;
   gap: boolean;
   fallbacks: string[]; // tool-step manual paths when the integration is not connected
 };
@@ -229,11 +232,13 @@ export async function getWorkflow(
             | null
             | undefined;
           const detail = (s as { detail?: unknown }).detail;
+          const sameAs = (s as { same_as_step?: unknown }).same_as_step;
           return {
             order: s.order,
             kind: s.kind || "skill",
             label: s.label || "",
             detail: typeof detail === "string" && detail ? detail : null,
+            same_as_step: typeof sameAs === "number" ? sameAs : null,
             ref: s.ref ?? null,
             ref_summary:
               rs && typeof rs === "object"

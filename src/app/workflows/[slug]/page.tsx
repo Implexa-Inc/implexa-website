@@ -147,8 +147,16 @@ function StepRow({
             {step.ref_summary.description}
           </p>
         ) : null}
+        {/* W3: this step reuses a skill already shown earlier in the chain.
+            Render a compact pointer instead of repeating the full summary. */}
+        {bound && step.same_as_step ? (
+          <p className="mt-1 text-xs text-zinc-500">
+            ↳ same skill as step {step.same_as_step}
+            {step.ref_summary?.name ? ` (${step.ref_summary.name})` : ""}
+          </p>
+        ) : null}
         {/* the bound skill's actual procedure depth, one click of context inline */}
-        {bound && step.ref_summary?.preview ? (
+        {bound && !step.same_as_step && step.ref_summary?.preview ? (
           <p className="mt-1.5 text-xs text-zinc-500 leading-relaxed border-l border-zinc-800 pl-3">
             {step.ref_summary.preview}
           </p>
