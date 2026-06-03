@@ -114,10 +114,16 @@ async function main() {
   const argv = process.argv.slice(2);
   const dryRun = argv.includes("--dry-run");
   const autoMerge = argv.includes("--merge");
+  // --edit replaces an EXISTING page (a CTR title/meta rewrite or a striking-
+  // distance expansion) instead of adding a new post. --path overrides the
+  // target file (e.g. content/resources/<slug>.md); default content/blog/<slug>.md.
+  const editMode = argv.includes("--edit");
   const baseIdx = argv.indexOf("--base");
   const base = baseIdx !== -1 ? argv[baseIdx + 1] : "main";
-  const draftPath = argv.find((a) => !a.startsWith("--") && a !== base);
-  if (!draftPath) fail("no draft file path given. usage: publish-draft-post.mjs <draft.md> [--dry-run]");
+  const pathIdx = argv.indexOf("--path");
+  const pathArg = pathIdx !== -1 ? argv[pathIdx + 1] : null;
+  const draftPath = argv.find((a) => !a.startsWith("--") && a !== base && a !== pathArg);
+  if (!draftPath) fail("no draft file path given. usage: publish-draft-post.mjs <draft.md> [--edit] [--path content/...md] [--dry-run] [--merge]");
 
   let raw;
   try {
@@ -142,14 +148,17 @@ async function main() {
   }
   const fm = parsed.data || {};
 
-  for (const key of REQUIRED) {
+  // publishedAt is required for a new post; on an edit it may be a resources/
+  // guides page that never had one, so only enforce its format if present.
+  const required = editMode ? ["title", "slug", "description"] : REQUIRED;
+  for (const key of required) {
     if (typeof fm[key] !== "string" || fm[key].length === 0) {
       fail(`missing or empty frontmatter field "${key}"`);
     }
   }
   if (!SLUG_RE.test(fm.slug)) fail(`slug "${fm.slug}" is not kebab-case (^[a-z0-9-]+$)`);
   if (fm.tags !== undefined && !Array.isArray(fm.tags)) fail(`frontmatter "tags" must be a list if present`);
-  if (!/^\d{4}-\d{2}-\d{2}/.test(fm.publishedAt)) fail(`publishedAt "${fm.publishedAt}" must start YYYY-MM-DD`);
+  if (fm.publishedAt !== undefined && !/^\d{4}-\d{2}-\d{2}/.test(fm.publishedAt)) fail(`publishedAt "${fm.publishedAt}" must start YYYY-MM-DD`);
 
   const body = parsed.content.trim();
   const words = body.split(/\s+/).filter(Boolean).length;
@@ -195,18 +204,37 @@ async function main() {
   }
 
   const slug = fm.slug;
-  const target = path.join(BLOG_DIR, `${slug}.md`);
+  // Resolve the repo-relative target. --path wins (must be a content/*.md file);
+  // otherwise content/blog/<slug>.md.
+  let targetRel;
+  if (pathArg) {
+    const norm = pathArg.replace(/^\.?\/+/, "");
+    if (!norm.startsWith("content/") || !norm.endsWith(".md")) {
+      fail(`--path must be a content/*.md file (got "${pathArg}")`);
+    }
+    targetRel = norm;
+  } else {
+    targetRel = path.posix.join("content", "blog", `${slug}.md`);
+  }
+  const target = path.join(REPO_ROOT, targetRel);
+
+  let exists = true;
   try {
     await fs.access(target);
-    fail(`content/blog/${slug}.md already exists. pick a different slug or update the existing post by hand.`);
   } catch {
-    // good: does not exist
+    exists = false;
+  }
+  if (editMode && !exists) {
+    fail(`--edit: ${targetRel} does not exist. edit mode replaces an existing page; drop --edit to create a new post, or fix --path/slug.`);
+  }
+  if (!editMode && exists) {
+    fail(`${targetRel} already exists. pick a different slug, or pass --edit to update the existing page.`);
   }
 
-  console.log(`[publish] validated: "${fm.title}" -> content/blog/${slug}.md (${words} words)`);
+  console.log(`[publish] validated: "${fm.title}" -> ${targetRel} (${words} words, ${editMode ? "edit" : "new"})`);
 
   if (dryRun) {
-    console.log(`[publish] dry-run: would open a PR adding content/blog/${slug}.md against ${base}. no git op performed.`);
+    console.log(`[publish] dry-run: would open a PR ${editMode ? "editing" : "adding"} ${targetRel} against ${base}. no git op performed.`);
     return;
   }
 
@@ -215,25 +243,29 @@ async function main() {
   // and any uncommitted work in it are never touched. The PR is a clean
   // single-file diff regardless of local repo state. Matches the repo's
   // worktree-for-parallel-branches convention.
-  const branch = `auto/blog-${slug}`;
+  const branch = `auto/${editMode ? "edit" : "blog"}-${slug}`;
   const wt = path.join(os.tmpdir(), `implexa-publish-${slug}-${Date.now()}`);
   let wtAdded = false;
   try {
     git(["fetch", "origin", base, "--quiet"]);
     git(["worktree", "add", "-B", branch, wt, `origin/${base}`, "--quiet"]);
     wtAdded = true;
-    const wtTarget = path.join(wt, "content", "blog", `${slug}.md`);
+    const wtTarget = path.join(wt, targetRel);
     await fs.mkdir(path.dirname(wtTarget), { recursive: true });
     await fs.writeFile(wtTarget, raw.endsWith("\n") ? raw : `${raw}\n`, "utf8");
-    git(["add", "--", `content/blog/${slug}.md`], wt);
-    git(["commit", "-q", "-m", `content(blog): ${fm.title} (auto-generated draft)\n\nfrom the scheduled SEO/AEO workflow. merging deploys it live via Vercel.\n\nCo-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>`], wt);
+    git(["add", "--", targetRel], wt);
+    const commitVerb = editMode ? "edit" : "blog";
+    const commitSubject = editMode
+      ? `content(edit): ${fm.title}`
+      : `content(blog): ${fm.title} (auto-generated draft)`;
+    git(["commit", "-q", "-m", `${commitSubject}\n\nfrom the scheduled SEO/AEO workflow. merging deploys it live via Vercel.\n\nCo-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>`], wt);
     git(["push", "-u", "origin", branch, "--force-with-lease", "--quiet"], wt);
     const prUrl = gh([
       "pr", "create",
       "--base", base,
       "--head", branch,
-      "--title", `blog: ${fm.title}`,
-      "--body", `Auto-generated blog draft from the scheduled SEO/AEO workflow.\n\nMerging this PR publishes the post live on implexa.ai via Vercel.${autoMerge ? " This run was launched with --merge: it auto-merges only after every check (the Vercel build among them) passes." : ""}\n\n- slug: \`${slug}\`\n- words: ${words}\n- target: \`content/blog/${slug}.md\`\n\nIf the draft is not good enough to ship, close the PR (nothing goes live).`,
+      "--title", `${commitVerb}: ${fm.title}`,
+      "--body", `Auto-generated ${editMode ? "edit to an existing page" : "blog draft"} from the scheduled SEO/AEO workflow.\n\nMerging this PR ${editMode ? "updates the page" : "publishes the post"} live on implexa.ai via Vercel.${autoMerge ? " This run was launched with --merge: it auto-merges only after every check (the Vercel build among them) passes." : ""}\n\n- slug: \`${slug}\`\n- words: ${words}\n- target: \`${targetRel}\`\n- mode: ${editMode ? "edit (replaces existing)" : "new post"}\n\nIf the ${editMode ? "edit" : "draft"} is not good enough to ship, close the PR (nothing goes live).`,
     ], wt);
     console.log(`[publish] PR opened: ${prUrl}`);
 
