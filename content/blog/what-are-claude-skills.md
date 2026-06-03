@@ -1,26 +1,26 @@
 ---
-title: "what are claude skills? the 2026 builder's guide"
+title: "What are Claude Skills? The 2026 builder's guide"
 slug: "what-are-claude-skills"
-description: "claude skills are reusable instruction packs that load on demand. this is the practical guide: what's inside a SKILL.md, when to use one vs a prompt, and how 40,000+ ranked skills work across anthropic, smithery, clawhub, and skills.sh."
+description: "Claude Skills are reusable instruction packs loaded on demand. What's inside a SKILL.md, skill vs prompt, where to find them, and how they differ from MCP."
 publishedAt: "2026-05-18"
 tags: ["claude-skills", "SKILL.md", "anthropic", "explainer"]
 ---
 
-# what are claude skills?
+# What are Claude Skills?
 
-a **Claude Skill** is a reusable instruction pack, a small directory with a `SKILL.md` file inside, that Claude loads on demand when a matching task comes up.
+A Claude Skill is a reusable instruction pack, a small directory with a `SKILL.md` file inside, that Claude loads on demand when a matching task comes up.
 
-instead of pasting the same multi-paragraph prompt every time you want to do something repeatable, you write the instructions once as a skill. Claude figures out when to use it.
+Instead of pasting the same multi-paragraph prompt every time you want to do something repeatable, you write the instructions once as a skill. Claude figures out when to use it.
 
-this page is the short version: what a skill is, what's inside it, how it compares to a prompt, and where to go next.
+This page is the practical version: what a skill is, what's inside it, how it compares to a prompt, whether it is genuinely new, where to find skills, and how it relates to MCP, subagents, and plugins.
 
-## the one-sentence version
+## The one-sentence version
 
-a Claude Skill is a function Claude knows how to call, defined in plain markdown, loaded automatically when its description matches the user's request.
+A Claude Skill is a function Claude knows how to call, defined in plain markdown, loaded automatically when its description matches the request. There is no code to compile and no API to wire up. The skill is the instructions, and Claude does the work.
 
-## what's inside a skill
+## What's inside a skill
 
-every skill is a directory. the only required file is `SKILL.md`:
+Every skill is a directory whose only required file is `SKILL.md`. That single file carries everything Claude needs to recognize the task and run it.
 
 ```
 prep-sales-call/
@@ -58,11 +58,11 @@ When the user mentions an upcoming meeting with a named company.
 **Recommended angle:** {one sentence}
 ```
 
-that's it. no build step, no compile, no install. drop it in `~/.claude/skills/` and Claude picks it up on next launch.
+That's it. No build step, no compile, no install. Drop it in `~/.claude/skills/` and Claude picks it up on next launch.
 
-## the 6 components of a good skill
+## The 6 components of a good skill
 
-the skill above hits four of the six components that separate skills that work from skills that drift. the full list:
+A good skill covers six components, and the two most builders skip are exactly the two that keep a skill working when inputs change. The skill above hits four of them. The full list:
 
 | # | component | what it is |
 |---|-----------|------------|
@@ -73,11 +73,21 @@ the skill above hits four of the six components that separate skills that work f
 | 5 | **output contract** | what the result looks like (format, fields, length) |
 | 6 | **outcome signal** | how you know it worked next time (CRM event, reply, etc.) |
 
-most skills you'll find online cover 1, 2, 3, and 5. the two that consistently get skipped are **decision points** and **outcome signal**, and those are exactly the two that matter when inputs shift or when you want to know if the skill is actually paying off.
+Most skills you'll find online cover 1, 2, 3, and 5. The two that consistently get skipped are **decision points** and **outcome signal**, and those are exactly the two that matter when inputs shift or when you want to know if the skill is actually paying off.
 
-full breakdown in the [pillar guide](/claude-skills).
+Full breakdown in the [pillar guide](/claude-skills).
+
+## Are Claude Skills just prompts with extra steps?
+
+No. A prompt lives in one conversation and disappears. A skill is a named, reusable unit that Claude triggers on its own, runs the same way every time, can call tools by name, and can be shared as a single artifact. That combination is what a raw prompt cannot do.
+
+The skepticism is fair to name, because a thin skill really is just a saved prompt. The difference shows up in the four components a saved prompt can never carry: automatic triggering from a description, a fixed output contract, named tool calls, and an outcome signal you can measure across runs. A prompt gives you none of those. A well-built skill gives you all four.
+
+So the honest answer is that a skill is not magic and does not let Claude do anything it could not do with the perfect prompt typed by hand every single time. What a skill removes is the "typed by hand every single time" part, plus the drift that comes with it. That is the whole point: consistency and reuse, not new raw capability.
 
 ## Claude Skill vs. prompt
+
+A skill beats a prompt the second time you reuse it, because it triggers itself and holds its format steady while a pasted prompt drifts. Side by side:
 
 | | prompt | Claude Skill |
 |---|---|---|
@@ -88,74 +98,118 @@ full breakdown in the [pillar guide](/claude-skills).
 | tracks outcomes? | no | yes (with the right skill graph) |
 | edits over time? | find-and-replace in your Notes | re-record or edit the `.md` file |
 
-a prompt is fine for a one-off. a skill is what you build the second time you find yourself pasting the same prompt.
+A prompt is fine for a one-off. A skill is what you build the second time you find yourself pasting the same prompt.
 
-## where skills live
+## Claude Skills vs. MCP vs. subagents vs. plugins
 
-two locations, both auto-discovered:
+These are four different layers that work together, not four names for the same thing. A skill is the instructions, MCP is how Claude reaches tools, a subagent is a separate worker Claude hands a task to, and a plugin is a package that bundles the rest for distribution.
 
-- **`~/.claude/skills/`**: user-level. only you can run them.
-- **`.claude/skills/`**: project-level (inside a repo). anyone who clones the repo gets them.
+| layer | what it is | what it does |
+|---|---|---|
+| **Claude Skill** | a `SKILL.md` instruction pack | tells Claude when and how to run a repeatable task |
+| **MCP** | Model Context Protocol | the protocol Claude uses to call external tools and data |
+| **subagent** | a delegated worker | runs a focused sub-task in its own context, reports back |
+| **plugin** | a distributable bundle | packages skills, commands, and MCP servers as one installable unit |
 
-if you want a third option, share with your team without giving them repo access, or with the public, you need a skill-graph host like [Implexa](https://implexa.ai). it gives each skill a shareable link and tracks outcomes when teammates run it.
+The clean mental model: a skill often *uses* one or more MCP servers as its execution backend, can *delegate* a step to a subagent, and can ship *inside* a plugin. They stack. You do not pick one instead of the others.
 
-## how skills get triggered
+## How skills get triggered
 
-when you make a request, Claude scans the `description` fields of available skills. if one matches semantically, Claude loads that skill's `SKILL.md` and follows the procedure.
+Claude triggers a skill by reading the `description` field of every installed skill and loading the one that semantically matches your request. The description is the single most important line in the file.
 
-the description is the most important line in the whole file. vague descriptions don't trigger. specific descriptions trigger reliably. "help with sales" won't fire. "prep for a sales call, pull CRM activity for the named account" fires every time.
+Vague descriptions don't trigger. Specific descriptions trigger reliably. "Help with sales" won't fire. "Prep for a sales call, pull CRM activity for the named account" fires every time.
 
-you can also force a skill explicitly with `/skill-name` if you want to override the auto-trigger.
+You can also force a skill explicitly with `/skill-name` if you want to override the auto-trigger.
+
+## Where to find Claude Skills
+
+You can find Claude Skills in three places: Anthropic's own bundled and documented skills, open-source community libraries, and skill-graph hosts that add sharing and outcome tracking. Each suits a different need.
+
+- **Anthropic's bundled skills and docs.** Claude Code ships with a set of built-in skills, and Anthropic publishes a format reference plus a long-form building guide. Start here for the canonical spec.
+- **Community libraries and repos.** Open-source collections on GitHub gather hundreds of skills, many of which also run in other coding agents. Good for examples and for copy-and-adapt starting points.
+- **Skill-graph hosts.** Tools like [implexa](https://implexa.ai) give each skill a shareable link, version it, and track whether it actually produced an outcome when a teammate ran it.
+
+A quick note on quality: the comprehensive "100 skills I tried" lists are useful for discovery, but most listed skills cover only intent, inputs, procedure, and output. Before you rely on one, check whether it also encodes decision points and an outcome signal. Those two are what keep it from drifting.
+
+## Claude Skills examples
+
+The clearest way to understand skills is a few concrete ones, because the pattern is always the same: a repeatable task with a fixed output. A handful that map cleanly to the `SKILL.md` format:
+
+- **Sales call prep:** pull CRM activity and recent news for a named account, return a one-page brief (the example above).
+- **Pull request review:** run a fixed review checklist against a diff, return findings grouped by severity.
+- **Weekly status report:** gather the week's shipped work from your tracker, return a three-section summary in the same layout every time.
+- **Incident write-up:** take an incident channel, return a timeline, root cause, and action items in your team's template.
+
+Each one is something you would otherwise re-explain from scratch. Writing it once as a skill is what makes the second, fifth, and fiftieth run identical.
+
+## Do Claude Skills work outside Claude Code?
+
+Skills work most fully inside Claude Code, where the `SKILL.md` auto-loader lives, but the format is portable enough that several other coding agents can read it too. The auto-discovery behavior is the part that varies.
+
+Inside Claude Code, skills load and trigger automatically. In Claude Desktop or through the Anthropic API, there is no auto-loader, so you paste the skill into a system prompt or wrap it in an agent. Several third-party coding agents now read the same `SKILL.md` format. The full cross-vendor walkthrough is in [use Claude Skills in Cursor, Codex, and Gemini](/blog/use-claude-skills-in-cursor-codex-gemini).
 
 ## "Claude Skills" vs. "Claude Code Skills" vs. "Anthropic Skills" vs. "SKILL.md"
 
-these all refer to the same thing:
+These four phrases all point to the same thing: the `SKILL.md` spec. The difference is only context.
 
-- **Claude Skills**: the general term
-- **Claude Code Skills**: using them inside the Claude Code CLI specifically
-- **Anthropic Skills**: Anthropic's branding when they announced the format
-- **SKILL.md**: the actual file format
+- **Claude Skills:** the general term.
+- **Claude Code Skills:** using them inside the Claude Code CLI specifically.
+- **Anthropic Skills:** Anthropic's branding when they announced the format.
+- **SKILL.md:** the actual file format.
 
-all four phrases point to the same `SKILL.md` spec.
+## How do you build one?
 
-## how do you build one?
+You build a skill one of two ways: hand-write the `SKILL.md`, or demonstrate the workflow once and have it captured for you. Both produce the same file format.
 
-two paths:
+**Hand-write it.** Open a text editor, write the `SKILL.md`, save it in `~/.claude/skills/your-skill/`. Works for short skills. Falls apart at length because you have to articulate decisions you'd normally make on autopilot.
 
-**hand-write it.** open a text editor, write the `SKILL.md`, save it in `~/.claude/skills/your-skill/`. works for short skills. falls apart at length because you have to articulate decisions you'd normally make on autopilot.
+**Demonstrate it once.** Run [implexa](https://implexa.ai) and `/implexa:record`. Do the workflow normally. Answer 2 to 4 short interview questions about decisions, output format, and what signals success. The skill gets authored from your actual behavior plus your answers, including the decision rationale most hand-written skills skip.
 
-**demonstrate it once.** run [Implexa](https://implexa.ai) and `/implexa:record`. do the workflow normally. answer 2 to 4 short interview questions about decisions, output format, and what signals success. the skill gets authored from your actual behavior plus your answers, including the decision rationale most hand-written skills skip.
+We call the captured layer **decision traces**: visible tool calls plus the interview-extracted rationale. Walkthrough in [how to create a Claude Skill](/blog/how-to-create-a-claude-skill).
 
-we call the captured layer **decision traces**: visible tool calls *plus* the interview-extracted rationale. walkthrough in [how to create a claude skill](/blog/how-to-create-a-claude-skill).
+## How many skills should you install?
+
+Install as many as you genuinely reuse, but keep each one focused, because triggering reliability drops when many vague descriptions compete for the same request. Quantity is not the problem. Overlapping, fuzzy descriptions are.
+
+The practical ceiling is about description quality, not a hard number. Hundreds of installed skills are fine as long as each description is specific enough that Claude can tell them apart. The full reasoning is in [how many Claude Skills is too many](/blog/how-many-claude-skills-is-too-many).
 
 ## FAQ
 
-### is a Claude Skill the same as a system prompt?
+### Is a Claude Skill the same as a system prompt?
 
-no. a system prompt applies to every message in a conversation. a skill is loaded only when its description matches a request, and unloaded after. you can have hundreds of skills installed without bloating every conversation.
+No. A system prompt applies to every message in a conversation. A skill is loaded only when its description matches a request, and unloaded after. You can have hundreds of skills installed without bloating every conversation.
 
-### do I need to write code to build a skill?
+### Do I need to write code to build a skill?
 
-no. `SKILL.md` is plain markdown. the procedure describes *what tools to call*, but Claude does the calling.
+No. `SKILL.md` is plain markdown. The procedure describes what tools to call, but Claude does the calling.
 
-### can a skill call other skills?
+### Are Claude Skills free?
 
-yes. a skill's procedure can reference another skill by name. best practice is to keep skills focused on one workflow and compose them rather than building one mega-skill.
+The format is free and open. A `SKILL.md` file costs nothing to write, store, or run, and the auto-loader is built into Claude Code. You only pay for the underlying Claude usage the skill consumes, plus any third-party host you choose for sharing or tracking.
 
-### can I version-control skills?
+### Can a skill call other skills?
 
-yes. either commit the skill directory to a repo (project-level skills live in `.claude/skills/`), or use a skill-graph host that handles versioning for you.
+Yes. A skill's procedure can reference another skill by name. Best practice is to keep skills focused on one workflow and compose them rather than building one mega-skill.
 
-### do skills work in Claude Desktop or only in Claude Code?
+### What's the difference between a skill and a plugin?
 
-the `SKILL.md` auto-loader is a Claude Code feature. Claude Desktop and the Anthropic API don't auto-discover skills the same way. you'd paste contents into a system prompt or wrap the skill in an agent.
+A skill is a single instruction pack. A plugin is a distributable bundle that can contain several skills, slash commands, and MCP servers as one installable unit. You install a plugin to get a set of skills at once.
 
-### what's the relationship between Skills and MCP?
+### Can I version-control skills?
 
-MCP (Model Context Protocol) is the protocol Claude uses to call external tools. skills are the *instructions* for when and how to call them. a skill typically uses one or more MCP servers as its execution backend.
+Yes. Either commit the skill directory to a repo (project-level skills live in `.claude/skills/`), or use a skill-graph host that handles versioning for you.
 
-## next reads
+### Do skills work in Claude Desktop or only in Claude Code?
 
-- **[how to create a claude skill (step-by-step)](/blog/how-to-create-a-claude-skill)**: 7-step build tutorial.
-- **[what are claude skills? (and the right way to build them)](/claude-skills)**: full pillar guide with the 6-component contract.
-- **[what is a skill graph?](/resources/what-is-a-skill-graph)**: the structure that connects many skills together.
+The `SKILL.md` auto-loader is a Claude Code feature. Claude Desktop and the Anthropic API don't auto-discover skills the same way. You'd paste contents into a system prompt or wrap the skill in an agent.
+
+### What's the relationship between Skills and MCP?
+
+MCP (Model Context Protocol) is the protocol Claude uses to call external tools. Skills are the instructions for when and how to call them. A skill typically uses one or more MCP servers as its execution backend.
+
+## Next reads
+
+- **[How to create a Claude Skill (step-by-step)](/blog/how-to-create-a-claude-skill)**: 7-step build tutorial.
+- **[What are Claude Skills? (and the right way to build them)](/claude-skills)**: full pillar guide with the 6-component contract.
+- **[Use Claude Skills in Cursor, Codex, and Gemini](/blog/use-claude-skills-in-cursor-codex-gemini)**: running the same `SKILL.md` across other agents.
+- **[What is a skill graph?](/resources/what-is-a-skill-graph)**: the structure that connects many skills together.
