@@ -46,10 +46,11 @@ export async function GET(): Promise<Response> {
   // Everything in lowercase except proper nouns (Claude Code, Codex, MCP).
   const body = `# implexa
 
-> implexa is google + wikipedia for SKILL.md, cross-vendor. it indexes 40,000+ skills from anthropic, smithery, clawhub, skills.sh, agentskills.io, github, cursor, and continue, ranks them with a proprietary multi-signal recommender (SkillRank), and serves them through one MCP server that plugs into Claude Code, Codex, Cursor, and Gemini CLI. agents call implexa for skill discovery; humans use the plugin to apply skills inline without installing them.
+> implexa turns your recurring AI work into agentic workflows: ordered chains of skills, tools, and decisions that run on a schedule, deliver the result to your inbox and dashboard, watch for misses, and learn from outcomes. it is built on a cross-vendor index of 40,000+ skills from anthropic, smithery, clawhub, skills.sh, agentskills.io, github, cursor, and continue, each ranked by a proprietary multi-signal score (SkillRank). one MCP server plugs into Claude Code, Codex, Cursor, and Gemini CLI. agents call implexa to find and run workflows; humans install the plugin to let their routines run unattended.
 
 ## key pages
 
+- [workflows](${SITE_URL}/workflows): the catalog of whole-job workflows you can run on a schedule
 - [homepage](${SITE_URL}/): search the full cross-vendor index, see what's trending
 - [scores](${SITE_URL}/scores): SkillRank leaderboard, top-rated skills across the index
 - [developers](${SITE_URL}/developers): API + MCP infrastructure for partner products
