@@ -26,7 +26,15 @@ import { CATEGORIES } from "@/lib/placeholder-data";
 // Explicit canonical so the homepage is never indexed under a query-string
 // variant (e.g. ?utm=x). Title + description come from layout.tsx defaults.
 export const metadata: Metadata = {
+  title: "Implexa: AI that runs your recurring work for you",
+  description:
+    "Implexa learns what you repeat, builds a workflow from 40,000+ verified AI skills, runs it on a schedule, and emails you the result. Install one plugin in Claude Code or Codex.",
   alternates: { canonical: "/" },
+  openGraph: {
+    title: "Implexa: AI that runs your recurring work for you",
+    description:
+      "It learns what you repeat, stitches the right skills and tools into a workflow, runs it on a schedule, and delivers the result. You approve once.",
+  },
 };
 
 type ToolMatch = {
@@ -209,31 +217,25 @@ export default async function HomePage() {
               </div>
 
               <h1 className="text-4xl lg:text-5xl xl:text-6xl font-semibold tracking-tight text-white leading-[1.05] mb-5">
-                Access {counts.vetted.toLocaleString()}+{" "}
+                Implexa runs your{" "}
                 <span className="underline decoration-amber-400 decoration-2 underline-offset-[6px]">
-                  vetted
-                </span>{" "}
-                AI skills.
-                <br />
-                <span className="text-zinc-400">
-                  Without installing{" "}
-                  <span className="text-white underline decoration-amber-400 decoration-2 underline-offset-[6px]">
-                    ANY
-                  </span>
-                  .
+                  recurring work
                 </span>
+                <br />
+                <span className="text-zinc-400">for you.</span>
               </h1>
 
               <p className="text-lg text-zinc-400 leading-relaxed mb-8 max-w-xl">
-                Ranked using{" "}
+                It learns what you repeat, builds a workflow from{" "}
+                {counts.vetted.toLocaleString()}+ verified AI skills (ranked by{" "}
                 <Link
                   href="/resources/skill-rank"
                   className="text-white underline decoration-amber-400 decoration-2 underline-offset-4 hover:decoration-amber-300 transition-colors"
                 >
                   SkillRank
-                </Link>
-                . Recommendations get better as you work. Access within
-                Claude Code &amp; Codex.
+                </Link>{" "}
+                for what actually works), runs it on a schedule, and emails you
+                the result. You approve once.
               </p>
 
               {/* two CTAs, primary + secondary. install is the conversion;
@@ -251,7 +253,7 @@ export default async function HomePage() {
                   install plugin
                 </Link>
                 <Link
-                  href="/scores"
+                  href="/workflows"
                   className={buttonVariants({
                     variant: "outline",
                     size: "lg",
@@ -259,7 +261,7 @@ export default async function HomePage() {
                       "border-zinc-700 text-zinc-300 hover:bg-zinc-950 hover:text-white h-12 px-6 text-base",
                   })}
                 >
-                  browse top skills →
+                  see workflows →
                 </Link>
               </div>
 
@@ -271,9 +273,10 @@ export default async function HomePage() {
               <p className="text-sm text-zinc-400 leading-relaxed mb-8 max-w-md">
                 Install{" "}
                 <span className="text-white font-semibold">ONE</span>{" "}
-                plugin and you{" "}
-                <span className="text-white font-semibold">NEVER</span>{" "}
-                install another SKILL.md file again.
+                plugin. It watches what you repeat, stitches the right skills and
+                tools into a workflow, and runs it{" "}
+                <span className="text-white font-semibold">unattended</span>, so
+                the work is done before you start.
               </p>
 
               {/* recent-search social-proof ticker. rotates real query
@@ -291,9 +294,37 @@ export default async function HomePage() {
             </div>
           </div>
 
+          {/* how it works: the loop, in one glance. the one story nobody else
+              can tell. compact horizontal strip, stacks on mobile. */}
+          <div className="mt-16 pt-12 border-t border-zinc-900">
+            <p className="text-center text-xs uppercase tracking-wider text-zinc-500 mb-6">
+              how it works
+            </p>
+            <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-2 text-sm">
+              {[
+                ["watches", "what you repeat"],
+                ["stitches", "the right skills + tools"],
+                ["schedules", "it to run on its own"],
+                ["delivers", "the result to your inbox"],
+                ["improves", "with every run"],
+              ].map(([verb, rest], i, arr) => (
+                <span key={verb} className="inline-flex items-center gap-3">
+                  <span className="text-zinc-400">
+                    <span className="text-white font-medium">{verb}</span> {rest}
+                  </span>
+                  {i < arr.length - 1 ? (
+                    <span className="text-amber-400/70" aria-hidden="true">
+                      →
+                    </span>
+                  ) : null}
+                </span>
+              ))}
+            </div>
+          </div>
+
           {/* install command, below the two-column hero for the visitors
               who scrolled this far and want the copy-paste right now */}
-          <div className="mt-16 pt-12 border-t border-zinc-900">
+          <div className="mt-12 pt-12 border-t border-zinc-900">
             <p className="text-center text-sm text-zinc-500 mb-5">
               or grab the install command directly:
             </p>
