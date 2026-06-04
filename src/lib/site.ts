@@ -15,9 +15,9 @@ const RAW = process.env.NEXT_PUBLIC_SITE_URL ?? "https://implexa.ai";
 export const SITE_URL = RAW.replace(/\/+$/, "");
 
 export const SITE_NAME = "implexa";
-export const SITE_TITLE = "implexa, let AI run your business";
+export const SITE_TITLE = "Implexa: Let AI run your business";
 export const SITE_DESCRIPTION =
-  "implexa watches your AI work and turns your routines into agentic workflows that run on a schedule, deliver the result, and learn from outcomes. built from 40k+ cross-vendor skills, ranked by SkillRank.";
+  "Implexa watches your AI work and turns your routines into agentic workflows that run on a schedule, deliver the result, and learn from outcomes. Built from 40k+ cross-vendor skills, ranked by SkillRank.";
 
 export const TWITTER_HANDLE = "@ImplexaAI";
 
