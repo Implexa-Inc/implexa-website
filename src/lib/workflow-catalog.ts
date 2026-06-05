@@ -156,12 +156,15 @@ async function callMcpTool<T>(
 }
 
 /**
- * listWorkflows() — the full workflow catalog for the index page. Cached at
- * the edge for 1h (the catalog changes only when we seed new workflows).
+ * listWorkflows() — the full workflow catalog for the index page. Cached 5m:
+ * the cards now carry live activity (run + autopilot counts) that drives the
+ * Popular ranking, so a long cache would show stale proof. The `catalog` arg is
+ * a cache-key version marker (ignored by the backend); bump it to bust the edge
+ * cache after a card-shape change.
  */
 export async function listWorkflows(): Promise<WorkflowCard[]> {
   type Resp = { ok: boolean; count?: number; workflows?: WorkflowCard[] };
-  const resp = await callMcpTool<Resp>("list_workflows", {}, 3600);
+  const resp = await callMcpTool<Resp>("list_workflows", { catalog: "v2" }, 300);
   if (!resp?.ok || !Array.isArray(resp.workflows)) return [];
   return resp.workflows.map((w) => ({
     source: w.source,
