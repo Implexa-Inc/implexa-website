@@ -61,6 +61,43 @@ function cadenceBadge(cadence: string | null) {
   );
 }
 
+// Activity score for the Popular ranking: people on autopilot count most,
+// then real runs. Proof line is the social-proof string on each card.
+function popularScore(w: WorkflowCard) {
+  return w.scheduled_count * 3 + w.run_count;
+}
+function proofLine(w: WorkflowCard): string | null {
+  if (w.scheduled_count > 0)
+    return `${w.scheduled_count} on autopilot`;
+  if (w.run_count > 0) return `run ${w.run_count}×`;
+  return null;
+}
+
+function Section({
+  title,
+  blurb,
+  items,
+}: {
+  title: string;
+  blurb: string;
+  items: WorkflowCard[];
+}) {
+  if (!items.length) return null;
+  return (
+    <section className="mb-12">
+      <h2 className="text-xl font-semibold text-white lowercase mb-1">
+        {title}
+      </h2>
+      <p className="text-sm text-zinc-500 mb-4">{blurb}</p>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        {items.map((w) => (
+          <WorkflowGridCard key={`${title}-${w.source}-${w.slug}`} w={w} />
+        ))}
+      </div>
+    </section>
+  );
+}
+
 function WorkflowGridCard({ w }: { w: WorkflowCard }) {
   return (
     <Card className="h-full bg-zinc-950 border-zinc-900 hover:border-zinc-700 transition-colors">
@@ -87,13 +124,18 @@ function WorkflowGridCard({ w }: { w: WorkflowCard }) {
           <p className="text-sm text-zinc-400 line-clamp-3">
             {w.primary_outcome || w.description}
           </p>
-          <div className="mt-3 flex items-center gap-1.5 text-[11px] text-zinc-500">
+          <div className="mt-3 flex items-center gap-1.5 text-[11px] text-zinc-500 flex-wrap">
             <Layers className="size-3" aria-hidden="true" />
             {w.step_count} steps
             {w.bound_step_count > 0 ? (
               <span className="text-emerald-400/80">
                 · {w.bound_step_count} from verified skills
               </span>
+            ) : null}
+            {proofLine(w) ? (
+              <span className="text-amber-300/90">· {proofLine(w)}</span>
+            ) : w.unproven ? (
+              <span className="text-zinc-600">· new</span>
             ) : null}
           </div>
         </CardContent>
@@ -113,6 +155,25 @@ export default async function WorkflowsPage(props: {
     ? all.filter((w) => w.vertical === verticalFilter)
     : all;
   const hasResults = workflows.length > 0;
+
+  // Catalog groups: Recommended (curated, proven), Popular (most activity),
+  // All (everything). Overlap is fine, like an app store's Featured + Top + All.
+  const recommended = workflows
+    .filter((w) => w.curated)
+    .sort(
+      (a, b) =>
+        popularScore(b) - popularScore(a) || a.name.localeCompare(b.name),
+    );
+  const popular = [...workflows]
+    .filter((w) => popularScore(w) > 0)
+    .sort((a, b) => popularScore(b) - popularScore(a))
+    .slice(0, 6);
+  const allSorted = [...workflows].sort(
+    (a, b) =>
+      (b.curated ? 1 : 0) - (a.curated ? 1 : 0) ||
+      popularScore(b) - popularScore(a) ||
+      a.name.localeCompare(b.name),
+  );
 
   const ldJson = jsonLdGraph(
     {
@@ -194,11 +255,23 @@ export default async function WorkflowsPage(props: {
         </div>
 
         {hasResults ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {workflows.map((w) => (
-              <WorkflowGridCard key={w.slug} w={w} />
-            ))}
-          </div>
+          <>
+            <Section
+              title="recommended"
+              blurb="hand-picked, proven workflows to start with."
+              items={recommended}
+            />
+            <Section
+              title="popular"
+              blurb="what people are running on autopilot right now."
+              items={popular}
+            />
+            <Section
+              title="all workflows"
+              blurb="every workflow in the catalog, newest builds included."
+              items={allSorted}
+            />
+          </>
         ) : (
           <div className="rounded-lg border border-zinc-900 bg-zinc-950 p-8 text-center">
             <Workflow

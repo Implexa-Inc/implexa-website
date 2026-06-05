@@ -23,6 +23,11 @@ export type WorkflowCard = {
   primary_outcome: string | null;
   step_count: number;
   bound_step_count: number;
+  // catalog signals (drive the Recommended / Popular / All grouping)
+  run_count: number;
+  scheduled_count: number;
+  curated: boolean; // proven, hand-curated workflow (source = web-seed)
+  unproven: boolean; // auto-generated, no real runs yet
   last_seen_at: string | null;
 };
 
@@ -169,6 +174,11 @@ export async function listWorkflows(): Promise<WorkflowCard[]> {
     step_count: typeof w.step_count === "number" ? w.step_count : 0,
     bound_step_count:
       typeof w.bound_step_count === "number" ? w.bound_step_count : 0,
+    run_count: typeof w.run_count === "number" ? w.run_count : 0,
+    scheduled_count:
+      typeof w.scheduled_count === "number" ? w.scheduled_count : 0,
+    curated: w.curated === true,
+    unproven: w.unproven === true,
     last_seen_at: w.last_seen_at ?? null,
   }));
 }
