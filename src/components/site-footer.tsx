@@ -5,17 +5,18 @@ export function SiteFooter() {
     <footer className="w-full border-t border-zinc-900 mt-24">
       <div className="mx-auto max-w-6xl px-4 sm:px-6 py-10 flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
         <div className="text-sm text-zinc-500">
-          implexa · Whole-job workflows, built from skills ranked by{" "}
-          <Link
-            href="/resources/skill-rank"
-            className="text-zinc-300 hover:text-amber-300 transition-colors underline decoration-amber-400/40 decoration-1 underline-offset-2"
-          >
-            SkillRank
-          </Link>
+          implexa · agents that run your business, free on the Claude or Codex
+          plan you already pay for
         </div>
         <nav className="flex flex-wrap gap-x-6 gap-y-2 text-sm text-zinc-400">
           <Link href="/workflows" className="hover:text-white transition-colors">
-            Workflows
+            Agents
+          </Link>
+          <Link
+            href="/built-with-ai"
+            className="hover:text-white transition-colors"
+          >
+            What next
           </Link>
           <Link href="/scores" className="hover:text-white transition-colors">
             Top skills
