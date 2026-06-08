@@ -108,7 +108,7 @@ export function ExampleThoughtsBox({
         </div>
       </div>
       <p className="text-xs text-zinc-600 mt-2 text-center">
-        real examples. you describe it once, the agent runs it on its own.
+        Real examples. You describe it once, the agent runs it on its own.
       </p>
     </div>
   );

@@ -5,7 +5,7 @@ export function SiteFooter() {
     <footer className="w-full border-t border-zinc-900 mt-24">
       <div className="mx-auto max-w-6xl px-4 sm:px-6 py-10 flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
         <div className="text-sm text-zinc-500">
-          implexa · agents that run your business, free on the Claude or Codex
+          implexa · Agents that run your business, free on the Claude or Codex
           plan you already pay for
         </div>
         <nav className="flex flex-wrap gap-x-6 gap-y-2 text-sm text-zinc-400">

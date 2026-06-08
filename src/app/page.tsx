@@ -193,7 +193,7 @@ export default async function HomePage() {
             <div>
               <div className="mb-6 inline-flex items-center gap-2 px-3 py-1 rounded-full border border-amber-900/40 bg-amber-500/5 text-xs text-amber-300">
                 <Sparkles className="size-3" aria-hidden="true" />
-                runs on the Claude or Codex plan you already pay for
+                Runs on the Claude or Codex plan you already pay for
               </div>
 
               {/* A/B-ready locked headline pair */}
@@ -248,7 +248,7 @@ export default async function HomePage() {
                 </Link>
               </div>
               <p className="text-sm text-zinc-500">
-                about 5 minutes to your first real one.
+                About 5 minutes to your first real one.
               </p>
             </div>
 
@@ -256,7 +256,7 @@ export default async function HomePage() {
             <div className="lg:pl-4">
               <AnimatedTerminal />
               <p className="text-xs text-zinc-600 mt-3 text-center lg:text-left">
-                running inside your own claude code. also works in codex.
+                Running inside your own Claude Code. Also works in Codex.
               </p>
             </div>
           </div>
@@ -339,7 +339,7 @@ export default async function HomePage() {
           <div className="text-center mb-12">
             <div className="inline-flex items-center gap-2 mb-4 px-3 py-1 rounded-full border border-emerald-900/40 bg-emerald-500/5 text-xs text-emerald-300">
               <span className="size-1.5 rounded-full bg-emerald-400" aria-hidden="true" />
-              how it works
+              How it works
             </div>
             <h2 className="text-3xl sm:text-4xl font-semibold tracking-tight text-white mb-4">
               Describe a job once. It runs every morning.
@@ -411,23 +411,23 @@ export default async function HomePage() {
               {/* the agent spec */}
               <div className="p-5 border-b sm:border-b-0 sm:border-r border-zinc-900">
                 <div className="text-xs text-zinc-500 mb-3 font-mono">
-                  the agent
+                  The agent
                 </div>
                 <div className="text-sm text-white font-medium mb-3">
-                  find new customers, every morning
+                  Find new customers, every morning
                 </div>
                 <dl className="space-y-2 text-sm">
                   <div className="flex gap-2">
-                    <dt className="text-zinc-500 w-20 shrink-0">runs</dt>
-                    <dd className="text-zinc-300">every day, 7:00am</dd>
+                    <dt className="text-zinc-500 w-20 shrink-0">Runs</dt>
+                    <dd className="text-zinc-300">Every day, 7:00am</dd>
                   </div>
                   <div className="flex gap-2">
-                    <dt className="text-zinc-500 w-20 shrink-0">as</dt>
-                    <dd className="text-zinc-300">you, in your own Claude</dd>
+                    <dt className="text-zinc-500 w-20 shrink-0">As</dt>
+                    <dd className="text-zinc-300">You, in your own Claude</dd>
                   </div>
                   <div className="flex gap-2">
-                    <dt className="text-zinc-500 w-20 shrink-0">delivers</dt>
-                    <dd className="text-zinc-300">a shortlist + drafted outreach</dd>
+                    <dt className="text-zinc-500 w-20 shrink-0">Delivers</dt>
+                    <dd className="text-zinc-300">A shortlist + drafted outreach</dd>
                   </div>
                 </dl>
               </div>
@@ -435,20 +435,20 @@ export default async function HomePage() {
               <div className="p-5">
                 <div className="text-xs text-emerald-300 mb-3 font-mono inline-flex items-center gap-1.5">
                   <RefreshCw className="size-3" aria-hidden="true" />
-                  improved this week
+                  Improved this week
                 </div>
                 <ul className="space-y-2 text-sm text-zinc-300">
                   <li className="flex gap-2">
                     <CircleCheck className="size-4 shrink-0 mt-0.5 text-emerald-400" aria-hidden="true" />
-                    caught 2 strong leads last week&apos;s run missed
+                    Caught 2 strong leads last week&apos;s run missed
                   </li>
                   <li className="flex gap-2">
                     <CircleCheck className="size-4 shrink-0 mt-0.5 text-emerald-400" aria-hidden="true" />
-                    learned to skip the duplicates you kept deleting
+                    Learned to skip the duplicates you kept deleting
                   </li>
                 </ul>
                 <p className="text-xs text-zinc-500 mt-3 leading-relaxed">
-                  why: the last run flagged its own gap, so it fixed itself.
+                  Why: the last run flagged its own gap, so it fixed itself.
                 </p>
               </div>
             </div>
@@ -616,7 +616,7 @@ export default async function HomePage() {
           </div>
 
           <div className="flex flex-wrap items-center justify-center gap-2 mb-16 text-sm">
-            <span className="text-zinc-500">try:</span>
+            <span className="text-zinc-500">Try:</span>
             {[
               "cold outreach email",
               "hubspot integration",
@@ -638,10 +638,10 @@ export default async function HomePage() {
           <div id="trending" className="mb-16">
             <div className="flex items-baseline justify-between mb-6">
               <h3 className="text-xl font-semibold text-white">
-                trending this week
+                Trending this week
               </h3>
               <span className="text-xs text-zinc-500">
-                ranked across the cross-vendor index
+                Ranked across the cross-vendor index
               </span>
             </div>
             {trending.length > 0 ? (
@@ -651,14 +651,14 @@ export default async function HomePage() {
                 ))}
               </div>
             ) : (
-              <p className="text-sm text-zinc-500">loading trending skills...</p>
+              <p className="text-sm text-zinc-500">Loading trending skills...</p>
             )}
           </div>
 
           {/* categories */}
           <div>
             <div className="flex items-baseline justify-between mb-6">
-              <h3 className="text-xl font-semibold text-white">by category</h3>
+              <h3 className="text-xl font-semibold text-white">By category</h3>
               <span className="text-xs text-zinc-500">7 verticals, growing</span>
             </div>
             <div className="flex flex-wrap gap-2">
