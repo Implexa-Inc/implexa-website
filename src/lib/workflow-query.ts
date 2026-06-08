@@ -30,12 +30,13 @@ import type {
 } from "@/lib/workflow-catalog";
 
 // ── The query-to-agent mapping ──────────────────────────────────────────────
-// slug -> the high-intent query string the agent answers. Lowercase to match
-// the site's typographic style (every H1 on the site is lowercase). This is
-// the authored layer: it is what we control before the backend returns a
-// per-agent `query`, and it stays as a curated override after. Add a row to
-// give any agent a hand-tuned query; unmapped agents fall through to the
-// derivation below, so the catalog still scales without an entry per agent.
+// slug -> the high-intent query string the agent answers. Sentence case
+// (capitalize the first word and proper nouns only) to match the site's
+// typographic style. This is the authored layer: it is what we control before
+// the backend returns a per-agent `query`, and it stays as a curated override
+// after. Add a row to give any agent a hand-tuned query; unmapped agents fall
+// through to the derivation below, so the catalog still scales without an entry
+// per agent.
 //
 // Seeded from the example thoughts in WEBSITE_POSITIONING.md /
 // DATA_AND_LEARNING_MODEL.md (the "how it works" example thoughts ARE the
@@ -43,20 +44,20 @@ import type {
 // path. Keys are best-effort slugs; a miss is harmless (derivation covers it).
 export const QUERY_MAP: Record<string, string> = {
   // builder vertical (the app-builder graduate ICP)
-  "lovable-to-claude-migration": "how do i migrate my lovable app to claude",
-  "daily-build-brief": "how do i keep up with what changed in my stack overnight",
-  "ship-log-to-changelog": "how do i turn my commits into a changelog my users read",
+  "lovable-to-claude-migration": "How do I migrate my Lovable app to Claude",
+  "daily-build-brief": "How do I keep up with what changed in my stack overnight",
+  "ship-log-to-changelog": "How do I turn my commits into a changelog my users read",
   // realtor vertical (the build-in-public proof account)
-  "daily-realtor-content-pack": "how do i post listings consistently without a marketer",
+  "daily-realtor-content-pack": "How do I post listings consistently without a marketer",
   "daily-realtor-content-pack-2":
-    "how do i post listings consistently without a marketer",
-  "weekly-market-report": "how do i send my farm area a weekly market report",
-  "listing-dispute-watch": "how do i catch errors on my listings before a client does",
+    "How do I post listings consistently without a marketer",
+  "weekly-market-report": "How do I send my farm area a weekly market report",
+  "listing-dispute-watch": "How do I catch errors on my listings before a client does",
   // content / social (broad high-intent)
-  "daily-ig-reel-research-bundle": "how do i grow my instagram",
-  "instagram-growth-pack": "how do i grow my instagram",
-  "linkedin-comment-drafter": "how do i stay active on linkedin without living in it",
-  "youtube-to-blog": "how do i turn my videos into blog posts that rank",
+  "daily-ig-reel-research-bundle": "How do I grow my Instagram",
+  "instagram-growth-pack": "How do I grow my Instagram",
+  "linkedin-comment-drafter": "How do I stay active on LinkedIn without living in it",
+  "youtube-to-blog": "How do I turn my videos into blog posts that rank",
 };
 
 // ── isProven: the amplification gate (locked discipline) ────────────────────
@@ -94,14 +95,17 @@ type QueryInput = {
 const QUESTION_RE = /^(how|what|why|when|where|which|can|should|is|do|does)\b/i;
 
 // Turn a job phrase into a question H1 when it is not already one. Kept
-// deliberately small: a verb-led job ("draft a daily content pack") reads
-// well as "how do i draft a daily content pack"; anything already phrased as a
-// question is passed through untouched.
+// deliberately small: a verb-led job ("Draft a daily content pack") reads
+// well as "How do I draft a daily content pack"; anything already phrased as a
+// question is passed through with a capitalized first word. Output is sentence
+// case: the leading word is capitalized and the authored proper nouns inside
+// the phrase are preserved.
 function questionize(phrase: string): string {
-  const p = phrase.trim().replace(/[.?!]+$/, "").toLowerCase();
+  const p = phrase.trim().replace(/[.?!]+$/, "");
   if (!p) return "";
-  if (QUESTION_RE.test(p)) return p;
-  return `how do i ${p}`;
+  if (QUESTION_RE.test(p)) return p.charAt(0).toUpperCase() + p.slice(1);
+  const body = p.charAt(0).toLowerCase() + p.slice(1);
+  return `How do I ${body}`;
 }
 
 /**
@@ -110,12 +114,12 @@ function questionize(phrase: string): string {
  * the agent name as a last resort (so the H1 is never empty).
  */
 export function resolveQuery(w: QueryInput): string {
-  if (w.query && w.query.trim()) return w.query.trim().toLowerCase();
+  if (w.query && w.query.trim()) return w.query.trim();
   const mapped = QUERY_MAP[w.slug];
   if (mapped) return mapped;
   const derived = questionize(w.job || w.description || "");
   if (derived) return derived;
-  return w.name.toLowerCase();
+  return w.name;
 }
 
 // True when resolveQuery produced a real query (map/backend/derived), false

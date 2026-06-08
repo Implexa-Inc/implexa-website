@@ -17,8 +17,8 @@ import { resolveQuery, hasResolvedQuery } from "@/lib/workflow-query";
 // URL per workflow, each with a one-click path into Claude.
 
 const VERTICAL_LABEL: Record<string, string> = {
-  builder: "builders",
-  realtor: "realtors",
+  builder: "Builders",
+  realtor: "Realtors",
 };
 
 type SearchParams = { vertical?: string | string[] };
@@ -86,7 +86,7 @@ function Section({
   if (!items.length) return null;
   return (
     <section className="mb-12">
-      <h2 className="text-xl font-semibold text-white lowercase mb-1">
+      <h2 className="text-xl font-semibold text-white mb-1">
         {title}
       </h2>
       <p className="text-sm text-zinc-500 mb-4">{blurb}</p>
@@ -123,15 +123,15 @@ function WorkflowGridCard({ w }: { w: WorkflowCard }) {
             )}
             {cadenceBadge(w.cadence)}
           </div>
-          <CardTitle className="text-base font-medium text-white group-hover:text-zinc-100 lowercase">
+          <CardTitle className="text-base font-medium text-white group-hover:text-zinc-100">
             {query}
           </CardTitle>
         </CardHeader>
         <CardContent className="pt-0">
           {isQuery ? (
             <p className="text-xs text-zinc-500 mb-1.5">
-              answered by{" "}
-              <span className="text-zinc-300 lowercase">{w.name}</span>
+              Answered by{" "}
+              <span className="text-zinc-300">{w.name}</span>
             </p>
           ) : null}
           <p className="text-sm text-zinc-400 line-clamp-2">
@@ -223,17 +223,17 @@ export default async function WorkflowsPage(props: {
           className="inline-flex items-center gap-2 text-sm text-zinc-500 hover:text-white mb-8"
         >
           <ArrowLeft className="size-3.5" aria-hidden="true" />
-          back home
+          Back home
         </Link>
 
         <div className="flex items-center gap-3 mb-3">
           <Workflow className="size-6 text-zinc-400" aria-hidden="true" />
-          <h1 className="text-3xl sm:text-4xl font-semibold tracking-tight text-white lowercase">
-            agents
+          <h1 className="text-3xl sm:text-4xl font-semibold tracking-tight text-white">
+            Agents
           </h1>
         </div>
         <p className="text-lg text-zinc-400 max-w-2xl mb-8">
-          one agent per question people actually ask. each one stitches{" "}
+          One agent per question people actually ask. Each one stitches{" "}
           <Link
             href="/scores"
             className="text-white underline decoration-amber-400 decoration-2 underline-offset-4 hover:decoration-amber-300 transition-colors"
@@ -242,7 +242,7 @@ export default async function WorkflowsPage(props: {
           </Link>{" "}
           into a complete recurring job, a daily content pack, a weekly market
           report, a morning build brief, and runs it on a schedule in your own
-          Claude or Codex. build once, let it deliver, free.
+          Claude or Codex. Build once, let it deliver, free.
         </p>
 
         {/* vertical filter chips */}
@@ -263,7 +263,7 @@ export default async function WorkflowsPage(props: {
                     : "border border-zinc-800 text-zinc-300 hover:border-zinc-600 hover:bg-zinc-950"
                 }`}
               >
-                {v === "all" ? "all" : VERTICAL_LABEL[v] ?? v}
+                {v === "all" ? "All" : VERTICAL_LABEL[v] ?? v}
               </Link>
             );
           })}
@@ -272,18 +272,18 @@ export default async function WorkflowsPage(props: {
         {hasResults ? (
           <>
             <Section
-              title="recommended"
-              blurb="hand-picked, proven agents to start with."
+              title="Recommended"
+              blurb="Hand-picked, proven agents to start with."
               items={recommended}
             />
             <Section
-              title="popular"
-              blurb="what people are running on autopilot right now."
+              title="Popular"
+              blurb="What people are running on autopilot right now."
               items={popular}
             />
             <Section
-              title="all agents"
-              blurb="every agent in the catalog, newest builds included."
+              title="All agents"
+              blurb="Every agent in the catalog, newest builds included."
               items={allSorted}
             />
           </>
@@ -295,18 +295,18 @@ export default async function WorkflowsPage(props: {
             />
             <p className="text-base text-white mb-2">
               {verticalFilter
-                ? `no agents yet for ${verticalFilter}`
-                : "agents are loading"}
+                ? `No agents yet for ${verticalFilter}`
+                : "Agents are loading"}
             </p>
             <p className="text-sm text-zinc-400 max-w-md mx-auto mb-6">
-              the agent catalog is seeded from the best repeatable jobs across
-              the web. check back shortly, or browse the skill index.
+              The agent catalog is seeded from the best repeatable jobs across
+              the web. Check back shortly, or browse the skill index.
             </p>
             <Link
               href="/scores"
               className="text-sm text-white hover:underline inline-flex items-center gap-1"
             >
-              browse skills
+              Browse skills
             </Link>
           </div>
         )}

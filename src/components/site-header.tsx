@@ -23,37 +23,37 @@ export function SiteHeader() {
             href="/workflows"
             className="px-3 py-1.5 text-zinc-400 hover:text-white transition-colors"
           >
-            agents
+            Agents
           </Link>
           <Link
             href="/built-with-ai"
             className="px-3 py-1.5 text-zinc-400 hover:text-white transition-colors hidden sm:inline-block"
           >
-            what next
+            What next
           </Link>
           <Link
             href="/scores"
             className="px-3 py-1.5 text-zinc-400 hover:text-white transition-colors hidden sm:inline-block"
           >
-            top skills
+            Top skills
           </Link>
           <Link
             href="/pricing"
             className="px-3 py-1.5 text-zinc-400 hover:text-white transition-colors"
           >
-            pricing
+            Pricing
           </Link>
           <Link
             href="/resources"
             className="px-3 py-1.5 text-zinc-400 hover:text-white transition-colors hidden sm:inline-block"
           >
-            resources
+            Resources
           </Link>
           <Link
             href="/install"
             className="px-3 py-1.5 text-zinc-400 hover:text-white transition-colors hidden sm:inline-block"
           >
-            install
+            Install
           </Link>
           <Link
             href="https://github.com/Implexa-Inc"
@@ -61,19 +61,19 @@ export function SiteHeader() {
             target="_blank"
             rel="noopener noreferrer"
           >
-            github
+            GitHub
           </Link>
           <Link
             href="https://app.implexa.ai/login"
             className="ml-2 px-3 py-1.5 rounded-md text-zinc-300 hover:text-white hover:bg-zinc-900 transition-colors"
           >
-            sign in
+            Sign in
           </Link>
           <Link
             href="https://app.implexa.ai/signup"
             className="px-3 py-1.5 rounded-md bg-white text-black hover:bg-zinc-200 font-medium transition-colors"
           >
-            sign up
+            Sign up
           </Link>
         </nav>
       </div>
