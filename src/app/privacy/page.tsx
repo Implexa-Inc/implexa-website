@@ -12,10 +12,10 @@ import { absoluteUrl, DEFAULT_OG_IMAGE } from "@/lib/site";
 // real lawyer before any enterprise sale; for marketplace review it's
 // substantively complete.
 //
-// Voice: lowercase headers, sentence-case body, no em-dashes (founder
-// voice rule). Reads more like linear.app/privacy than a wall of legal
-// boilerplate. Modern dev-friendly privacy policies use plain language;
-// reviewers + users both benefit.
+// Voice: sentence case throughout, no em-dashes (founder voice rule).
+// Reads more like linear.app/privacy than a wall of legal boilerplate.
+// Modern dev-friendly privacy policies use plain language; reviewers +
+// users both benefit.
 //
 // LAST_UPDATED drives the metadata + the visible date stamp at the top
 // of the page. Bump it any time the policy changes materially.
@@ -23,18 +23,18 @@ import { absoluteUrl, DEFAULT_OG_IMAGE } from "@/lib/site";
 const LAST_UPDATED = "May 27, 2026";
 
 export const metadata: Metadata = {
-  title: "privacy policy",
+  title: "Privacy policy",
   description:
-    "what implexa collects, how we use it, who we share with, and how to get your data back. plain-english privacy policy, last updated " +
-    LAST_UPDATED.toLowerCase() +
+    "What Implexa collects, how we use it, who we share with, and how to get your data back. Plain-English privacy policy, last updated " +
+    LAST_UPDATED +
     ".",
   alternates: { canonical: "/privacy" },
   openGraph: {
     type: "website",
     url: absoluteUrl("/privacy"),
-    title: "privacy policy | implexa",
+    title: "Privacy policy | implexa",
     description:
-      "what implexa collects, how we use it, who we share with, and how to get your data back.",
+      "What Implexa collects, how we use it, who we share with, and how to get your data back.",
     images: [DEFAULT_OG_IMAGE],
   },
   robots: { index: true, follow: true },
@@ -50,36 +50,36 @@ export default function PrivacyPage() {
           className="inline-flex items-center gap-2 text-sm text-zinc-500 hover:text-white mb-10"
         >
           <ArrowLeft className="size-3.5" aria-hidden="true" />
-          back home
+          Back home
         </Link>
 
         <h1 className="text-3xl sm:text-4xl font-semibold tracking-tight text-white mb-3">
-          privacy policy
+          Privacy policy
         </h1>
         <p className="text-sm text-zinc-500 mb-12">
-          last updated {LAST_UPDATED.toLowerCase()}
+          Last updated {LAST_UPDATED}
         </p>
 
         {/* TL;DR — the 5-line version. Every modern privacy policy worth
             reading leads with the short version; reviewers + users both
             stop reading after this section, so it has to be honest. */}
-        <Section title="the short version">
+        <Section title="The short version">
           <ul className="list-disc pl-6 space-y-2 text-zinc-300 leading-relaxed">
             <li>
-              we collect what we need to run implexa: your email and name on
+              We collect what we need to run Implexa: your email and name on
               signup, plus telemetry about how you use the plugin (tool
               calls, applied skills, outcomes).
             </li>
             <li>
-              we do <strong className="text-white">not</strong> sell your
-              data. ever.
+              We do <strong className="text-white">not</strong> sell your
+              data. Ever.
             </li>
             <li>
-              we do <strong className="text-white">not</strong> train AI
+              We do <strong className="text-white">not</strong> train AI
               models on your prompts.
             </li>
             <li>
-              you can export or delete your data anytime. email{" "}
+              You can export or delete your data anytime. Email{" "}
               <a
                 href="mailto:founder@implexa.ai"
                 className="text-white underline decoration-amber-400 decoration-2 underline-offset-2 hover:decoration-amber-300"
@@ -89,36 +89,36 @@ export default function PrivacyPage() {
               and we will respond within 30 days.
             </li>
             <li>
-              questions? same email. we read everything.
+              Questions? Same email. We read everything.
             </li>
           </ul>
         </Section>
 
-        <Section title="what we collect">
-          <Subsection title="account information">
+        <Section title="What we collect">
+          <Subsection title="Account information">
             <p>
               When you sign up at app.implexa.ai we collect:
             </p>
             <ul className="list-disc pl-6 space-y-1 mt-2">
-              <li>email address (required for sign-in and transactional email)</li>
-              <li>display name (optional, used in dashboard UI)</li>
+              <li>Email address (required for sign-in and transactional email)</li>
+              <li>Display name (optional, used in dashboard UI)</li>
               <li>
-                authentication token (when you sign in via OAuth: google,
-                github, or claude.ai)
+                Authentication token (when you sign in via OAuth: Google,
+                GitHub, or claude.ai)
               </li>
             </ul>
           </Subsection>
 
-          <Subsection title="telemetry from the plugin">
-            <p>When the implexa plugin runs in your Claude Code or Codex session, we record:</p>
+          <Subsection title="Telemetry from the plugin">
+            <p>When the Implexa plugin runs in your Claude Code or Codex session, we record:</p>
             <ul className="list-disc pl-6 space-y-1 mt-2">
-              <li>which slash commands you invoke (e.g. /implexa:run)</li>
-              <li>which skills you apply, and whether they succeed or fail</li>
+              <li>Which slash commands you invoke (e.g. /implexa:run)</li>
+              <li>Which skills you apply, and whether they succeed or fail</li>
               <li>
-                an aggregated inventory of MCP servers you have installed
+                An aggregated inventory of MCP servers you have installed
                 (we use this to score skill compatibility)
               </li>
-              <li>counts and timestamps of plugin activity</li>
+              <li>Counts and timestamps of plugin activity</li>
             </ul>
             <p className="mt-3">
               We use this to rank skills via{" "}
@@ -132,7 +132,7 @@ export default function PrivacyPage() {
             </p>
           </Subsection>
 
-          <Subsection title="prompt context for skill recommendations">
+          <Subsection title="Prompt context for skill recommendations">
             <p>
               When you submit a prompt in Claude Code with implexa active, the
               plugin sends the prompt text to our backend so we can recommend
@@ -140,23 +140,23 @@ export default function PrivacyPage() {
             </p>
             <ul className="list-disc pl-6 space-y-1 mt-2">
               <li>
-                if we find a recommendation above our confidence threshold,
+                If we find a recommendation above our confidence threshold,
                 the prompt is logged alongside the recommendation, keyed by
                 an anonymized user identifier (a salted hash of your user
                 id, not the email).
               </li>
               <li>
-                if no recommendation matches, the prompt is discarded
+                If no recommendation matches, the prompt is discarded
                 immediately and not persisted.
               </li>
               <li>
-                we never use your prompts to train AI models. we never sell
+                We never use your prompts to train AI models. We never sell
                 or share prompt content with third parties.
               </li>
             </ul>
           </Subsection>
 
-          <Subsection title="work signatures (opt-in, off by default)">
+          <Subsection title="Work signatures (opt-in, off by default)">
             <p>
               You can optionally allow implexa to build a "work signature":
               an embedded representation of your work patterns across tools
@@ -177,17 +177,17 @@ export default function PrivacyPage() {
           </Subsection>
         </Section>
 
-        <Section title="how we use your data">
+        <Section title="How we use your data">
           <p>We use the data we collect to:</p>
           <ul className="list-disc pl-6 space-y-1 mt-2">
-            <li>deliver the product (recommend skills, store your library, bill you)</li>
+            <li>Deliver the product (recommend skills, store your library, bill you)</li>
             <li>
-              improve SkillRank, our cross-vendor skill ranking algorithm.
+              Improve SkillRank, our cross-vendor skill ranking algorithm.
               Aggregate telemetry, never individual user lookup.
             </li>
-            <li>debug issues you report to support</li>
+            <li>Debug issues you report to support</li>
             <li>
-              send transactional emails (welcome, billing receipts, security
+              Send transactional emails (welcome, billing receipts, security
               alerts)
             </li>
           </ul>
@@ -195,17 +195,17 @@ export default function PrivacyPage() {
             We do <strong className="text-white">not</strong>:
           </p>
           <ul className="list-disc pl-6 space-y-1 mt-2">
-            <li>sell your data to anyone, ever</li>
-            <li>train AI models on your prompts or skills</li>
-            <li>send marketing emails without explicit opt-in</li>
+            <li>Sell your data to anyone, ever</li>
+            <li>Train AI models on your prompts or skills</li>
+            <li>Send marketing emails without explicit opt-in</li>
             <li>
-              share user-level data with Anthropic, OpenAI, or any other
+              Share user-level data with Anthropic, OpenAI, or any other
               vendor unless required by law
             </li>
           </ul>
         </Section>
 
-        <Section title="who we share data with (sub-processors)">
+        <Section title="Who we share data with (sub-processors)">
           <p>
             Implexa runs on a small number of trusted infrastructure vendors.
             Each receives the minimum data needed to deliver their service:
@@ -242,7 +242,7 @@ export default function PrivacyPage() {
           </p>
         </Section>
 
-        <Section title="data retention">
+        <Section title="Data retention">
           <ul className="list-disc pl-6 space-y-2">
             <li>
               <strong className="text-white">Account data</strong> (email,
@@ -269,15 +269,15 @@ export default function PrivacyPage() {
           </ul>
         </Section>
 
-        <Section title="your rights">
+        <Section title="Your rights">
           <p>At any time you can ask us to:</p>
           <ul className="list-disc pl-6 space-y-1 mt-2">
-            <li>show you all the data we have about you</li>
-            <li>correct anything inaccurate</li>
-            <li>delete your account and all associated data</li>
-            <li>export your data in a portable format</li>
-            <li>stop processing your data for product improvement</li>
-            <li>opt out of telemetry or work-signature collection</li>
+            <li>Show you all the data we have about you</li>
+            <li>Correct anything inaccurate</li>
+            <li>Delete your account and all associated data</li>
+            <li>Export your data in a portable format</li>
+            <li>Stop processing your data for product improvement</li>
+            <li>Opt out of telemetry or work-signature collection</li>
           </ul>
           <p className="mt-4">
             Email{" "}
@@ -296,11 +296,11 @@ export default function PrivacyPage() {
           </p>
         </Section>
 
-        <Section title="cookies and tracking">
+        <Section title="Cookies and tracking">
           <p>We use cookies sparingly:</p>
           <ul className="list-disc pl-6 space-y-1 mt-2">
             <li>
-              <strong className="text-white">essential cookies</strong> for
+              <strong className="text-white">Essential cookies</strong> for
               authentication (sign-in state, session token)
             </li>
             <li>
@@ -319,7 +319,7 @@ export default function PrivacyPage() {
           </p>
         </Section>
 
-        <Section title="children">
+        <Section title="Children">
           <p>
             Implexa is not directed at children under 16. We do not knowingly
             collect data from minors. If you are a parent or guardian and
@@ -334,7 +334,7 @@ export default function PrivacyPage() {
           </p>
         </Section>
 
-        <Section title="international transfers">
+        <Section title="International transfers">
           <p>
             Implexa is based in the United States. If you use the product from
             outside the US, your data is transferred to and processed in the
@@ -343,7 +343,7 @@ export default function PrivacyPage() {
           </p>
         </Section>
 
-        <Section title="changes to this policy">
+        <Section title="Changes to this policy">
           <p>
             We update this page when something material changes. The
             last-updated date at the top reflects the most recent revision.
@@ -353,7 +353,7 @@ export default function PrivacyPage() {
           </p>
         </Section>
 
-        <Section title="contact">
+        <Section title="Contact">
           <p>
             One inbox for everything for now (privacy, security, general,
             press):
@@ -381,7 +381,7 @@ export default function PrivacyPage() {
         <div className="mt-16 pt-8 border-t border-zinc-900 text-xs text-zinc-500 leading-relaxed">
           <p>
             This privacy policy reflects how Implexa Inc. handles data as of{" "}
-            {LAST_UPDATED.toLowerCase()}. It is not legal advice. If you have
+            {LAST_UPDATED}. It is not legal advice. If you have
             specific questions about how privacy law applies to you, please
             consult a qualified attorney.
           </p>

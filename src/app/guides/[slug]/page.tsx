@@ -26,7 +26,7 @@ export async function generateMetadata(props: {
   const { slug } = await props.params;
   const guide = await getGuide(slug);
   if (!guide) {
-    return { title: "guide not found" };
+    return { title: "Guide not found" };
   }
 
   const { title, description } = guide.frontmatter;
@@ -58,17 +58,15 @@ export async function generateMetadata(props: {
 }
 
 function formatPublishDate(iso: string): string {
-  // Render as e.g. "may 25, 2026" (lowercase, voice-consistent).
+  // Render as e.g. "May 25, 2026" (sentence case, voice-consistent).
   const d = new Date(`${iso}T00:00:00Z`);
   if (Number.isNaN(d.getTime())) return iso;
-  return d
-    .toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-      timeZone: "UTC",
-    })
-    .toLowerCase();
+  return d.toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+    timeZone: "UTC",
+  });
 }
 
 export default async function GuidePage(props: {
@@ -108,7 +106,7 @@ export default async function GuidePage(props: {
           className="inline-flex items-center gap-2 text-sm text-zinc-500 hover:text-white mb-8"
         >
           <ArrowLeft className="size-3.5" aria-hidden="true" />
-          back to guides
+          Back to guides
         </Link>
 
         <article>
@@ -121,7 +119,7 @@ export default async function GuidePage(props: {
                 {typeof day === "number" ? `day ${day}` : "guide"}
               </Badge>
               <span className="text-xs text-zinc-500">
-                published {formatPublishDate(publishedAt)}
+                Published {formatPublishDate(publishedAt)}
               </span>
             </div>
             <h1 className="text-3xl sm:text-4xl font-semibold tracking-tight text-white mb-5 leading-[1.15]">
@@ -170,7 +168,7 @@ export default async function GuidePage(props: {
 
         <section className="text-sm text-zinc-400">
           <p className="mb-3">
-            building solo? follow{" "}
+            Building solo? Follow{" "}
             <a
               href="https://instagram.com/implexaai"
               target="_blank"
@@ -183,7 +181,7 @@ export default async function GuidePage(props: {
             <Link href="/install" className="text-white hover:underline">
               install the plugin
             </Link>{" "}
-            to use implexa inside Claude Code.
+            to use Implexa inside Claude Code.
           </p>
         </section>
       </main>

@@ -26,7 +26,7 @@ export async function generateMetadata(props: {
   const { slug } = await props.params;
   const resource = await getResource(slug);
   if (!resource) {
-    return { title: "resource not found" };
+    return { title: "Resource not found" };
   }
 
   const { title, description } = resource.frontmatter;
@@ -58,17 +58,15 @@ export async function generateMetadata(props: {
 }
 
 function formatPublishDate(iso: string): string {
-  // Render as e.g. "may 25, 2026" (lowercase, voice-consistent).
+  // Render as e.g. "May 25, 2026" (sentence case, voice-consistent).
   const d = new Date(`${iso}T00:00:00Z`);
   if (Number.isNaN(d.getTime())) return iso;
-  return d
-    .toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-      timeZone: "UTC",
-    })
-    .toLowerCase();
+  return d.toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+    timeZone: "UTC",
+  });
 }
 
 export default async function ResourcePage(props: {
@@ -110,7 +108,7 @@ export default async function ResourcePage(props: {
           className="inline-flex items-center gap-2 text-sm text-zinc-500 hover:text-white mb-8"
         >
           <ArrowLeft className="size-3.5" aria-hidden="true" />
-          back to resources
+          Back to resources
         </Link>
 
         <article>
@@ -123,7 +121,7 @@ export default async function ResourcePage(props: {
                 cornerstone
               </Badge>
               <span className="text-xs text-zinc-500">
-                published {formatPublishDate(publishedAt)}
+                Published {formatPublishDate(publishedAt)}
               </span>
             </div>
             <h1 className="text-3xl sm:text-4xl font-semibold tracking-tight text-white mb-5 leading-[1.15]">
@@ -172,9 +170,9 @@ export default async function ResourcePage(props: {
 
         <section className="text-sm text-zinc-400">
           <p className="mb-3">
-            ready to try implexa?{" "}
+            Ready to try Implexa?{" "}
             <Link href="/install" className="text-white hover:underline">
-              install the plugin
+              Install the plugin
             </Link>{" "}
             in 30 seconds, or{" "}
             <Link href="/" className="text-white hover:underline">
