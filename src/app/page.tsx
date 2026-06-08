@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { Metadata } from "next";
+import { cookies } from "next/headers";
 import {
   ArrowRight,
   ShieldCheck,
@@ -169,6 +170,12 @@ export default async function HomePage() {
     fetchSkillCounts(),
   ]);
 
+  // Server-decided hero A/B: middleware assigns a sticky cookie, so the first
+  // paint already shows the assigned headline (flash-free). await works whether
+  // cookies() is sync or async in this Next fork.
+  const heroVariant: "a" | "b" =
+    (await cookies()).get("implexa_hero_variant")?.value === "b" ? "b" : "a";
+
   return (
     <>
       <SiteHeader />
@@ -190,7 +197,7 @@ export default async function HomePage() {
               </div>
 
               {/* A/B-ready locked headline pair */}
-              <HeroHeadline />
+              <HeroHeadline forced={heroVariant} />
 
               <p className="text-lg text-zinc-400 leading-relaxed mb-6 max-w-xl">
                 Tell Implexa a recurring job in one sentence. It builds an{" "}

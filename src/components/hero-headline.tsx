@@ -55,7 +55,16 @@ export function HeroHeadline({ forced }: { forced?: HeroVariant }) {
   const [variant, setVariant] = useState<HeroVariant>(forced ?? "a");
 
   useEffect(() => {
-    if (forced) return;
+    if (forced) {
+      // Server decided the variant (middleware cookie). Still report the view
+      // once so the A/B test has conversion data for the forced cohort.
+      try {
+        track("hero_variant_view", { variant: forced });
+      } catch {
+        // analytics is best-effort; never block render on it
+      }
+      return;
+    }
     let assigned: HeroVariant;
     try {
       const stored = window.localStorage.getItem(STORAGE_KEY);
