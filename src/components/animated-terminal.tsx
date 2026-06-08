@@ -40,56 +40,56 @@ type Script = {
 const SCRIPTS: Script[] = [
   {
     id: "build-agent",
-    label: "build an agent",
+    label: "Build an agent",
     steps: [
       { mode: "prompt", text: "Implexa, find me new customers every morning" },
       {
         mode: "answer",
         text:
-          "💡 i'll build you an agent for that. it runs at 7am, as you,\n   on your real data. free on the claude plan you already have.",
+          "💡 I'll build you an agent for that. It runs at 7am, as you,\n   on your real data. Free on the Claude plan you already have.",
         afterMs: 1200,
       },
-      { mode: "pulse", text: "building the agent + setting the schedule...", afterMs: 1000 },
+      { mode: "pulse", text: "Building the agent + setting the schedule...", afterMs: 1000 },
       {
         mode: "answer",
-        text: "✓ agent built. first run tomorrow, 7:00am. nothing to babysit.",
+        text: "✓ Agent built. First run tomorrow, 7:00am. Nothing to babysit.",
         afterMs: 800,
       },
     ],
   },
   {
     id: "runs-itself",
-    label: "it runs on its own",
+    label: "It runs on its own",
     steps: [
-      { mode: "pulse", text: "7:00am · your agent is running, as you...", afterMs: 1100 },
+      { mode: "pulse", text: "7:00am · Your agent is running, as you...", afterMs: 1100 },
       {
         mode: "answer",
         text:
-          "💡 done before you woke up.\n   12 new accounts found, outreach drafted, waiting in your inbox.",
+          "💡 Done before you woke up.\n   12 new accounts found, outreach drafted, waiting in your inbox.",
         afterMs: 1300,
       },
       { mode: "prompt", text: "Nice. Same again tomorrow" },
       {
         mode: "answer",
-        text: "✓ already scheduled. you manage me, i manage the work.",
+        text: "✓ Already scheduled. You manage me, I manage the work.",
         afterMs: 900,
       },
     ],
   },
   {
     id: "gets-better",
-    label: "it gets better",
+    label: "It gets better",
     steps: [
       { mode: "prompt", text: "What did my agent learn this week?" },
       {
         mode: "answer",
         text:
-          "💡 this week it caught 2 leads last week's run missed,\n   and learned to skip the duplicates you kept deleting.",
+          "💡 This week it caught 2 leads last week's run missed,\n   and learned to skip the duplicates you kept deleting.",
         afterMs: 1400,
       },
       {
         mode: "pulse",
-        text: "its memory is yours. it travels across claude + codex.",
+        text: "Its memory is yours. It travels across Claude + Codex.",
         afterMs: 1200,
       },
     ],
@@ -224,7 +224,7 @@ export function AnimatedTerminal() {
             <div className="size-2.5 rounded-full bg-zinc-700" />
           </div>
           <span className="text-xs text-zinc-500 ml-1 font-mono truncate">
-            claude code · {SCRIPTS[scriptIndex].label}
+            Claude Code · {SCRIPTS[scriptIndex].label}
           </span>
         </div>
 

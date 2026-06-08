@@ -1,23 +1,23 @@
 import Link from "next/link";
 import type { Metadata } from "next";
-import { ArrowLeft, Check, Clock } from "lucide-react";
+import { ArrowLeft, Check, Clock, Download, Monitor, Terminal } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 
 export const metadata: Metadata = {
-  title: "install",
+  title: "Install Implexa",
   description:
-    "install the implexa plugin in claude code or codex. one curl command, ~30 seconds, signs you up + writes the config.",
+    "Download the Implexa desktop app for macOS. It installs Implexa into your own Claude Code and Codex and runs your agents on a schedule. Prefer the CLI? Install the plugin with one command.",
   alternates: { canonical: "/install" },
 };
 
-const STEPS = [
-  "implexa runs alongside your session",
-  "watches every prompt, semantic-matches against 22k+ skills across 6 sources",
-  "surfaces the best fit with a 15-word reason",
-  "one command to apply inline. no download, no install per skill",
+const WHAT_IT_DOES = [
+  "Installs Implexa into your own Claude Code and Codex, in one click",
+  "Runs your agents on a schedule, as you, on your real data",
+  "Keeps your machine awake for scheduled runs and gathers the results",
+  "Presence, not runtime: it never touches your model or your credentials",
 ];
 
 export default function InstallPage() {
@@ -30,94 +30,65 @@ export default function InstallPage() {
           className="inline-flex items-center gap-2 text-sm text-zinc-500 hover:text-white mb-8"
         >
           <ArrowLeft className="size-3.5" aria-hidden="true" />
-          back home
+          Back home
         </Link>
 
         <h1 className="text-3xl sm:text-4xl font-semibold tracking-tight text-white mb-3">
-          install implexa
+          Install Implexa
         </h1>
         <p className="text-lg text-zinc-400 mb-10">
-          one curl command. ~30 seconds. signs you up + writes the config.
+          One download. The desktop app installs Implexa into your own Claude Code
+          and Codex, and runs your agents for you.
         </p>
 
-        <section className="space-y-6 mb-12">
-          {/* claude code — uses install.sh which handles device-auth + hooks
-              + MCP server registration in one pass */}
-          <Card className="bg-zinc-950 border-zinc-900">
-            <CardHeader>
-              <CardTitle className="text-white text-lg">claude code</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <CodeBlock command="curl -fsSL https://core.implexa.ai/install.sh | bash" />
-              <p className="text-xs text-zinc-500 mt-3">
-                opens a browser for sign-in (device-auth), writes the
-                UserPromptSubmit hook + the MCP server config, registers
-                the plugin in claude code&apos;s marketplace cache. fully
-                quit + relaunch claude code to pick up the new tools.
-              </p>
-            </CardContent>
-          </Card>
-
-          {/* codex CLI — separate script because ~/.codex/config.toml uses
-              a different shape than ~/.claude/* (headers instead of bearer_token,
-              query-param auth, marketplace + plugin registration blocks) */}
-          <Card className="bg-zinc-950 border-zinc-900">
-            <CardHeader>
-              <CardTitle className="text-white text-lg">codex</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <CodeBlock command="curl -fsSL https://core.implexa.ai/install-for-codex.sh | bash" />
-              <p className="text-xs text-zinc-500 mt-3">
-                requires openai codex CLI ≥0.50 (
-                <code className="text-zinc-400">npm install -g @openai/codex</code>
-                ). same device-auth flow as claude. writes the implexa MCP
-                server block to{" "}
-                <code className="text-zinc-400">~/.codex/config.toml</code> and
-                installs the plugin skills to the cache. fully quit + relaunch
-                codex to load them.
-              </p>
-            </CardContent>
-          </Card>
-
-          {/* cursor — honest about state. we haven't built or verified this
-              path, marketplace install scripts don't exist yet. soft signup
-              for "tell me when it's ready" instead of fake commands. */}
-          <Card className="bg-zinc-950 border-zinc-900 opacity-70">
-            <CardHeader>
-              <CardTitle className="text-white text-lg flex items-center gap-2">
-                cursor
-                <span className="text-xs font-normal text-amber-300/80 inline-flex items-center gap-1">
-                  <Clock className="size-3" aria-hidden="true" />
-                  coming soon
-                </span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-zinc-400 mb-3">
-                cursor&apos;s MCP config (
-                <code className="text-zinc-400">.cursor/mcp.json</code>
-                ) supports streamable HTTP servers, so the technical path
-                exists. we&apos;re still verifying the auth + tool-discovery
-                shape end-to-end before publishing an install script.
-              </p>
+        {/* Primary path: the desktop app. The notarized build is not published
+            yet (pending an Apple Developer certificate), so the download is an
+            honest coming-soon with an email capture, not a broken link. */}
+        <Card className="bg-zinc-950 border-zinc-800 mb-12">
+          <CardHeader>
+            <CardTitle className="text-white text-lg flex items-center gap-2">
+              <Monitor className="size-5" aria-hidden="true" />
+              Implexa for macOS
+              <span className="text-xs font-normal text-amber-300/80 inline-flex items-center gap-1">
+                <Clock className="size-3" aria-hidden="true" />
+                Coming soon
+              </span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-zinc-400 mb-4">
+              The desktop app is the simplest way in: it installs Implexa into your
+              Claude Code and Codex, keeps your scheduled agents running, and shows
+              their results in one place. We are finishing Apple notarization so the
+              download is safe and one-click. Leave your email and we will tell you
+              the moment it is ready.
+            </p>
+            <div className="flex flex-wrap items-center gap-3">
+              <button
+                type="button"
+                disabled
+                className="inline-flex items-center gap-2 rounded-md bg-zinc-800 text-zinc-500 px-4 py-2 text-sm font-medium cursor-not-allowed"
+                aria-disabled="true"
+              >
+                <Download className="size-4" aria-hidden="true" />
+                Download for macOS
+              </button>
               <Link
-                href="mailto:hello@implexa.ai?subject=Tell%20me%20when%20Cursor%20support%20ships"
+                href="mailto:hello@implexa.ai?subject=Notify%20me%20when%20the%20Implexa%20macOS%20app%20is%20ready"
                 className="text-sm text-amber-300/90 hover:text-amber-200 transition-colors"
               >
-                tell me when it&apos;s ready →
+                Notify me when it is ready &rarr;
               </Link>
-            </CardContent>
-          </Card>
-        </section>
-
-        <Separator className="bg-zinc-900 mb-12" />
+            </div>
+          </CardContent>
+        </Card>
 
         <section className="mb-12">
           <h2 className="text-xl font-semibold text-white mb-4">
-            what implexa does
+            What the app does
           </h2>
           <ul className="space-y-3">
-            {STEPS.map((step, i) => (
+            {WHAT_IT_DOES.map((step, i) => (
               <li key={i} className="flex items-start gap-3">
                 <Check
                   className="size-5 text-white flex-shrink-0 mt-0.5"
@@ -129,61 +100,93 @@ export default function InstallPage() {
           </ul>
         </section>
 
+        <Separator className="bg-zinc-900 mb-12" />
+
+        {/* Secondary path: the CLI / plugin install for terminal-first users. */}
         <section className="mb-12">
-          <h2 className="text-xl font-semibold text-white mb-4">verify it</h2>
+          <div className="flex items-center gap-2 mb-1">
+            <Terminal className="size-5 text-zinc-400" aria-hidden="true" />
+            <h2 className="text-xl font-semibold text-white">
+              Prefer the CLI? Install the plugin manually
+            </h2>
+          </div>
+          <p className="text-sm text-zinc-500 mb-6">
+            If you live in the terminal, you can install the Implexa plugin into
+            Claude Code or Codex right now with one command. The desktop app does
+            this for you.
+          </p>
+
+          <div className="space-y-6">
+            {/* Claude Code: install.sh handles device-auth + hooks + MCP server. */}
+            <Card className="bg-zinc-950 border-zinc-900">
+              <CardHeader>
+                <CardTitle className="text-white text-lg">Claude Code</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <CodeBlock command="curl -fsSL https://core.implexa.ai/install.sh | bash" />
+                <p className="text-xs text-zinc-500 mt-3">
+                  Opens a browser for sign-in (device-auth), writes the
+                  UserPromptSubmit hook and the MCP server config, and registers the
+                  plugin in Claude Code&apos;s marketplace cache. Fully quit and
+                  relaunch Claude Code to pick up the new tools.
+                </p>
+              </CardContent>
+            </Card>
+
+            {/* Codex: separate script for ~/.codex/config.toml's shape. */}
+            <Card className="bg-zinc-950 border-zinc-900">
+              <CardHeader>
+                <CardTitle className="text-white text-lg">Codex</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <CodeBlock command="curl -fsSL https://core.implexa.ai/install-for-codex.sh | bash" />
+                <p className="text-xs text-zinc-500 mt-3">
+                  Requires the OpenAI Codex CLI 0.50 or newer (
+                  <code className="text-zinc-400">npm install -g @openai/codex</code>
+                  ). Same device-auth flow as Claude. Writes the Implexa MCP server
+                  block to{" "}
+                  <code className="text-zinc-400">~/.codex/config.toml</code> and
+                  installs the plugin skills to the cache. Fully quit and relaunch
+                  Codex to load them.
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+        </section>
+
+        <section className="mb-12">
+          <h2 className="text-xl font-semibold text-white mb-4">Verify it</h2>
           <p className="text-zinc-400 mb-3">
-            after install + relaunch, type this in any session:
+            After install and relaunch, type this in any session:
           </p>
           <CodeBlock command="implexa, find me a skill for outbound sequences" />
           <p className="text-xs text-zinc-500 mt-3">
-            you should see ranked matches with a fit reason and a one-tap
-            apply path. or use the slash commands directly:{" "}
-            <code className="text-zinc-400">
-              /implexa:suggest
-            </code>
-            ,{" "}
-            <code className="text-zinc-400">
-              /implexa:run
-            </code>
-            ,{" "}
-            <code className="text-zinc-400">
-              /implexa:record
-            </code>
-            ,{" "}
-            <code className="text-zinc-400">
-              /implexa:my-skills
-            </code>
-            ,{" "}
-            <code className="text-zinc-400">
-              /implexa:help
-            </code>
-            ,{" "}
-            <code className="text-zinc-400">
-              /implexa:schedule
-            </code>
-            ,{" "}
-            <code className="text-zinc-400">
-              /implexa:share-this
-            </code>
-            . codex uses{" "}
+            You should see ranked matches with a fit reason and a one-tap apply
+            path. Or use the slash commands directly:{" "}
+            <code className="text-zinc-400">/implexa:suggest</code>,{" "}
+            <code className="text-zinc-400">/implexa:run</code>,{" "}
+            <code className="text-zinc-400">/implexa:record</code>,{" "}
+            <code className="text-zinc-400">/implexa:my-skills</code>,{" "}
+            <code className="text-zinc-400">/implexa:schedule</code>,{" "}
+            <code className="text-zinc-400">/implexa:share-this</code>. Codex uses{" "}
             <code className="text-zinc-400">$implexa-*</code> instead of{" "}
             <code className="text-zinc-400">/implexa:*</code>.
           </p>
         </section>
 
         <section>
-          <h2 className="text-xl font-semibold text-white mb-4">help</h2>
+          <h2 className="text-xl font-semibold text-white mb-4">Help</h2>
           <p className="text-zinc-400">
-            broken install or weird match?{" "}
+            Broken install or a weird match?{" "}
             <Link
               href="https://github.com/Implexa-Inc"
               target="_blank"
               rel="noopener noreferrer"
               className="text-white hover:underline"
             >
-              open an issue
+              Open an issue
             </Link>
-            . most fixes ship same-day.
+            . Most fixes ship same-day.
           </p>
         </section>
       </main>

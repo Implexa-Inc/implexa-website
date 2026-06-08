@@ -77,9 +77,11 @@ function shortDate(iso: string | null): string | null {
   if (!iso) return null;
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return null;
-  return d
-    .toLocaleDateString("en-US", { month: "short", day: "numeric", timeZone: "UTC" })
-    .toLowerCase();
+  return d.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    timeZone: "UTC",
+  });
 }
 
 export async function generateMetadata(props: {
@@ -89,8 +91,8 @@ export async function generateMetadata(props: {
   const w = await getWorkflow(slug);
   if (!w) {
     return {
-      title: "agent not found",
-      description: "this agent is not in the catalog.",
+      title: "Agent not found",
+      description: "This agent is not in the catalog.",
       alternates: { canonical: `/workflows/${slug}` },
     };
   }
@@ -100,8 +102,10 @@ export async function generateMetadata(props: {
   const isQuery = hasResolvedQuery(w);
   const desc =
     (w.primary_outcome || w.job || w.description || "").slice(0, 200) ||
-    "a whole-job AI agent you build once and run on a schedule inside your own Claude or Codex.";
+    "A whole-job AI agent you build once and run on a schedule inside your own Claude or Codex.";
   const title = isQuery ? `${query}: the agent that answers it` : w.name;
+  // query is sentence case (resolveQuery); the suffix stays lowercase after the
+  // colon, which is valid sentence case for a continuation clause.
   return {
     title,
     description: desc,
@@ -140,7 +144,7 @@ function StepRow({
       <div className="min-w-0">
         <div className="flex items-center gap-2 mb-0.5">
           <span className="text-[11px] tabular-nums text-zinc-600">
-            step {step.order}
+            Step {step.order}
           </span>
           {step.kind !== "skill" ? (
             <Badge
@@ -185,24 +189,24 @@ function StepRow({
             className="mt-1.5 inline-flex items-center gap-1 text-xs text-emerald-400/90 hover:text-emerald-300 transition-colors"
           >
             {step.ref_summary?.name
-              ? `full skill: ${step.ref_summary.name}`
-              : `uses verified skill: ${step.ref.slug}`}
+              ? `Full skill: ${step.ref_summary.name}`
+              : `Uses verified skill: ${step.ref.slug}`}
             <ExternalLink className="size-2.5" aria-hidden="true" />
           </Link>
         ) : step.kind === "decision" ? (
           <span className="mt-1 block text-xs text-zinc-600">
-            decision step
+            Decision step
           </span>
         ) : (
           <span className="mt-1 block text-xs text-zinc-600">
-            your model fills this step
+            Your model fills this step
           </span>
         )}
         {step.fallbacks.length > 0 ? (
           <ul className="mt-1.5 space-y-0.5">
             {step.fallbacks.map((fb) => (
               <li key={fb} className="text-xs text-zinc-500">
-                <span className="text-zinc-600">no integration? </span>
+                <span className="text-zinc-600">No integration? </span>
                 {fb}
               </li>
             ))}
@@ -312,7 +316,7 @@ export default async function WorkflowDetailPage(props: {
           className="inline-flex items-center gap-2 text-sm text-zinc-500 hover:text-white mb-8"
         >
           <ArrowLeft className="size-3.5" aria-hidden="true" />
-          all agents
+          All agents
         </Link>
 
         {/* header */}
@@ -351,7 +355,7 @@ export default async function WorkflowDetailPage(props: {
             by" line is dropped. */}
         {queryIsH1 ? (
           <>
-            <h1 className="text-3xl sm:text-4xl font-semibold tracking-tight text-white lowercase mb-4">
+            <h1 className="text-3xl sm:text-4xl font-semibold tracking-tight text-white mb-4">
               {query}
             </h1>
             <div className="mb-5">
@@ -359,7 +363,7 @@ export default async function WorkflowDetailPage(props: {
                 the agent that answers this
               </p>
               <p className="text-lg text-zinc-300">
-                <span className="text-white font-medium lowercase">{w.name}</span>
+                <span className="text-white font-medium">{w.name}</span>
                 {answer ? (
                   <span className="text-zinc-400">. {answer}</span>
                 ) : null}
@@ -368,7 +372,7 @@ export default async function WorkflowDetailPage(props: {
           </>
         ) : (
           <>
-            <h1 className="text-3xl sm:text-4xl font-semibold tracking-tight text-white lowercase mb-3">
+            <h1 className="text-3xl sm:text-4xl font-semibold tracking-tight text-white mb-3">
               {w.name}
             </h1>
             <p className="text-lg text-zinc-400 mb-5">{answer}</p>
@@ -387,7 +391,7 @@ export default async function WorkflowDetailPage(props: {
             {activity.run_count > 0 && lastRun ? (
               <span className="inline-flex items-center gap-1.5">
                 <Clock className="size-3" aria-hidden="true" />
-                last run {lastRun}
+                Last run {lastRun}
               </span>
             ) : null}
             {activity.scheduled_count > 0 ? (
@@ -398,7 +402,7 @@ export default async function WorkflowDetailPage(props: {
             ) : null}
             {updatedAt ? (
               <span className="inline-flex items-center gap-1.5 text-zinc-600">
-                updated {updatedAt}
+                Updated {updatedAt}
               </span>
             ) : null}
             {w.version != null ? (
@@ -469,8 +473,8 @@ export default async function WorkflowDetailPage(props: {
                 </p>
               </div>
               <p className="mt-2.5 text-xs text-zinc-600">
-                example output, to show the shape of the deliverable. it has not
-                run on your data. build the agent to get this on yours.
+                Example output, to show the shape of the deliverable. It has not
+                run on your data. Build the agent to get this on yours.
               </p>
             </CardContent>
           </Card>
@@ -515,8 +519,8 @@ export default async function WorkflowDetailPage(props: {
                 </p>
               ) : null}
               <p className="mt-3 text-xs text-emerald-300/50">
-                agents are alive: a run can catch its own gaps and propose a fix.
-                this is real run history, not a directory listing.
+                Agents are alive: a run can catch its own gaps and propose a fix.
+                This is real run history, not a directory listing.
               </p>
             </CardContent>
           </Card>
@@ -598,7 +602,7 @@ export default async function WorkflowDetailPage(props: {
                 ))}
               </ul>
               <p className="mt-3 text-xs text-zinc-600">
-                connect these and the agent gathers its own data and delivers on
+                Connect these and the agent gathers its own data and delivers on
                 a schedule, instead of leaving you blanks to fill.
               </p>
             </CardContent>
@@ -611,17 +615,17 @@ export default async function WorkflowDetailPage(props: {
         <Card className="bg-zinc-950 border-zinc-800 mb-8">
           <CardContent className="p-5">
             <h2 className="text-base font-medium text-white mb-1">
-              build and run this on your own Claude or Codex, free
+              Build and run this on your own Claude or Codex, free
             </h2>
             <p className="text-sm text-zinc-400 mb-4">
-              install implexa, then say{" "}
+              Install Implexa, then say{" "}
               <span className="text-zinc-200 font-mono text-xs bg-zinc-900 px-1.5 py-0.5 rounded">
                 build the {w.name} agent
               </span>{" "}
-              and approve the schedule. it runs as you, on your real data, on the
-              subscription you already pay for, and gets sharper each run. your
+              and approve the schedule. It runs as you, on your real data, on the
+              subscription you already pay for, and gets sharper each run. Your
               agent&apos;s memory is yours and travels with you across Claude,
-              Codex, and whatever comes next. about 5 minutes to your first real
+              Codex, and whatever comes next. About 5 minutes to your first real
               run.
             </p>
             <CopyableInstall />
@@ -652,7 +656,7 @@ export default async function WorkflowDetailPage(props: {
                 ))}
               </ul>
               <p className="mt-3 text-xs text-zinc-600">
-                implexa assembles public best-practice into runnable agents and
+                Implexa assembles public best-practice into runnable agents and
                 credits the sources it drew from.
               </p>
             </div>
@@ -712,7 +716,7 @@ export default async function WorkflowDetailPage(props: {
                 ))}
               </ol>
               <p className="mt-3 text-xs text-zinc-600">
-                agents are alive: every change is a version, and a run can
+                Agents are alive: every change is a version, and a run can
                 propose improvements that get reviewed and applied.
               </p>
             </div>
@@ -757,7 +761,7 @@ export default async function WorkflowDetailPage(props: {
                             </Badge>
                           ) : null}
                         </div>
-                        <p className="text-sm text-zinc-200 lowercase group-hover:underline decoration-zinc-600">
+                        <p className="text-sm text-zinc-200 group-hover:underline decoration-zinc-600">
                           {rQuery}
                         </p>
                         <p className="mt-1 text-xs text-zinc-500 line-clamp-2">
