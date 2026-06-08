@@ -23,11 +23,17 @@ export function SiteHeader() {
             href="/workflows"
             className="px-3 py-1.5 text-zinc-400 hover:text-white transition-colors"
           >
-            workflows
+            agents
+          </Link>
+          <Link
+            href="/built-with-ai"
+            className="px-3 py-1.5 text-zinc-400 hover:text-white transition-colors hidden sm:inline-block"
+          >
+            what next
           </Link>
           <Link
             href="/scores"
-            className="px-3 py-1.5 text-zinc-400 hover:text-white transition-colors"
+            className="px-3 py-1.5 text-zinc-400 hover:text-white transition-colors hidden sm:inline-block"
           >
             top skills
           </Link>

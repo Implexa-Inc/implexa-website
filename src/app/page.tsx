@@ -1,13 +1,17 @@
 import Link from "next/link";
 import type { Metadata } from "next";
+import { cookies } from "next/headers";
 import {
-  Sparkles,
-  Download,
-  Search,
-  Wand2,
+  ArrowRight,
+  ShieldCheck,
+  Plug,
+  Infinity as InfinityIcon,
+  Wallet,
+  Clock,
+  RefreshCw,
+  Boxes,
   CircleCheck,
-  Layers,
-  Zap,
+  Sparkles,
 } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -16,24 +20,25 @@ import { SearchBar } from "@/components/search-bar";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { SkillCard } from "@/components/skill-card";
-import { CountUpPill } from "@/components/count-up-pill";
 import { CopyableInstall } from "@/components/copyable-install";
 import { AnimatedTerminal } from "@/components/animated-terminal";
-import { RecentSearchTicker } from "@/components/recent-search-ticker";
+import { HeroHeadline } from "@/components/hero-headline";
+import { ExampleThoughtsBox } from "@/components/example-thoughts-box";
 import type { SkillCard as SkillCardData } from "@/lib/placeholder-data";
 import { CATEGORIES } from "@/lib/placeholder-data";
 
 // Explicit canonical so the homepage is never indexed under a query-string
-// variant (e.g. ?utm=x). Title + description come from layout.tsx defaults.
+// variant (e.g. ?utm=x). Title + description come from layout.tsx defaults
+// (src/lib/site.ts), which now carry the locked agents positioning.
 export const metadata: Metadata = {
-  title: "Implexa: Let AI run your business",
+  title: "Implexa: agents that run your business",
   description:
-    "Implexa watches your AI work and turns your routines into agentic workflows. Launch with one command, run on a schedule, track outcomes. For Claude Code and Codex.",
+    "Describe a recurring job once and Implexa builds an agent that runs it every morning inside your own Claude or Codex, on your real data. Unlimited agents, free, because they run on the subscription you already pay for.",
   alternates: { canonical: "/" },
   openGraph: {
-    title: "Implexa: Let AI run your business",
+    title: "Implexa: agents that run your business",
     description:
-      "Implexa watches your AI work and turns your routines into agentic workflows. Launch with one command, run on a schedule, track outcomes.",
+      "Describe a recurring job once and Implexa builds an agent that runs it every morning inside your own Claude or Codex. Unlimited agents, free.",
   },
 };
 
@@ -52,10 +57,8 @@ const TOKEN = process.env.IMPLEXA_PUBLIC_SEARCH_TOKEN ?? "";
 
 // Fetch N skills from the prod index via recommend_skills_for_context in
 // explicit-search mode. We use a seed query that's broad enough to return
-// diverse results across sources. Tagged with `revalidate: 3600` (1 hr)
-// since launching — the homepage's trending/fresh rails don't need
-// finer granularity than that. Bumped from 600s 2026-05-28 after Vercel
-// free-tier warning.
+// diverse results across sources. Tagged with `revalidate: 3600` (1 hr) since
+// the homepage's catalog rail doesn't need finer granularity than that.
 async function fetchHomeSkills(seed: string, count: number): Promise<SkillCardData[]> {
   if (!TOKEN) return [];
 
@@ -76,7 +79,7 @@ async function fetchHomeSkills(seed: string, count: number): Promise<SkillCardDa
           arguments: {
             messages: [seed],
             topN: Math.min(count, 10),
-            minScore: 0.10,
+            minScore: 0.1,
             skipGates: true,
           },
         },
@@ -102,9 +105,6 @@ async function fetchHomeSkills(seed: string, count: number): Promise<SkillCardDa
       title: String(m.name ?? m.slug ?? ""),
       description: String(m.description ?? m.fit_reason ?? "").slice(0, 200),
       tag: m.score ? `${(m.score * 100).toFixed(0)}% match` : "popular",
-      // Use the real author the recommender now forwards. If the row
-      // doesn't have an author yet (clawhub backlog), fall back to empty
-      // string so the card just hides the byline.
       author: m.author ? String(m.author) : "",
     }));
   } catch {
@@ -112,23 +112,10 @@ async function fetchHomeSkills(seed: string, count: number): Promise<SkillCardDa
   }
 }
 
-// Live counts of indexed skills via the backend count_skills MCP tool.
-//
-// Returns two numbers:
-//   - vetted: rows passing the public quality gate (is_active=true AND
-//     embedding_status='ok'). Headline "Access N+ vetted AI skills" uses
-//     this. Conservative + defensible.
-//   - total: every row in aggregated_skills regardless of status. Live
-//     pill counter uses this to flex raw catalog coverage.
-//
-// Earlier version called list_aggregated_skills and looked for a `total`
-// field that the tool doesn't expose (it returns `count` = page size).
-// That meant the homepage permanently fell back to 19,000 even after
-// the catalog grew past 40k. count_skills is purpose-built for this
-// single call and returns both numbers in <50ms.
-//
-// Falls back to {vetted: 19000, total: 40000} if the backend is
-// unreachable so the page never renders broken numbers.
+// Live count of indexed skills via the backend count_skills MCP tool. Used
+// only in the subordinate catalog section ("the skills your agents are built
+// from"), never in the hero. Falls back so the page never renders broken
+// numbers.
 async function fetchSkillCounts(): Promise<{ vetted: number; total: number }> {
   const FALLBACK = { vetted: 19000, total: 40000 };
   if (!TOKEN) return FALLBACK;
@@ -144,10 +131,7 @@ async function fetchSkillCounts(): Promise<{ vetted: number; total: number }> {
         jsonrpc: "2.0",
         id: 1,
         method: "tools/call",
-        params: {
-          name: "count_skills",
-          arguments: {},
-        },
+        params: { name: "count_skills", arguments: {} },
       }),
       signal: AbortSignal.timeout(8000),
       next: { revalidate: 3600 },
@@ -163,81 +147,83 @@ async function fetchSkillCounts(): Promise<{ vetted: number; total: number }> {
       JSON.parse(raw);
     return {
       vetted: typeof parsed.vetted === "number" ? parsed.vetted : FALLBACK.vetted,
-      total:  typeof parsed.total === "number" ? parsed.total : FALLBACK.total,
+      total: typeof parsed.total === "number" ? parsed.total : FALLBACK.total,
     };
   } catch {
     return FALLBACK;
   }
 }
 
-// Reusable inline command chip. Amber matches the brand "the wedge" color +
-// hints visually that this is something the user actually says/types into
-// their AI workspace.
-function Cmd({ children }: { children: React.ReactNode }) {
-  return (
-    <code className="inline-block px-1.5 py-0.5 rounded bg-amber-500/10 border border-amber-900/40 text-amber-300 font-mono text-[0.85em]">
-      {children}
-    </code>
-  );
-}
+// The four scoped trust-rail claims. This copy is locked: it is the privacy
+// line scoped to accounts + credentials (never an unscoped "no data access"),
+// plus the free / unlimited / your-own-plan promises.
+const TRUST_RAIL = [
+  { icon: ShieldCheck, text: "We never touch your accounts or credentials" },
+  { icon: Plug, text: "No complex integrations to set up" },
+  { icon: InfinityIcon, text: "Unlimited agents, free" },
+  { icon: Wallet, text: "Just your Claude or Codex plan" },
+];
 
 export default async function HomePage() {
-  // Parallel fetches: trending + fresh skills + live count.
-  // If any fails, that section renders empty rather than falling back to
-  // broken placeholders.
-  // counts.vetted → hero "Access N+ vetted AI skills" (filtered to
-  // is_active + embedding_status='ok', the runnable-and-searchable subset).
-  // counts.total → live pill counter ("N and counting skills"), flexes raw
-  // catalog coverage including stubs / dead links / un-embedded rows.
-  const [trending, fresh, counts] = await Promise.all([
-    fetchHomeSkills("automate productivity workflow", 6),
-    fetchHomeSkills("integration api connector", 6),
+  const [trending, counts] = await Promise.all([
+    fetchHomeSkills("automate productivity sales content", 6),
     fetchSkillCounts(),
   ]);
+
+  // Server-decided hero A/B: middleware assigns a sticky cookie, so the first
+  // paint already shows the assigned headline (flash-free). await works whether
+  // cookies() is sync or async in this Next fork.
+  const heroVariant: "a" | "b" =
+    (await cookies()).get("implexa_hero_variant")?.value === "b" ? "b" : "a";
 
   return (
     <>
       <SiteHeader />
       <main className="flex-1">
 
-        {/* ─────────────────────────────────────────────────────────────
-            section 1 — asymmetric two-column hero (linear.app / cursor.com
-            pattern). left: words + CTAs + recent-search ticker. right:
-            animated terminal demo (play-once + replay). stacks on mobile.
-            ───────────────────────────────────────────────────────────── */}
-        <section className="mx-auto max-w-6xl px-4 sm:px-6 pt-20 pb-20">
+        {/* ============================================================
+            1 - HERO. asymmetric two-column. left: A/B headline + scoped
+            trust rail + CTA with a realistic time expectation. right:
+            animated agent demo. stacks on mobile.
+            ============================================================ */}
+        <section className="mx-auto max-w-6xl px-4 sm:px-6 pt-20 pb-16">
           <div className="grid gap-12 lg:gap-16 lg:grid-cols-[1.05fr_1fr] lg:items-center">
 
-            {/* ─── left column: pitch + CTAs ─── */}
+            {/* left column */}
             <div>
-              {/* small count chip above the headline, inline with the brand
-                  voice (lowercase, factual). real number from server fetch. */}
-              <div className="mb-6">
-                <CountUpPill target={counts.total} />
+              <div className="mb-6 inline-flex items-center gap-2 px-3 py-1 rounded-full border border-amber-900/40 bg-amber-500/5 text-xs text-amber-300">
+                <Sparkles className="size-3" aria-hidden="true" />
+                runs on the Claude or Codex plan you already pay for
               </div>
 
-              <h1 className="text-4xl lg:text-5xl xl:text-6xl font-semibold tracking-tight text-white leading-[1.05] mb-5">
-                Let AI run your{" "}
-                <span className="underline decoration-amber-400 decoration-2 underline-offset-[6px]">
-                  business
-                </span>
-                .
-              </h1>
+              {/* A/B-ready locked headline pair */}
+              <HeroHeadline forced={heroVariant} />
 
-              <p className="text-lg text-zinc-400 leading-relaxed mb-4 max-w-xl">
-                Implexa watches your AI work and turns your routines into{" "}
-                <span className="text-white">agentic workflows</span>.
-              </p>
-              <p className="text-base text-zinc-200 font-medium leading-relaxed mb-3 max-w-xl">
-                Launch with one command. Run on a schedule. Track outcomes.
-              </p>
-              <p className="text-sm text-zinc-500 mb-8">
-                Available for Claude Code and Codex.
+              <p className="text-lg text-zinc-400 leading-relaxed mb-6 max-w-xl">
+                Tell Implexa a recurring job in one sentence. It builds an{" "}
+                <span className="text-white">agent</span> that runs inside your
+                own Claude or Codex, as you, on your real data, on a schedule,
+                and gets sharper every run.
               </p>
 
-              {/* two CTAs, primary + secondary. install is the conversion;
-                  browse-top-skills is the low-commitment exploration path. */}
-              <div className="flex flex-wrap items-center gap-3 mb-4">
+              {/* scoped trust rail (locked copy) */}
+              <ul className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2.5 mb-8 max-w-xl">
+                {TRUST_RAIL.map(({ icon: Icon, text }) => (
+                  <li
+                    key={text}
+                    className="flex items-center gap-2.5 text-sm text-zinc-300"
+                  >
+                    <Icon
+                      className="size-4 shrink-0 text-emerald-400"
+                      aria-hidden="true"
+                    />
+                    {text}
+                  </li>
+                ))}
+              </ul>
+
+              {/* CTA + realistic time expectation (honesty guardrail) */}
+              <div className="flex flex-wrap items-center gap-3 mb-2">
                 <Link
                   href="/install"
                   className={buttonVariants({
@@ -246,8 +232,8 @@ export default async function HomePage() {
                       "bg-white text-black hover:bg-zinc-200 h-12 px-6 text-base inline-flex items-center gap-2",
                   })}
                 >
-                  <Download className="size-4" aria-hidden="true" />
-                  install plugin
+                  Build your first agent
+                  <ArrowRight className="size-4" aria-hidden="true" />
                 </Link>
                 <Link
                   href="/workflows"
@@ -258,125 +244,363 @@ export default async function HomePage() {
                       "border-zinc-700 text-zinc-300 hover:bg-zinc-950 hover:text-white h-12 px-6 text-base",
                   })}
                 >
-                  see workflows →
+                  See example agents
                 </Link>
               </div>
-
-              {/* the wedge in one sentence. positioned right under the CTAs
-                  so it's the last thing the eye reads before the click.
-                  ONE + NEVER carry the caps emphasis (matches the headline's
-                  "ANY" pattern). text-white for the caps, text-zinc-400
-                  for the surrounding prose. */}
-              <p className="text-sm text-zinc-400 leading-relaxed mb-8 max-w-md">
-                Install{" "}
-                <span className="text-white font-semibold">ONE</span>{" "}
-                plugin. It watches what you repeat, stitches the right skills and
-                tools into a workflow, and runs it{" "}
-                <span className="text-white font-semibold">unattended</span>, so
-                the work is done before you start.
+              <p className="text-sm text-zinc-500">
+                about 5 minutes to your first real one.
               </p>
-
-              {/* recent-search social-proof ticker. rotates real query
-                  topics every ~3.4s. */}
-              <RecentSearchTicker />
             </div>
 
-            {/* ─── right column: animated terminal proof ─── */}
+            {/* right column: animated agent demo */}
             <div className="lg:pl-4">
               <AnimatedTerminal />
-              {/* small caption under the terminal to anchor what it is */}
               <p className="text-xs text-zinc-600 mt-3 text-center lg:text-left">
-                running inline in claude code · also works in codex
+                running inside your own claude code. also works in codex.
               </p>
             </div>
           </div>
+        </section>
 
-          {/* how it works: the loop, in one glance. the one story nobody else
-              can tell. compact horizontal strip, stacks on mobile. */}
-          <div className="mt-16 pt-12 border-t border-zinc-900">
-            <p className="text-center text-xs uppercase tracking-wider text-zinc-500 mb-6">
-              how it works
-            </p>
-            <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-2 text-sm">
-              {[
-                ["watches", "what you repeat"],
-                ["stitches", "the right skills + tools"],
-                ["schedules", "it to run on its own"],
-                ["delivers", "the result to your inbox"],
-                ["improves", "with every run"],
-              ].map(([verb, rest], i, arr) => (
-                <span key={verb} className="inline-flex items-center gap-3">
-                  <span className="text-zinc-400">
-                    <span className="text-white font-medium">{verb}</span> {rest}
-                  </span>
-                  {i < arr.length - 1 ? (
-                    <span className="text-amber-400/70" aria-hidden="true">
-                      →
-                    </span>
-                  ) : null}
-                </span>
-              ))}
+        {/* ============================================================
+            2 - THE ECONOMIC FLIP. co-leads with the hero. the one thing
+            the resellers structurally cannot match.
+            ============================================================ */}
+        <section className="border-y border-zinc-900 bg-zinc-950/40">
+          <div className="mx-auto max-w-5xl px-4 sm:px-6 py-16">
+            <div className="max-w-3xl">
+              <div className="text-xs uppercase tracking-wider text-amber-400 mb-3 font-mono">
+                why it is free
+              </div>
+              <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight text-white mb-4 leading-tight">
+                You already pay for the AI. Why pay again to use it?
+              </h2>
+              <p className="text-base sm:text-lg text-zinc-400 leading-relaxed">
+                You already pay for Claude or Codex. Everyone else resells you
+                the same lab APIs at a markup, then bills you for the API usage
+                on top. Implexa runs on the subscription you already own, so your
+                agents are free. Build as many as you want.
+              </p>
+            </div>
+
+            <div className="grid gap-4 sm:grid-cols-2 mt-8">
+              <div className="rounded-lg border border-zinc-800 bg-black p-6">
+                <div className="text-xs text-zinc-500 mb-2 font-mono uppercase tracking-wider">
+                  everyone else
+                </div>
+                <p className="text-sm text-zinc-400 leading-relaxed">
+                  Their servers run the AI on their API keys, with a margin on
+                  top. You pay your subscription, then you pay them, then you pay
+                  the metered usage per run. The bill grows with the work.
+                </p>
+              </div>
+              <div className="rounded-lg border border-emerald-900/40 bg-emerald-500/5 p-6">
+                <div className="text-xs text-emerald-300 mb-2 font-mono uppercase tracking-wider">
+                  implexa
+                </div>
+                <p className="text-sm text-zinc-300 leading-relaxed">
+                  Your agents run on the Claude or Codex plan you already bought.
+                  No second AI bill, no per-run metering, no markup. Unlimited
+                  agents, free, because we never resell you inference.
+                </p>
+              </div>
             </div>
           </div>
+        </section>
 
-          {/* install command, below the two-column hero for the visitors
-              who scrolled this far and want the copy-paste right now */}
-          <div className="mt-12 pt-12 border-t border-zinc-900">
-            <p className="text-center text-sm text-zinc-500 mb-5">
-              or grab the install command directly:
+        {/* ============================================================
+            3 - THE MANAGER METAPHOR. one scroll down, explains the why.
+            ============================================================ */}
+        <section className="mx-auto max-w-5xl px-4 sm:px-6 py-20">
+          <div className="max-w-3xl mx-auto text-center">
+            <div className="text-xs uppercase tracking-wider text-zinc-500 mb-3 font-mono">
+              the shape of it
+            </div>
+            <h2 className="text-3xl sm:text-4xl font-semibold tracking-tight text-white mb-5 leading-tight">
+              You manage one thing. Implexa manages the rest.
+            </h2>
+            <p className="text-lg text-zinc-400 leading-relaxed">
+              Think of Implexa as the manager you hire. You manage one thing,
+              Implexa. It manages the agents that do the work, running on the AI
+              subscriptions you already pay for. You check in when you want. Most
+              days the work is already done.
             </p>
-            <CopyableInstall />
           </div>
         </section>
 
         <Separator className="bg-zinc-900 mx-auto max-w-6xl" />
 
-        {/* ─────────────────────────────────────────────────────────────
-            section 2 — positioning narrative + the catalog.
-            "skills are the new web pages". search lives here, not above.
-            sentence case body, lowercase headers (hybrid voice).
-            ───────────────────────────────────────────────────────────── */}
+        {/* ============================================================
+            4 - HOW IT WORKS. "describe a job once. it runs every
+            morning." rotating example thoughts (the target query
+            strings) + the four steps + a LABELED example result.
+            ============================================================ */}
         <section className="mx-auto max-w-6xl px-4 sm:px-6 py-24">
-
-          {/* the narrative — why this exists */}
-          <div className="max-w-3xl mx-auto text-center mb-16">
-            <div className="inline-flex items-center gap-2 mb-5 px-3 py-1 rounded-full border border-emerald-900/40 bg-emerald-500/5 text-xs text-emerald-300">
-              <Layers className="size-3" aria-hidden="true" />
-              ai&apos;s web moment
+          <div className="text-center mb-12">
+            <div className="inline-flex items-center gap-2 mb-4 px-3 py-1 rounded-full border border-emerald-900/40 bg-emerald-500/5 text-xs text-emerald-300">
+              <span className="size-1.5 rounded-full bg-emerald-400" aria-hidden="true" />
+              how it works
             </div>
-            <h2 className="text-3xl sm:text-5xl font-semibold tracking-tight text-white mb-6 leading-tight">
-              skills are the new web pages.
+            <h2 className="text-3xl sm:text-4xl font-semibold tracking-tight text-white mb-4">
+              Describe a job once. It runs every morning.
             </h2>
-            <div className="text-base sm:text-lg text-zinc-400 leading-relaxed space-y-4">
-              <p>
-                Almost 30 years ago Google saw what the web was becoming and
-                built the index that organized it. Today the same shift is
-                happening for AI.
-              </p>
-              <p>
-                Agents and the humans working with them don&apos;t need more
-                web pages anymore. They need skills. And there are already
-                100,000+ skills out there, written by tens of thousands of
-                people, scattered across half a dozen vendors.
-              </p>
-              <p className="text-white">
-                Implexa is the search, the score, and the runtime for that
-                graph. Skills are AI&apos;s web pages, and this is where you
-                find the best ones.
-              </p>
-              <p className="text-sm text-zinc-500">
-                <Link
-                  href="/resources/what-is-a-skill-graph"
-                  className="text-zinc-400 hover:text-white underline decoration-zinc-700 hover:decoration-white"
-                >
-                  read more: what is a skill graph?
-                </Link>
-              </p>
+            <p className="text-lg text-zinc-400 max-w-2xl mx-auto leading-relaxed">
+              No flows to wire, no integrations to maintain. You say it the way
+              you would say it to a person.
+            </p>
+          </div>
+
+          {/* the describe box (rotating, growing list of example jobs) */}
+          <div className="flex justify-center mb-14">
+            <ExampleThoughtsBox />
+          </div>
+
+          {/* the four steps */}
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-14">
+            {[
+              {
+                n: "1",
+                title: "Describe the job",
+                body: "One sentence, in plain words. The same way you would ask a capable assistant.",
+              },
+              {
+                n: "2",
+                title: "Implexa builds the agent",
+                body: "It picks the steps, the schedule, and the tools, and sets up the fallbacks so it does not stall.",
+              },
+              {
+                n: "3",
+                title: "It runs on its own",
+                body: "Inside your own Claude or Codex, as you, on your real data, on the schedule you set.",
+              },
+              {
+                n: "4",
+                title: "It gets better",
+                body: "Every run it learns what worked. You see what it changed this week, in plain words.",
+              },
+            ].map((step) => (
+              <div
+                key={step.n}
+                className="rounded-lg border border-zinc-800 bg-zinc-950 p-5"
+              >
+                <div className="size-7 rounded-md bg-amber-500/10 border border-amber-900/40 inline-flex items-center justify-center text-amber-300 font-mono text-sm mb-3">
+                  {step.n}
+                </div>
+                <h3 className="text-base font-medium text-white mb-1.5">
+                  {step.title}
+                </h3>
+                <p className="text-sm text-zinc-400 leading-relaxed">
+                  {step.body}
+                </p>
+              </div>
+            ))}
+          </div>
+
+          {/* LABELED example result (honesty guardrail: clearly an example,
+              never implied to have run on the visitor's data). */}
+          <div className="max-w-3xl mx-auto rounded-xl border border-zinc-800 bg-zinc-950 overflow-hidden">
+            <div className="flex items-center justify-between gap-3 px-5 py-3 border-b border-zinc-900 bg-zinc-900/40">
+              <span className="text-xs font-mono uppercase tracking-wider text-zinc-400">
+                example result
+              </span>
+              <span className="text-[10px] uppercase tracking-wider text-zinc-500 border border-zinc-800 rounded-full px-2 py-0.5">
+                sample, not your data
+              </span>
+            </div>
+            <div className="grid gap-0 sm:grid-cols-[1fr_1.2fr]">
+              {/* the agent spec */}
+              <div className="p-5 border-b sm:border-b-0 sm:border-r border-zinc-900">
+                <div className="text-xs text-zinc-500 mb-3 font-mono">
+                  the agent
+                </div>
+                <div className="text-sm text-white font-medium mb-3">
+                  find new customers, every morning
+                </div>
+                <dl className="space-y-2 text-sm">
+                  <div className="flex gap-2">
+                    <dt className="text-zinc-500 w-20 shrink-0">runs</dt>
+                    <dd className="text-zinc-300">every day, 7:00am</dd>
+                  </div>
+                  <div className="flex gap-2">
+                    <dt className="text-zinc-500 w-20 shrink-0">as</dt>
+                    <dd className="text-zinc-300">you, in your own Claude</dd>
+                  </div>
+                  <div className="flex gap-2">
+                    <dt className="text-zinc-500 w-20 shrink-0">delivers</dt>
+                    <dd className="text-zinc-300">a shortlist + drafted outreach</dd>
+                  </div>
+                </dl>
+              </div>
+              {/* the improved-this-week proof line */}
+              <div className="p-5">
+                <div className="text-xs text-emerald-300 mb-3 font-mono inline-flex items-center gap-1.5">
+                  <RefreshCw className="size-3" aria-hidden="true" />
+                  improved this week
+                </div>
+                <ul className="space-y-2 text-sm text-zinc-300">
+                  <li className="flex gap-2">
+                    <CircleCheck className="size-4 shrink-0 mt-0.5 text-emerald-400" aria-hidden="true" />
+                    caught 2 strong leads last week&apos;s run missed
+                  </li>
+                  <li className="flex gap-2">
+                    <CircleCheck className="size-4 shrink-0 mt-0.5 text-emerald-400" aria-hidden="true" />
+                    learned to skip the duplicates you kept deleting
+                  </li>
+                </ul>
+                <p className="text-xs text-zinc-500 mt-3 leading-relaxed">
+                  why: the last run flagged its own gap, so it fixed itself.
+                </p>
+              </div>
             </div>
           </div>
 
-          {/* search + catalog. live count pill sits just above the bar so
-              the number anchors the entire section. */}
+          {/* portability line (locked: ownership + portability, never
+              "your data never leaves your machine"). */}
+          <p className="text-center text-sm text-zinc-500 max-w-2xl mx-auto mt-8 leading-relaxed">
+            Your agent&apos;s memory is yours, private to you, never shared, and
+            it travels with you across Claude, Codex, and whatever comes next.
+          </p>
+        </section>
+
+        <Separator className="bg-zinc-900 mx-auto max-w-6xl" />
+
+        {/* ============================================================
+            5 - BUILT IT WITH AI? WHAT NEXT? homepage section that hands
+            off to the dedicated /built-with-ai landing page.
+            ============================================================ */}
+        <section className="mx-auto max-w-5xl px-4 sm:px-6 py-24">
+          <div className="rounded-2xl border border-zinc-800 bg-gradient-to-b from-zinc-950 to-black p-8 sm:p-12">
+            <div className="max-w-2xl">
+              <div className="text-xs uppercase tracking-wider text-amber-400 mb-3 font-mono">
+                built it with AI?
+              </div>
+              <h2 className="text-3xl sm:text-4xl font-semibold tracking-tight text-white mb-4 leading-tight">
+                You built the app with AI. Now let AI run the business around it.
+              </h2>
+              <p className="text-lg text-zinc-400 leading-relaxed mb-6">
+                The marketing, the outreach, the support replies, the onboarding
+                emails, the weekly reports. The work that surrounds the thing you
+                shipped. Describe each one once and an agent runs it every
+                morning, on the plan you already pay for.
+              </p>
+              <Link
+                href="/built-with-ai"
+                className={buttonVariants({
+                  size: "lg",
+                  className:
+                    "bg-white text-black hover:bg-zinc-200 h-12 px-6 text-base inline-flex items-center gap-2",
+                })}
+              >
+                See what comes next
+                <ArrowRight className="size-4" aria-hidden="true" />
+              </Link>
+            </div>
+          </div>
+        </section>
+
+        <Separator className="bg-zinc-900 mx-auto max-w-6xl" />
+
+        {/* ============================================================
+            6 - WHY IMPLEXA. the locked differentiators, agents-framed.
+            ============================================================ */}
+        <section className="mx-auto max-w-5xl px-4 sm:px-6 py-24">
+          <div className="text-center mb-14">
+            <h2 className="text-3xl sm:text-4xl font-semibold tracking-tight text-white mb-4">
+              Why Implexa
+            </h2>
+            <p className="text-lg text-zinc-400 max-w-2xl mx-auto leading-relaxed">
+              The things only a vendor-neutral manager that runs on your own plan
+              can do.
+            </p>
+          </div>
+
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {[
+              {
+                icon: Wallet,
+                title: "Free, on the plan you own",
+                body: "Agents run on your Claude or Codex subscription. No second AI bill, no per-run metering.",
+                color: "amber" as const,
+              },
+              {
+                icon: Clock,
+                title: "Runs unattended, on a schedule",
+                body: "As you, on your real data, while you sleep. The work is done before you start.",
+                color: "emerald" as const,
+              },
+              {
+                icon: RefreshCw,
+                title: "Gets better every run",
+                body: "It learns what worked and shows you what it changed this week, in plain words.",
+                color: "emerald" as const,
+              },
+              {
+                icon: Boxes,
+                title: "Your agent's brain is portable",
+                body: "The memory is yours and travels across Claude, Codex, and whatever comes next. Export or delete it any time.",
+                color: "amber" as const,
+              },
+              {
+                icon: ShieldCheck,
+                title: "We never touch your accounts",
+                body: "No passwords, no credentials, no contents of your work. No fragile integrations to set up.",
+                color: "emerald" as const,
+              },
+              {
+                icon: InfinityIcon,
+                title: "Unlimited agents",
+                body: "Build one for every recurring job. There is no cap and no per-agent charge.",
+                color: "amber" as const,
+              },
+            ].map((f) => (
+              <div
+                key={f.title}
+                className="rounded-lg border border-zinc-800 bg-zinc-950 p-6"
+              >
+                <div
+                  className={
+                    "size-8 rounded-md inline-flex items-center justify-center mb-3 " +
+                    (f.color === "emerald"
+                      ? "bg-emerald-500/10 border border-emerald-900/40"
+                      : "bg-amber-500/10 border border-amber-900/40")
+                  }
+                >
+                  <f.icon
+                    className={
+                      "size-4 " +
+                      (f.color === "emerald" ? "text-emerald-400" : "text-amber-300")
+                    }
+                    aria-hidden="true"
+                  />
+                </div>
+                <h3 className="text-base font-medium text-white mb-1.5">
+                  {f.title}
+                </h3>
+                <p className="text-sm text-zinc-400 leading-relaxed">{f.body}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <Separator className="bg-zinc-900 mx-auto max-w-6xl" />
+
+        {/* ============================================================
+            7 - THE CATALOG, subordinate. honest framing: agents are built
+            from skills, and you can browse the index they draw from.
+            keeps the live backend integration + SEO value.
+            ============================================================ */}
+        <section className="mx-auto max-w-6xl px-4 sm:px-6 py-24">
+          <div className="max-w-3xl mx-auto text-center mb-10">
+            <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight text-white mb-4">
+              The skills your agents are built from
+            </h2>
+            <p className="text-base text-zinc-400 leading-relaxed">
+              Under the hood, every agent is assembled from skills, the indexed,
+              graded, cross-vendor building blocks of what AI can do. Implexa
+              picks the right ones for you. You can browse the index too.
+            </p>
+          </div>
+
           <div className="max-w-3xl mx-auto mb-3 flex justify-center">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-zinc-800 bg-zinc-950 text-xs text-zinc-400">
               <span
@@ -391,7 +615,6 @@ export default async function HomePage() {
             <SearchBar />
           </div>
 
-          {/* example queries to reduce blank-page friction */}
           <div className="flex flex-wrap items-center justify-center gap-2 mb-16 text-sm">
             <span className="text-zinc-500">try:</span>
             {[
@@ -428,19 +651,15 @@ export default async function HomePage() {
                 ))}
               </div>
             ) : (
-              <p className="text-sm text-zinc-500">
-                loading trending skills...
-              </p>
+              <p className="text-sm text-zinc-500">loading trending skills...</p>
             )}
           </div>
 
           {/* categories */}
-          <div className="mb-16">
+          <div>
             <div className="flex items-baseline justify-between mb-6">
               <h3 className="text-xl font-semibold text-white">by category</h3>
-              <span className="text-xs text-zinc-500">
-                7 verticals, growing
-              </span>
+              <span className="text-xs text-zinc-500">7 verticals, growing</span>
             </div>
             <div className="flex flex-wrap gap-2">
               {CATEGORIES.map((cat) => (
@@ -463,350 +682,38 @@ export default async function HomePage() {
               ))}
             </div>
           </div>
-
-          {/* freshly indexed */}
-          <div>
-            <div className="flex items-baseline justify-between mb-6">
-              <h3 className="text-xl font-semibold text-white inline-flex items-center gap-2">
-                <Sparkles className="size-4 text-zinc-500" aria-hidden="true" />
-                recently indexed
-              </h3>
-              <span className="text-xs text-zinc-500">
-                skills added in the last crawl
-              </span>
-            </div>
-            {fresh.length > 0 ? (
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                {fresh.map((skill) => (
-                  <SkillCard key={`${skill.source}/${skill.slug}`} skill={skill} />
-                ))}
-              </div>
-            ) : (
-              <p className="text-sm text-zinc-500">
-                loading recent skills...
-              </p>
-            )}
-          </div>
         </section>
 
         <Separator className="bg-zinc-900 mx-auto max-w-6xl" />
 
-        {/* ─────────────────────────────────────────────────────────────
-            section 3 — what the plugin actually does. 4 features,
-            each anchored on a real command you say to implexa.
-            ───────────────────────────────────────────────────────────── */}
+        {/* ============================================================
+            8 - FINAL CTA. install command + the realistic-time line +
+            the locked trust claims restated.
+            ============================================================ */}
         <section className="mx-auto max-w-5xl px-4 sm:px-6 py-24">
-          <div className="text-center mb-14">
-            <div className="inline-flex items-center gap-2 mb-4 px-3 py-1 rounded-full border border-amber-900/40 bg-amber-500/5 text-xs text-amber-400">
-              <span className="size-1.5 rounded-full bg-amber-400" aria-hidden="true" />
-              features
-            </div>
+          <div className="text-center mb-10">
             <h2 className="text-3xl sm:text-4xl font-semibold tracking-tight text-white mb-4">
-              what the implexa plugin gives you
+              Build your first agent
             </h2>
             <p className="text-lg text-zinc-400 max-w-2xl mx-auto leading-relaxed">
-              four commands, learned in 30 seconds. they live inside your
-              claude code or codex session.
+              One command installs the plugin into your own Claude or Codex. Then
+              you describe a job and it runs. About 5 minutes to your first real
+              one.
             </p>
           </div>
 
-          <div className="grid gap-4 sm:grid-cols-2">
+          <CopyableInstall />
 
-            {/* feature 1: ask for a recommendation */}
-            <div className="rounded-lg border border-zinc-800 bg-zinc-950 p-6">
-              <div className="flex items-center gap-2 mb-3">
-                <div className="size-7 rounded-md bg-emerald-500/10 border border-emerald-900/40 inline-flex items-center justify-center">
-                  <Wand2 className="size-3.5 text-emerald-400" aria-hidden="true" />
-                </div>
-                <span className="text-xs text-zinc-500 font-mono">01 · ask</span>
-              </div>
-              <h3 className="text-base font-medium text-white mb-2">
-                ask mid-task, get a skill
-              </h3>
-              <p className="text-sm text-zinc-400 leading-relaxed mb-3">
-                drop a question into your existing claude code or codex
-                session. implexa pulls the best-fit skills from the
-                cross-vendor index.
-              </p>
-              <div className="space-y-1.5 text-xs">
-                <div>
-                  <Cmd>implexa: can i use a skill here?</Cmd>
-                </div>
-                <div>
-                  <Cmd>implexa: recommend a skill for {"<task>"}</Cmd>
-                </div>
-              </div>
-            </div>
-
-            {/* feature 2: ranked recommendations that get smarter */}
-            <div className="rounded-lg border border-emerald-900/40 bg-emerald-500/5 p-6">
-              <div className="flex items-center gap-2 mb-3">
-                <div className="size-7 rounded-md bg-emerald-500/20 border border-emerald-900/40 inline-flex items-center justify-center">
-                  <Search className="size-3.5 text-emerald-300" aria-hidden="true" />
-                </div>
-                <span className="text-xs text-emerald-300 font-mono">02 · rank</span>
-              </div>
-              <h3 className="text-base font-medium text-white mb-2">
-                ranked by quality + your workflow
-              </h3>
-              <p className="text-sm text-zinc-400 leading-relaxed mb-3">
-                recommendations score on completeness, implexa quality grade,
-                and your own working pattern. the more you use it, the more it
-                learns what fits you.
-              </p>
-              <div className="text-xs">
-                <Cmd>implexa: suggest</Cmd>{" "}
-                <span className="text-zinc-500">
-                  tells you which skill to use right now
-                </span>
-              </div>
-            </div>
-
-            {/* feature 3: capture your own workflows */}
-            <div className="rounded-lg border border-zinc-800 bg-zinc-950 p-6">
-              <div className="flex items-center gap-2 mb-3">
-                <div className="size-7 rounded-md bg-zinc-900 border border-zinc-800 inline-flex items-center justify-center">
-                  <CircleCheck className="size-3.5 text-zinc-400" aria-hidden="true" />
-                </div>
-                <span className="text-xs text-zinc-500 font-mono">03 · record</span>
-              </div>
-              <h3 className="text-base font-medium text-white mb-2">
-                turn your workflow into a reusable skill
-              </h3>
-              <p className="text-sm text-zinc-400 leading-relaxed mb-3">
-                implexa watches a session, captures the steps, and writes a
-                clean SKILL.md you can keep private, share with your team, or
-                publish to the index.
-              </p>
-              <div className="text-xs">
-                <Cmd>implexa: record</Cmd>
-              </div>
-            </div>
-
-            {/* feature 4: run anything inline */}
-            <div className="rounded-lg border border-amber-900/40 bg-amber-500/5 p-6">
-              <div className="flex items-center gap-2 mb-3">
-                <div className="size-7 rounded-md bg-amber-500/10 border border-amber-900/40 inline-flex items-center justify-center">
-                  <Zap className="size-3.5 text-amber-400" aria-hidden="true" />
-                </div>
-                <span className="text-xs text-amber-400 font-mono">04 · run</span>
-              </div>
-              <h3 className="text-base font-medium text-white mb-2">
-                run a skill without installing it
-              </h3>
-              <p className="text-sm text-zinc-400 leading-relaxed mb-3">
-                pass a skill name or just a natural-language prompt. implexa
-                resolves the right SKILL.md and runs it inline. nothing to
-                pre-install, nothing to restart.
-              </p>
-              <div className="space-y-1.5 text-xs">
-                <div>
-                  <Cmd>implexa: run draft-outreach</Cmd>
-                </div>
-                <div>
-                  <Cmd>implexa: run {'"draft a follow-up email"'}</Cmd>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* install command preview to make it real */}
-          <div className="max-w-2xl mx-auto mt-12 rounded-lg border border-zinc-900 bg-zinc-950 overflow-hidden">
-            <div className="flex items-center gap-2 px-4 py-2 border-b border-zinc-900 bg-zinc-900/50">
-              <span className="text-xs text-zinc-500 font-mono">terminal</span>
-            </div>
-            <pre className="p-4 text-sm font-mono text-zinc-300 overflow-x-auto leading-relaxed">
-              <span className="text-zinc-600">$</span>{" "}
-              <span className="text-emerald-400">curl</span> -fsSL{" "}
-              <span className="text-amber-400">https://core.implexa.ai/install.sh</span>{" "}
-              | <span className="text-emerald-400">bash</span>
-            </pre>
-          </div>
-        </section>
-
-        <Separator className="bg-zinc-900 mx-auto max-w-6xl" />
-
-        {/* ─────────────────────────────────────────────────────────────
-            section 4 — why this matters. reinforce the wedge against
-            the "just install some skills" status quo.
-            ───────────────────────────────────────────────────────────── */}
-        <section className="mx-auto max-w-5xl px-4 sm:px-6 py-24">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl sm:text-4xl font-semibold tracking-tight text-white mb-4">
-              the 10-skill ceiling is the bug.
-              <br />
-              <span className="text-zinc-400">implexa is the fix.</span>
-            </h2>
-            <p className="text-lg text-zinc-400 max-w-2xl mx-auto leading-relaxed">
-              every vendor caps how many skills you can pre-install. but the
-              skill you need next is usually one you haven&apos;t installed
-              yet.
-            </p>
-          </div>
-
-          <div className="grid gap-4 sm:grid-cols-2 mb-12">
-            <div className="rounded-lg border border-zinc-800 bg-zinc-950 p-6">
-              <div className="text-xs text-amber-400 mb-2 font-mono uppercase tracking-wider">
-                the status quo
-              </div>
-              <h3 className="text-base font-medium text-white mb-2">
-                pre-install 10-12 skills, hope you picked right
-              </h3>
-              <p className="text-sm text-zinc-400 leading-relaxed">
-                even claude recommends keeping the installed-skill list under a
-                dozen. so you spend hours picking, then forget to use them, then
-                hit the next task they don&apos;t cover.
-              </p>
-            </div>
-
-            <div className="rounded-lg border border-emerald-900/40 bg-emerald-500/5 p-6">
-              <div className="text-xs text-emerald-300 mb-2 font-mono uppercase tracking-wider">
-                with implexa
-              </div>
-              <h3 className="text-base font-medium text-white mb-2">
-                {counts.vetted.toLocaleString()}+ skills, applied on demand
-              </h3>
-              <p className="text-sm text-zinc-400 leading-relaxed">
-                search the full cross-vendor index from inside claude code
-                or codex.
-                use any skill without installing it. implexa watches your work
-                and surfaces the right one mid-task.
-              </p>
-            </div>
-          </div>
-
-          {/* the reinforcement list */}
-          <div className="rounded-lg border border-zinc-900 bg-zinc-950 p-6 sm:p-8 mb-12">
-            <div className="grid gap-5 sm:grid-cols-2">
-              {[
-                {
-                  title: "search inside claude code or codex",
-                  body: "one plugin, one index, one set of commands. lives next to claude code or codex without taking either over.",
-                  color: "emerald" as const,
-                },
-                {
-                  title: "use without installing",
-                  body: "skills run inline. nothing to download, nothing to restart, nothing to remember.",
-                  color: "emerald" as const,
-                },
-                {
-                  title: "implexa improves skills automatically",
-                  body: "every indexed skill is graded, then enriched into a canonical SKILL.md with clearer intent, edge cases, and decision logic.",
-                  color: "amber" as const,
-                },
-                {
-                  title: "recommendations get smarter with use",
-                  body: "implexa learns your tool stack and work pattern. the more sessions, the sharper the suggestions.",
-                  color: "amber" as const,
-                },
-              ].map((row) => (
-                <div key={row.title} className="flex gap-3">
-                  <CircleCheck
-                    className={
-                      row.color === "emerald"
-                        ? "size-4 shrink-0 mt-0.5 text-emerald-400"
-                        : "size-4 shrink-0 mt-0.5 text-amber-400"
-                    }
-                    aria-hidden="true"
-                  />
-                  <div>
-                    <div className="text-sm font-medium text-white mb-0.5">
-                      {row.title}
-                    </div>
-                    <div className="text-sm text-zinc-400 leading-relaxed">
-                      {row.body}
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* command cheatsheet — repeatable visual + reinforces memory */}
-          <div className="rounded-lg border border-zinc-900 bg-zinc-950 overflow-hidden mb-12">
-            <div className="px-5 py-3 border-b border-zinc-900 bg-zinc-900/40">
-              <span className="text-xs text-zinc-500 font-mono uppercase tracking-wider">
-                cheatsheet · the seven commands
-              </span>
-            </div>
-            <div className="divide-y divide-zinc-900">
-              {[
-                {
-                  cmd: "implexa: suggest [for X]",
-                  what: "find skills — active search or passive buffer",
-                },
-                {
-                  cmd: "implexa: run <skill or prompt>",
-                  what: "apply the best-fit skill from library + cross-vendor graph",
-                },
-                {
-                  cmd: "implexa: record",
-                  what: "capture a skill — new demo, post-hoc save, or update via re-record",
-                },
-                {
-                  cmd: "implexa: my-skills [scope]",
-                  what: "browse libraries — personal / team / org / public",
-                },
-                {
-                  cmd: "implexa: schedule <skill> <cadence>",
-                  what: "auto-run any skill on a recurrence, dashboard or slack",
-                },
-                {
-                  cmd: "implexa: share-this",
-                  what: "team-gated or public share link, one-click install",
-                },
-                {
-                  cmd: "implexa: help",
-                  what: "list commands + your current credit balance",
-                },
-              ].map((r) => (
-                <div
-                  key={r.cmd}
-                  className="px-5 py-3 flex flex-col sm:flex-row sm:items-center sm:gap-6"
-                >
-                  <code className="text-sm font-mono text-amber-300 sm:w-80 shrink-0">
-                    {r.cmd}
-                  </code>
-                  <span className="text-sm text-zinc-400">{r.what}</span>
-                </div>
-              ))}
-            </div>
-            <div className="px-5 py-3 border-t border-zinc-900 bg-zinc-900/20">
-              <span className="text-xs text-zinc-500 leading-relaxed">
-                for anything else, just ask in natural language. fork, morning brief, skill ROI, clawhub publish all route through the model.
-              </span>
-            </div>
-          </div>
-
-          {/* closing CTA */}
-          <div className="text-center">
-            <div className="flex flex-wrap items-center justify-center gap-3 mb-4">
-              <Link
-                href="/install"
-                className={buttonVariants({
-                  size: "lg",
-                  className:
-                    "bg-white text-black hover:bg-zinc-200 h-12 px-6 text-base inline-flex items-center gap-2",
-                })}
+          <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 mt-10">
+            {TRUST_RAIL.map(({ icon: Icon, text }) => (
+              <span
+                key={text}
+                className="inline-flex items-center gap-2 text-sm text-zinc-400"
               >
-                <Download className="size-4" aria-hidden="true" />
-                install the plugin
-              </Link>
-              <Link
-                href="https://app.implexa.ai/signup"
-                className={buttonVariants({
-                  variant: "outline",
-                  size: "lg",
-                  className:
-                    "border-zinc-700 text-zinc-300 hover:bg-zinc-950 hover:text-white h-12 px-6 text-base",
-                })}
-              >
-                sign up free
-              </Link>
-            </div>
-            <p className="text-sm text-zinc-500">
-              plugin is MIT licensed. free tier forever. cross-vendor by design.
-            </p>
+                <Icon className="size-4 text-emerald-400" aria-hidden="true" />
+                {text}
+              </span>
+            ))}
           </div>
         </section>
       </main>

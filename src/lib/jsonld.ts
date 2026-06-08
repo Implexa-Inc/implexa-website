@@ -451,6 +451,61 @@ export function faqSchema(
   };
 }
 
+// ── QAPage for query-addressable agent pages ───────────────────────────────
+//
+// Each agent detail page IS a real high-intent query (its H1 is the thought a
+// person types: "how do i grow my instagram"). QAPage is the schema.org type
+// answer engines (Google AI Overviews, Perplexity, ChatGPT Search) preferentially
+// lift for question-shaped pages: it states the question and the accepted
+// answer as structured data, so the page is citable as the answer to that query
+// without the engine parsing prose. Paired with HowTo (the procedure) and
+// SoftwareApplication (the installable agent) in jsonLdGraph().
+
+export type QAPageInput = {
+  question: string; // the page's query H1
+  answerText: string; // the agent's answer (what it does / its outcome)
+  url: string; // canonical page URL
+  upvoteCount?: number; // real run/schedule count, when proven; never fabricated
+  dateModified?: string;
+};
+
+/**
+ * QAPage schema. Returns null when the question or answer is empty so
+ * jsonLdGraph drops it. upvoteCount is only passed for proven agents (real run
+ * history); we never synthesize a count, per the amplification discipline.
+ */
+export function qaPageSchema(input: QAPageInput): JsonLdNode | null {
+  const question = input.question.trim();
+  const answer = input.answerText.trim();
+  if (!question || !answer) return null;
+
+  const acceptedAnswer: JsonLdNode = {
+    "@type": "Answer",
+    text: answer,
+    url: input.url,
+  };
+  if (typeof input.upvoteCount === "number" && input.upvoteCount > 0) {
+    acceptedAnswer.upvoteCount = input.upvoteCount;
+  }
+
+  const mainEntity: JsonLdNode = {
+    "@type": "Question",
+    name: question,
+    answerCount: 1,
+    acceptedAnswer,
+  };
+
+  const node: JsonLdNode = {
+    "@type": "QAPage",
+    "@id": input.url,
+    url: input.url,
+    isPartOf: { "@id": WEBSITE_ID },
+    mainEntity,
+  };
+  if (input.dateModified) node.dateModified = input.dateModified;
+  return node;
+}
+
 // ── Graph assembler ────────────────────────────────────────────────────────
 
 /**

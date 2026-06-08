@@ -29,6 +29,13 @@ export type WorkflowCard = {
   curated: boolean; // proven, hand-curated workflow (source = web-seed)
   unproven: boolean; // auto-generated, no real runs yet
   last_seen_at: string | null;
+  // ── BACKEND INTEGRATION SLOT (query-addressable pages) ──────────────────
+  // The high-intent query this agent answers ("how do i grow my instagram").
+  // The parallel backend stream will return this per agent; until it lands it
+  // is null and the query is resolved from the query map / derivation in
+  // lib/workflow-query.ts. Keeping the raw field here keeps the seam clean:
+  // when the backend ships, resolveQuery() prefers this with zero page changes.
+  query: string | null;
 };
 
 export type WorkflowCapability = {
@@ -55,6 +62,34 @@ export type WorkflowVersionEntry = {
   summary: string | null;
   source: string; // seed | generated | feedback | manual
   at: string;
+};
+
+// ── BACKEND INTEGRATION SLOT (proof + "improved this week") ─────────────────
+// The dedicated improvement signal the parallel backend stream is building: a
+// dated, run-attributed "improved this week / here is why" delta. Until that
+// read path lands this is null and resolveImprovement() derives the proof line
+// from the feedback-sourced changelog (WorkflowVersionEntry) instead. When the
+// backend ships, it carries the richer `why` (what a run flagged) that the
+// changelog summary alone can only approximate. Per the locked amplification
+// discipline this is ONLY shown on proven agents (real, non-degraded runs).
+export type WorkflowImprovement = {
+  at: string; // ISO date the improvement was applied
+  summary: string; // what changed ("caught the 2 disputes v2 missed")
+  why: string | null; // why it changed ("last run flagged its own gap")
+  version: number | null; // the version this improvement produced
+};
+
+// ── BACKEND INTEGRATION SLOT (example Result) ───────────────────────────────
+// A real, rendered example deliverable for this agent's job category, pulled
+// from a pre-built library by the backend. Rendered under a hard "example
+// result" label and a "not run on your data" disclaimer (honesty guardrail).
+// Until the backend returns it this is null and resolveExampleResult() falls
+// back to a descriptive, clearly-illustrative shape built from primary_outcome
+// + signals. `format` tells the page how to render `body`.
+export type WorkflowExampleResult = {
+  title: string | null;
+  body: string; // the example deliverable (markdown or plain text)
+  format: "markdown" | "text";
 };
 
 // A one-glance summary of the verified skill a step is bound to. Lets the
@@ -109,6 +144,13 @@ export type WorkflowDetail = {
   version: number | null; // current (newest applied) version number
   versions: WorkflowVersionEntry[]; // applied changelog, newest first
   proposed_count: number; // pending feedback-driven revisions
+  // ── BACKEND INTEGRATION SLOTS (query-addressable rebuild) ─────────────────
+  // All three are null until the parallel backend read path lands. The page
+  // never depends on them directly; it calls the resolvers in
+  // lib/workflow-query.ts, which prefer these and fall back to derived values.
+  query: string | null; // the high-intent thought this agent answers
+  improvement: WorkflowImprovement | null; // dated "improved this week" delta
+  example_result: WorkflowExampleResult | null; // a real example deliverable
 };
 
 // Parse the SSE-wrapped MCP response. The backend wraps responses as
@@ -183,6 +225,8 @@ export async function listWorkflows(): Promise<WorkflowCard[]> {
     curated: w.curated === true,
     unproven: w.unproven === true,
     last_seen_at: w.last_seen_at ?? null,
+    // backend slot; null until the query read path lands (see workflow-query.ts)
+    query: typeof w.query === "string" && w.query ? w.query : null,
   }));
 }
 
@@ -225,6 +269,18 @@ export async function getWorkflow(
       at?: string;
     }>;
     proposed_count?: number;
+    query?: string | null;
+    improvement?: {
+      at?: string;
+      summary?: string;
+      why?: string | null;
+      version?: number | null;
+    } | null;
+    example_result?: {
+      title?: string | null;
+      body?: string;
+      format?: string;
+    } | null;
   };
   const num = (v: unknown) => (typeof v === "number" && v >= 0 ? v : 0);
   return {
@@ -305,5 +361,32 @@ export async function getWorkflow(
           }))
       : [],
     proposed_count: num(raw.proposed_count),
+    // backend slots; null until the read path lands. The page reads these only
+    // through the resolvers in workflow-query.ts, which fall back gracefully.
+    query: typeof raw.query === "string" && raw.query ? raw.query : null,
+    improvement:
+      raw.improvement && typeof raw.improvement.summary === "string"
+        ? {
+            at: String(raw.improvement.at ?? ""),
+            summary: raw.improvement.summary,
+            why:
+              typeof raw.improvement.why === "string" ? raw.improvement.why : null,
+            version:
+              typeof raw.improvement.version === "number"
+                ? raw.improvement.version
+                : null,
+          }
+        : null,
+    example_result:
+      raw.example_result && typeof raw.example_result.body === "string"
+        ? {
+            title:
+              typeof raw.example_result.title === "string"
+                ? raw.example_result.title
+                : null,
+            body: raw.example_result.body,
+            format: raw.example_result.format === "markdown" ? "markdown" : "text",
+          }
+        : null,
   };
 }

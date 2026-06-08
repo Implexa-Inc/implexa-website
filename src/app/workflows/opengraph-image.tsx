@@ -8,15 +8,15 @@ import { renderOgCard, OG_SIZE, OG_CONTENT_TYPE } from "@/lib/og-card";
 
 export const size = OG_SIZE;
 export const contentType = OG_CONTENT_TYPE;
-export const alt = "implexa workflows";
+export const alt = "implexa agents";
 
 export default function Image() {
   return new ImageResponse(
     renderOgCard({
-      title: "AI workflows you can run on a schedule",
+      title: "AI agents you can build and run on a schedule",
       description:
-        "whole-job workflows built from verified skills. install once, let it deliver.",
-      eyebrow: "workflows",
+        "one agent per question people ask. build once, let it deliver, free.",
+      eyebrow: "agents",
       footer: "implexa.ai/workflows",
     }),
     { ...OG_SIZE },
