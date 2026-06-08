@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { absoluteUrl } from "@/lib/site";
 import { jsonLdGraph, breadcrumbSchema } from "@/lib/jsonld";
 import { listWorkflows, type WorkflowCard } from "@/lib/workflow-catalog";
+import { resolveQuery, hasResolvedQuery } from "@/lib/workflow-query";
 
 // /workflows — the public catalog of whole-job workflows. Each workflow
 // stitches verified skills into a complete recurring job (a daily content
@@ -28,12 +29,12 @@ export async function generateMetadata(props: {
   const sp = await props.searchParams;
   const vertical = typeof sp.vertical === "string" ? sp.vertical : "";
   const title = vertical
-    ? `${vertical} workflows you can run on a schedule`
-    : "AI workflows you can run on a schedule";
+    ? `${vertical} agents you can build and run on a schedule`
+    : "AI agents you can build and run on a schedule";
   return {
     title,
     description:
-      "Ready-made AI workflows that stitch verified skills into a whole recurring job, a daily content pack, a weekly market report, a morning build brief, and run on a schedule inside Claude. Install once, let it deliver.",
+      "Ready-made AI agents organized around the real questions people ask. Each one answers a high-intent query, a daily content pack, a weekly market report, a morning build brief, and runs on a schedule inside your own Claude or Codex. Build once, let it deliver, free.",
     alternates: { canonical: "/workflows" },
     // og:image injected from the colocated opengraph-image.tsx.
     openGraph: {
@@ -41,7 +42,7 @@ export async function generateMetadata(props: {
       url: absoluteUrl("/workflows"),
       title: `${title} | implexa`,
       description:
-        "Whole-job AI workflows built from verified skills, runnable on a schedule. Browse the catalog and install in one line.",
+        "AI agents organized around real queries, built from verified skills, runnable on a schedule in your own Claude or Codex. Browse the catalog and build in one line.",
     },
   };
 }
@@ -99,6 +100,12 @@ function Section({
 }
 
 function WorkflowGridCard({ w }: { w: WorkflowCard }) {
+  // The catalog is organized around real queries: each card LEADS with the
+  // thought the agent answers ("how do i grow my instagram"), with the agent
+  // itself as the secondary line. resolveQuery prefers the backend query / the
+  // authored map and derives a sensible question otherwise.
+  const query = resolveQuery(w);
+  const isQuery = hasResolvedQuery(w);
   return (
     <Card className="h-full bg-zinc-950 border-zinc-900 hover:border-zinc-700 transition-colors">
       <Link href={`/workflows/${w.slug}`} className="group block h-full">
@@ -117,11 +124,17 @@ function WorkflowGridCard({ w }: { w: WorkflowCard }) {
             {cadenceBadge(w.cadence)}
           </div>
           <CardTitle className="text-base font-medium text-white group-hover:text-zinc-100 lowercase">
-            {w.name}
+            {query}
           </CardTitle>
         </CardHeader>
         <CardContent className="pt-0">
-          <p className="text-sm text-zinc-400 line-clamp-3">
+          {isQuery ? (
+            <p className="text-xs text-zinc-500 mb-1.5">
+              answered by{" "}
+              <span className="text-zinc-300 lowercase">{w.name}</span>
+            </p>
+          ) : null}
+          <p className="text-sm text-zinc-400 line-clamp-2">
             {w.primary_outcome || w.description}
           </p>
           <div className="mt-3 flex items-center gap-1.5 text-[11px] text-zinc-500 flex-wrap">
@@ -178,24 +191,26 @@ export default async function WorkflowsPage(props: {
   const ldJson = jsonLdGraph(
     {
       "@type": "CollectionPage",
-      name: "AI workflows you can run on a schedule",
+      name: "AI agents you can build and run on a schedule",
       description:
-        "Whole-job AI workflows built from verified skills, runnable on a schedule inside Claude.",
+        "AI agents organized around real queries, built from verified skills, runnable on a schedule in your own Claude or Codex.",
       url: absoluteUrl("/workflows"),
       mainEntity: {
         "@type": "ItemList",
         numberOfItems: workflows.length,
+        // Name each list item by the QUERY it answers (the page is the query),
+        // so the collection reads to answer engines as a list of questions.
         itemListElement: workflows.slice(0, 20).map((w, i) => ({
           "@type": "ListItem",
           position: i + 1,
           url: absoluteUrl(`/workflows/${w.slug}`),
-          name: w.name,
+          name: resolveQuery(w),
         })),
       },
     },
     breadcrumbSchema([
       { name: "implexa", url: absoluteUrl("/") },
-      { name: "workflows", url: absoluteUrl("/workflows") },
+      { name: "agents", url: absoluteUrl("/workflows") },
     ]),
   );
 
@@ -214,11 +229,11 @@ export default async function WorkflowsPage(props: {
         <div className="flex items-center gap-3 mb-3">
           <Workflow className="size-6 text-zinc-400" aria-hidden="true" />
           <h1 className="text-3xl sm:text-4xl font-semibold tracking-tight text-white lowercase">
-            workflows
+            agents
           </h1>
         </div>
         <p className="text-lg text-zinc-400 max-w-2xl mb-8">
-          whole-job automations. each one stitches{" "}
+          one agent per question people actually ask. each one stitches{" "}
           <Link
             href="/scores"
             className="text-white underline decoration-amber-400 decoration-2 underline-offset-4 hover:decoration-amber-300 transition-colors"
@@ -226,8 +241,8 @@ export default async function WorkflowsPage(props: {
             verified skills
           </Link>{" "}
           into a complete recurring job, a daily content pack, a weekly market
-          report, a morning build brief, and runs it on a schedule inside
-          Claude. install once, let it deliver.
+          report, a morning build brief, and runs it on a schedule in your own
+          Claude or Codex. build once, let it deliver, free.
         </p>
 
         {/* vertical filter chips */}
@@ -258,7 +273,7 @@ export default async function WorkflowsPage(props: {
           <>
             <Section
               title="recommended"
-              blurb="hand-picked, proven workflows to start with."
+              blurb="hand-picked, proven agents to start with."
               items={recommended}
             />
             <Section
@@ -267,8 +282,8 @@ export default async function WorkflowsPage(props: {
               items={popular}
             />
             <Section
-              title="all workflows"
-              blurb="every workflow in the catalog, newest builds included."
+              title="all agents"
+              blurb="every agent in the catalog, newest builds included."
               items={allSorted}
             />
           </>
@@ -280,11 +295,11 @@ export default async function WorkflowsPage(props: {
             />
             <p className="text-base text-white mb-2">
               {verticalFilter
-                ? `no workflows yet for ${verticalFilter}`
-                : "workflows are loading"}
+                ? `no agents yet for ${verticalFilter}`
+                : "agents are loading"}
             </p>
             <p className="text-sm text-zinc-400 max-w-md mx-auto mb-6">
-              the workflow catalog is seeded from the best repeatable jobs across
+              the agent catalog is seeded from the best repeatable jobs across
               the web. check back shortly, or browse the skill index.
             </p>
             <Link

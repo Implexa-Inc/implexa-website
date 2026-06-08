@@ -13,6 +13,8 @@ import {
   Zap,
   Globe,
   Clock,
+  TrendingUp,
+  FileText,
 } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
@@ -21,12 +23,25 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { CopyableInstall } from "@/components/copyable-install";
 import { absoluteUrl } from "@/lib/site";
-import { jsonLdGraph, breadcrumbSchema, howToSchema } from "@/lib/jsonld";
+import {
+  jsonLdGraph,
+  breadcrumbSchema,
+  howToSchema,
+  qaPageSchema,
+} from "@/lib/jsonld";
 import {
   getWorkflow,
   listWorkflows,
   type WorkflowDetail,
 } from "@/lib/workflow-catalog";
+import {
+  resolveQuery,
+  hasResolvedQuery,
+  resolveExampleResult,
+  resolveImprovement,
+  isProven,
+  isCardProven,
+} from "@/lib/workflow-query";
 
 type RouteParams = { slug: string };
 
@@ -74,18 +89,21 @@ export async function generateMetadata(props: {
   const w = await getWorkflow(slug);
   if (!w) {
     return {
-      title: "workflow not found",
-      description: "this workflow is not in the catalog.",
+      title: "agent not found",
+      description: "this agent is not in the catalog.",
       alternates: { canonical: `/workflows/${slug}` },
     };
   }
-  const cadence = w.cadence ? `${w.cadence} ` : "";
-  const vertical = w.vertical ? `${w.vertical} ` : "";
+  // The page IS the query: lead the title tag with the high-intent thought, so
+  // it matches the searcher's phrasing in the SERP and in answer-engine cites.
+  const query = resolveQuery(w);
+  const isQuery = hasResolvedQuery(w);
   const desc =
     (w.primary_outcome || w.job || w.description || "").slice(0, 200) ||
-    "a whole-job AI workflow you can run on a schedule inside Claude.";
+    "a whole-job AI agent you build once and run on a schedule inside your own Claude or Codex.";
+  const title = isQuery ? `${query}: the agent that answers it` : w.name;
   return {
-    title: `${w.name}: a ${cadence}${vertical}workflow`,
+    title,
     description: desc,
     alternates: { canonical: `/workflows/${slug}` },
     // og:image / twitter:image are injected automatically from the colocated
@@ -93,12 +111,12 @@ export async function generateMetadata(props: {
     openGraph: {
       type: "article",
       url: absoluteUrl(`/workflows/${slug}`),
-      title: `${w.name} | implexa workflow`,
+      title: isQuery ? query : `${w.name} | implexa agent`,
       description: desc,
     },
     twitter: {
       card: "summary_large_image",
-      title: w.name,
+      title: isQuery ? query : w.name,
       description: desc,
     },
   };
@@ -205,17 +223,34 @@ export default async function WorkflowDetailPage(props: {
   ]);
   if (!w) notFound();
 
-  // related workflows: prefer same-vertical siblings, fill with the rest, cap 4.
-  // interlinks the high-intent workflow pages with each other (internal linking
+  // Query-addressable resolution: the page IS the high-intent query. These
+  // resolvers prefer the backend fields (when the read path lands) and fall
+  // back to the authored map / derivation, so the template stays dumb.
+  const query = resolveQuery(w);
+  const queryIsH1 = hasResolvedQuery(w);
+  const exampleResult = resolveExampleResult(w);
+  const improvement = resolveImprovement(w); // null unless proven + recent
+  const proven = isProven(w);
+  // The agent's one-line answer to the query.
+  const answer = w.job || w.primary_outcome || w.description || "";
+
+  // related agents: prefer same-vertical siblings, fill with the rest, cap 4.
+  // interlinks the query-addressable pages with each other (internal linking
   // for ranking, since these are the surface we lean into for higher-intent
-  // queries). listWorkflows is cached and tiny (~12 rows).
+  // queries). Amplification discipline: proven agents (real run history) are
+  // promoted ahead of unproven ones in the internal link graph, so we never
+  // rank up an un-vetted page. listWorkflows is cached and tiny (~12 rows).
   const otherWorkflows = allWorkflows.filter((x) => x.slug !== w.slug);
-  const sameVertical = otherWorkflows.filter(
-    (x) => w.vertical && x.vertical === w.vertical,
-  );
+  const provenFirst = (a: typeof otherWorkflows[number], b: typeof a) =>
+    (isCardProven(b) ? 1 : 0) - (isCardProven(a) ? 1 : 0);
+  const sameVertical = otherWorkflows
+    .filter((x) => w.vertical && x.vertical === w.vertical)
+    .sort(provenFirst);
   const relatedWorkflows = [
     ...sameVertical,
-    ...otherWorkflows.filter((x) => !sameVertical.includes(x)),
+    ...otherWorkflows
+      .filter((x) => !sameVertical.includes(x))
+      .sort(provenFirst),
   ].slice(0, 4);
 
   const boundCount = w.steps.filter((s) => s.ref && !s.gap).length;
@@ -232,26 +267,39 @@ export default async function WorkflowDetailPage(props: {
     Boolean(updatedAt) ||
     w.version != null;
 
+  const pageUrl = absoluteUrl(`/workflows/${slug}`);
   const ldJson = jsonLdGraph(
+    // QAPage: the page is literally a question; the agent is the accepted
+    // answer. upvoteCount only when proven (real run history), never faked.
+    qaPageSchema({
+      question: query,
+      answerText: w.primary_outcome || answer || w.name,
+      url: pageUrl,
+      upvoteCount: proven ? w.activity.run_count || undefined : undefined,
+      dateModified: w.updated_at || undefined,
+    }),
+    // HowTo kept + sharpened: the procedure that answers the query. Naming it
+    // with the query (not the agent name) is what answer engines lift for
+    // "how do i X" prompts.
     howToSchema({
-      name: w.name,
-      description: w.job || w.description || undefined,
-      url: absoluteUrl(`/workflows/${slug}`),
+      name: queryIsH1 ? query : w.name,
+      description: answer || undefined,
+      url: pageUrl,
       steps: w.steps.map((s) => ({ name: s.label })),
     }),
     {
       "@type": "SoftwareApplication",
       name: w.name,
-      applicationCategory: "AI Workflow",
+      applicationCategory: "AI Agent",
       operatingSystem: "Cross-platform (Claude Code, Cursor, Codex, Gemini CLI)",
-      description: w.job || w.description || undefined,
+      description: answer || undefined,
       offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
-      url: absoluteUrl(`/workflows/${slug}`),
+      url: pageUrl,
     },
     breadcrumbSchema([
       { name: "implexa", url: absoluteUrl("/") },
-      { name: "workflows", url: absoluteUrl("/workflows") },
-      { name: w.name, url: absoluteUrl(`/workflows/${slug}`) },
+      { name: "agents", url: absoluteUrl("/workflows") },
+      { name: queryIsH1 ? query : w.name, url: pageUrl },
     ]),
   );
 
@@ -264,7 +312,7 @@ export default async function WorkflowDetailPage(props: {
           className="inline-flex items-center gap-2 text-sm text-zinc-500 hover:text-white mb-8"
         >
           <ArrowLeft className="size-3.5" aria-hidden="true" />
-          all workflows
+          all agents
         </Link>
 
         {/* header */}
@@ -295,10 +343,37 @@ export default async function WorkflowDetailPage(props: {
             </Badge>
           ) : null}
         </div>
-        <h1 className="text-3xl sm:text-4xl font-semibold tracking-tight text-white lowercase mb-3">
-          {w.name}
-        </h1>
-        <p className="text-lg text-zinc-400 mb-5">{w.job || w.description}</p>
+
+        {/* H1 = the high-intent query (the thought the visitor typed). The page
+            IS the query: SEO/AEO landing, product, and proof, all on one URL.
+            When no query resolves (a generated agent with no map entry and an
+            un-questionable job) the agent name stays the H1 and the "answered
+            by" line is dropped. */}
+        {queryIsH1 ? (
+          <>
+            <h1 className="text-3xl sm:text-4xl font-semibold tracking-tight text-white lowercase mb-4">
+              {query}
+            </h1>
+            <div className="mb-5">
+              <p className="text-[11px] uppercase tracking-wider text-zinc-500 mb-1">
+                the agent that answers this
+              </p>
+              <p className="text-lg text-zinc-300">
+                <span className="text-white font-medium lowercase">{w.name}</span>
+                {answer ? (
+                  <span className="text-zinc-400">. {answer}</span>
+                ) : null}
+              </p>
+            </div>
+          </>
+        ) : (
+          <>
+            <h1 className="text-3xl sm:text-4xl font-semibold tracking-tight text-white lowercase mb-3">
+              {w.name}
+            </h1>
+            <p className="text-lg text-zinc-400 mb-5">{answer}</p>
+          </>
+        )}
 
         {/* activity strip: live usage signal + freshness (aggregate only) */}
         {hasActivity ? (
@@ -362,6 +437,91 @@ export default async function WorkflowDetailPage(props: {
           </Card>
         ) : null}
 
+        {/* example result: the on-page aha. ALWAYS labeled an example and
+            explicitly "not run on your data" (locked honesty guardrail). Real
+            sample deliverable from the backend when present; an illustrative
+            shape derived from the outcome otherwise. */}
+        {exampleResult ? (
+          <Card className="bg-zinc-950 border-zinc-900 mb-8">
+            <CardContent className="p-5">
+              <div className="flex items-center justify-between gap-2 mb-3">
+                <div className="flex items-center gap-2">
+                  <FileText className="size-4 text-sky-400" aria-hidden="true" />
+                  <h2 className="text-sm font-medium text-white uppercase tracking-wider">
+                    example result
+                  </h2>
+                </div>
+                <Badge
+                  variant="outline"
+                  className="text-[9px] uppercase tracking-wider border-sky-500/30 text-sky-300/90"
+                >
+                  {exampleResult.derived ? "illustrative" : "sample deliverable"}
+                </Badge>
+              </div>
+              {exampleResult.title ? (
+                <p className="text-sm font-medium text-zinc-200 mb-2">
+                  {exampleResult.title}
+                </p>
+              ) : null}
+              <div className="rounded-md border border-zinc-900 bg-black/30 p-4">
+                <p className="text-sm text-zinc-300 whitespace-pre-line leading-relaxed">
+                  {exampleResult.body}
+                </p>
+              </div>
+              <p className="mt-2.5 text-xs text-zinc-600">
+                example output, to show the shape of the deliverable. it has not
+                run on your data. build the agent to get this on yours.
+              </p>
+            </CardContent>
+          </Card>
+        ) : null}
+
+        {/* improved this week / here is why: the most defensible element on the
+            page and the breaker of the "so it is just a scheduler" reflex. Gated
+            on proof: resolveImprovement returns null for any unproven agent, so
+            this never renders on a directory listing with no real run history. */}
+        {improvement ? (
+          <Card className="bg-emerald-950/15 border-emerald-900/40 mb-8">
+            <CardContent className="p-5">
+              <div className="flex flex-wrap items-center gap-2 mb-2">
+                <TrendingUp
+                  className="size-4 text-emerald-400"
+                  aria-hidden="true"
+                />
+                <h2 className="text-sm font-medium text-emerald-200 uppercase tracking-wider">
+                  {improvement.thisWeek ? "improved this week" : "improved recently"}
+                </h2>
+                {improvement.version != null ? (
+                  <Badge
+                    variant="outline"
+                    className="text-[9px] uppercase tracking-wider border-emerald-500/30 text-emerald-300/90"
+                  >
+                    v{improvement.version}
+                  </Badge>
+                ) : null}
+                {shortDate(improvement.at) ? (
+                  <span className="text-xs text-emerald-300/50">
+                    {shortDate(improvement.at)}
+                  </span>
+                ) : null}
+              </div>
+              <p className="text-sm text-emerald-100/90">{improvement.summary}</p>
+              {improvement.why ? (
+                <p className="mt-1.5 text-xs text-emerald-300/70">
+                  <span className="uppercase tracking-wider text-emerald-400/70">
+                    why:{" "}
+                  </span>
+                  {improvement.why}
+                </p>
+              ) : null}
+              <p className="mt-3 text-xs text-emerald-300/50">
+                agents are alive: a run can catch its own gaps and propose a fix.
+                this is real run history, not a directory listing.
+              </p>
+            </CardContent>
+          </Card>
+        ) : null}
+
         {/* steps */}
         <div className="mb-8">
           <div className="flex items-center justify-between mb-2">
@@ -404,7 +564,7 @@ export default async function WorkflowDetailPage(props: {
           </Card>
         ) : null}
 
-        {/* runs best with — the capabilities that take it hands-free */}
+        {/* runs best with: the capabilities that take it hands-free */}
         {w.capabilities.length > 0 ? (
           <Card className="bg-zinc-950 border-zinc-900 mb-8">
             <CardContent className="p-5">
@@ -438,25 +598,31 @@ export default async function WorkflowDetailPage(props: {
                 ))}
               </ul>
               <p className="mt-3 text-xs text-zinc-600">
-                connect these and the workflow gathers its own data and delivers
-                on a schedule, instead of leaving you blanks to fill.
+                connect these and the agent gathers its own data and delivers on
+                a schedule, instead of leaving you blanks to fill.
               </p>
             </CardContent>
           </Card>
         ) : null}
 
-        {/* CTA */}
+        {/* CTA: build-and-run. Ownership + portability framing (locked copy
+            guardrail: never "data never leaves your machine"). Free because it
+            runs on the Claude/Codex subscription the user already pays for. */}
         <Card className="bg-zinc-950 border-zinc-800 mb-8">
           <CardContent className="p-5">
             <h2 className="text-base font-medium text-white mb-1">
-              run this workflow
+              build and run this on your own Claude or Codex, free
             </h2>
             <p className="text-sm text-zinc-400 mb-4">
-              install implexa, then in Claude say{" "}
+              install implexa, then say{" "}
               <span className="text-zinc-200 font-mono text-xs bg-zinc-900 px-1.5 py-0.5 rounded">
-                run the {w.name} workflow
+                build the {w.name} agent
               </span>{" "}
-              and approve the schedule. it delivers on its own from then on.
+              and approve the schedule. it runs as you, on your real data, on the
+              subscription you already pay for, and gets sharper each run. your
+              agent&apos;s memory is yours and travels with you across Claude,
+              Codex, and whatever comes next. about 5 minutes to your first real
+              run.
             </p>
             <CopyableInstall />
           </CardContent>
@@ -486,14 +652,14 @@ export default async function WorkflowDetailPage(props: {
                 ))}
               </ul>
               <p className="mt-3 text-xs text-zinc-600">
-                implexa assembles public best-practice into runnable workflows
-                and credits the sources it drew from.
+                implexa assembles public best-practice into runnable agents and
+                credits the sources it drew from.
               </p>
             </div>
           </>
         ) : null}
 
-        {/* changelog: workflows are alive, this is how this one has evolved */}
+        {/* changelog: agents are alive, this is how this one has evolved */}
         {w.versions.length > 0 ? (
           <>
             <Separator className="bg-zinc-900 mb-6" />
@@ -546,55 +712,63 @@ export default async function WorkflowDetailPage(props: {
                 ))}
               </ol>
               <p className="mt-3 text-xs text-zinc-600">
-                workflows are alive: every change is a version, and a run can
+                agents are alive: every change is a version, and a run can
                 propose improvements that get reviewed and applied.
               </p>
             </div>
           </>
         ) : null}
 
-        {/* related workflows: interlink the high-intent workflow pages */}
+        {/* related agents: interlink the query-addressable pages. Each card
+            leads with the QUERY it answers (the thought), so the internal link
+            graph reads as a web of high-intent questions. */}
         {relatedWorkflows.length > 0 ? (
           <>
             <Separator className="bg-zinc-900 mb-6" />
             <div className="mb-4">
               <h2 className="text-xs font-medium text-zinc-500 uppercase tracking-wider mb-3">
-                related workflows
+                related agents
               </h2>
               <ul className="grid gap-2 sm:grid-cols-2">
-                {relatedWorkflows.map((r) => (
-                  <li key={r.slug}>
-                    <Link
-                      href={`/workflows/${r.slug}`}
-                      className="group block rounded-lg border border-zinc-900 hover:border-zinc-700 bg-zinc-950 hover:bg-zinc-900/40 transition-colors p-4 h-full"
-                    >
-                      <div className="flex flex-wrap items-center gap-1.5 mb-1.5">
-                        {r.cadence ? (
-                          <Badge
-                            variant="outline"
-                            className="text-[10px] uppercase tracking-wider border-zinc-800 text-amber-300/90"
-                          >
-                            {r.cadence}
-                          </Badge>
-                        ) : null}
-                        {r.vertical ? (
-                          <Badge
-                            variant="outline"
-                            className="text-[10px] uppercase tracking-wider border-zinc-800 text-zinc-400"
-                          >
-                            {r.vertical}
-                          </Badge>
-                        ) : null}
-                      </div>
-                      <p className="text-sm text-zinc-200 lowercase group-hover:underline decoration-zinc-600">
-                        {r.name}
-                      </p>
-                      <p className="mt-1 text-xs text-zinc-500 line-clamp-2">
-                        {r.primary_outcome || r.description}
-                      </p>
-                    </Link>
-                  </li>
-                ))}
+                {relatedWorkflows.map((r) => {
+                  const rQuery = resolveQuery(r);
+                  const rIsQuery = hasResolvedQuery(r);
+                  return (
+                    <li key={r.slug}>
+                      <Link
+                        href={`/workflows/${r.slug}`}
+                        className="group block rounded-lg border border-zinc-900 hover:border-zinc-700 bg-zinc-950 hover:bg-zinc-900/40 transition-colors p-4 h-full"
+                      >
+                        <div className="flex flex-wrap items-center gap-1.5 mb-1.5">
+                          {r.cadence ? (
+                            <Badge
+                              variant="outline"
+                              className="text-[10px] uppercase tracking-wider border-zinc-800 text-amber-300/90"
+                            >
+                              {r.cadence}
+                            </Badge>
+                          ) : null}
+                          {r.vertical ? (
+                            <Badge
+                              variant="outline"
+                              className="text-[10px] uppercase tracking-wider border-zinc-800 text-zinc-400"
+                            >
+                              {r.vertical}
+                            </Badge>
+                          ) : null}
+                        </div>
+                        <p className="text-sm text-zinc-200 lowercase group-hover:underline decoration-zinc-600">
+                          {rQuery}
+                        </p>
+                        <p className="mt-1 text-xs text-zinc-500 line-clamp-2">
+                          {rIsQuery
+                            ? r.name
+                            : r.primary_outcome || r.description}
+                        </p>
+                      </Link>
+                    </li>
+                  );
+                })}
               </ul>
             </div>
           </>
