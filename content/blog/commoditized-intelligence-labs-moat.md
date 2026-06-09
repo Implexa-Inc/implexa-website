@@ -28,4 +28,4 @@ I should put my cards on the table, because this argument cuts against my own co
 
 If this is right, the next couple of years are boring to predict. The routers and wrappers get competed down to nothing. The open-model camp keeps topping benchmarks and keeps losing the customer. The big SaaS names quietly turn into read-write endpoints. Two or three lab-owned platforms end up running most of the digital knowledge-work economy. And the cheap intelligence everyone is celebrating is the thing that got us there.
 
-Tell me where this is wrong.
+Tell me where this is wrong — [the discussion is on Hacker News](https://news.ycombinator.com/item?id=48387398).
