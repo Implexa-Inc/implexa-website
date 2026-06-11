@@ -1,6 +1,5 @@
 import Link from "next/link";
 import type { Metadata } from "next";
-import { cookies } from "next/headers";
 import {
   ArrowRight,
   ShieldCheck,
@@ -171,11 +170,13 @@ export default async function HomePage() {
     fetchSkillCounts(),
   ]);
 
-  // Server-decided hero A/B: middleware assigns a sticky cookie, so the first
-  // paint already shows the assigned headline (flash-free). await works whether
-  // cookies() is sync or async in this Next fork.
-  const heroVariant: "a" | "b" =
-    (await cookies()).get("implexa_hero_variant")?.value === "b" ? "b" : "a";
+  // Hero A/B is PAUSED (founder chose variant A). Hardcoding it removes the
+  // only reason this page rendered dynamically per request (the cookie read) —
+  // so the homepage is now statically generated + ISR-revalidated (the fetches
+  // below cache for 1h), and bot/crawler hits serve from the CDN instead of
+  // triggering a render. That's the edge-request fix. To resume a real A/B,
+  // restore the cookie read + re-add the proxy middleware (HeadlineB still ships).
+  const heroVariant: "a" | "b" = "a";
 
   return (
     <>
