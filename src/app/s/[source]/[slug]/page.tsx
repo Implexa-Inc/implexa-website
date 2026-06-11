@@ -1,3 +1,4 @@
+import { cache } from "react";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
@@ -17,6 +18,7 @@ import {
   firstParagraphOf,
 } from "@/lib/skill-enrichment";
 import { SkillCard } from "@/components/skill-card";
+import { SkillAgentBanner } from "@/components/skill-agent-banner";
 import { ModuleCard } from "@/components/module-card";
 import type { TrustTier } from "@/lib/module-verification";
 import { absoluteUrl } from "@/lib/site";
@@ -70,10 +72,16 @@ const TOKEN = process.env.IMPLEXA_PUBLIC_SEARCH_TOKEN ?? "";
 // Server-side fetch of one aggregated_skills row via the get_aggregated_skill
 // MCP tool. Read-only, no side effects. Returns null on any failure path so
 // the detail page can fall back to a graceful 404 / placeholder state.
-async function fetchAggregatedSkill(
+//
+// cache()-wrapped: this is called in BOTH generateMetadata and the page body
+// with the same (source, slug). Without it, every skill render does two
+// identical POSTs (Next only auto-memoizes GET). Deduping halves the dominant
+// per-render cost across the 40k-page catalog. The fetch's own ISR cache
+// (revalidate below) still handles cross-request caching.
+const fetchAggregatedSkill = cache(async (
   source: string,
   slug: string,
-): Promise<AggregatedSkill | null> {
+): Promise<AggregatedSkill | null> => {
   if (!TOKEN) return null;
 
   try {
@@ -99,7 +107,7 @@ async function fetchAggregatedSkill(
       // ISR they were the second-biggest Fluid CPU consumer after author
       // pages. Bumped 2026-05-28 from 300s → 21600s after Vercel free-tier
       // warning. Cuts function invocations on this route by 72x.
-      next: { revalidate: 21600 },
+      next: { revalidate: 86400 },
     });
 
     if (!upstream.ok) return null;
@@ -118,7 +126,7 @@ async function fetchAggregatedSkill(
   } catch {
     return null;
   }
-}
+});
 
 export async function generateMetadata(props: {
   params: Promise<RouteParams>;
@@ -389,8 +397,14 @@ export default async function SkillDetailPage(props: {
           {title}
         </h1>
         {description ? (
-          <p className="text-lg text-zinc-400 max-w-2xl mb-8">{description}</p>
+          <p className="text-lg text-zinc-400 max-w-2xl mb-6">{description}</p>
         ) : null}
+
+        {/* The funnel to the core benefit: turn this skill into a multi-step
+            agent. Placed high so SEO/answer-engine visitors see it first. */}
+        <div className="mb-8">
+          <SkillAgentBanner skillName={title} />
+        </div>
 
         <div className="flex flex-wrap items-start gap-4 mb-10">
           <RunInClaudeButton slug={slug} source={source} />
@@ -557,7 +571,13 @@ export default async function SkillDetailPage(props: {
           </section>
         ) : null}
 
-        <div className="mt-10 text-sm text-zinc-500">
+        {/* Bottom funnel: a reader who scrolled the whole SKILL.md is warm,
+            catch them again with the build-an-agent benefit. */}
+        <div className="mt-16">
+          <SkillAgentBanner skillName={title} />
+        </div>
+
+        <div className="mt-8 text-sm text-zinc-500">
           <p>
             don&apos;t have the plugin yet?{" "}
             <Link href="/install" className="text-white hover:underline">

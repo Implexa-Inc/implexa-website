@@ -10,6 +10,8 @@
 // pages never 500 — important because the backend tools land in a separate
 // deploy and because local dev has no IMPLEXA_PUBLIC_SEARCH_TOKEN.
 
+import { cache } from "react";
+
 const BACKEND = process.env.IMPLEXA_API_URL ?? "https://core.implexa.ai";
 const TOKEN = process.env.IMPLEXA_PUBLIC_SEARCH_TOKEN ?? "";
 
@@ -236,7 +238,11 @@ export async function listWorkflows(): Promise<WorkflowCard[]> {
  * would show stale run counts; only ~12 workflow pages exist so the shorter
  * window is negligible load). source defaults to 'web-seed'.
  */
-export async function getWorkflow(
+// cache() dedupes within a request: the agent detail page calls getWorkflow in
+// both generateMetadata and the page body. Function declarations hoist, so the
+// forward reference to _getWorkflow resolves at module-eval time.
+export const getWorkflow = cache(_getWorkflow);
+async function _getWorkflow(
   slug: string,
   source = "web-seed",
 ): Promise<WorkflowDetail | null> {

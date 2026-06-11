@@ -15,6 +15,8 @@ import {
   Clock,
   TrendingUp,
   FileText,
+  HelpCircle,
+  Wallet,
 } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
@@ -28,6 +30,7 @@ import {
   breadcrumbSchema,
   howToSchema,
   qaPageSchema,
+  faqSchema,
 } from "@/lib/jsonld";
 import {
   getWorkflow,
@@ -82,6 +85,80 @@ function shortDate(iso: string | null): string | null {
     day: "numeric",
     timeZone: "UTC",
   });
+}
+
+// Derive a small, accurate FAQ from the agent's own fields. These answer the
+// exact questions a high-intent searcher (and an answer engine) asks about a
+// recurring AI agent: cost, cadence, setup, privacy, and how to build it. The
+// answers are grounded in the agent's real shape (cadence, capabilities, step
+// count), never invented. Rendered visibly AND emitted as FAQPage JSON-LD, the
+// schema.org type answer engines lift directly into AI Overviews / Perplexity.
+function buildAgentFaqs(
+  w: WorkflowDetail,
+  query: string,
+  boundCount: number,
+): Array<{ question: string; answer: string }> {
+  const name = w.name;
+  const cadence = (w.cadence || "").trim();
+  const caps = w.capabilities.map((c) => c.name).filter(Boolean);
+  const faqs: Array<{ question: string; answer: string }> = [];
+
+  faqs.push({
+    question: `Is the ${name} agent free?`,
+    answer:
+      "Yes. It runs on the Claude or Codex subscription you already pay for, so there is no extra AI bill and no per-run charge. You can build and run unlimited agents on the free plan.",
+  });
+
+  faqs.push({
+    question: `How often does the ${name} agent run?`,
+    answer: cadence
+      ? `It is built to run ${cadence.toLowerCase()}, on a schedule you set when you build it. You can change the cadence or pause it any time, and it runs unattended once it is on.`
+      : "You choose: run it on demand, or put it on a schedule (hourly, daily, weekly). Once scheduled it runs unattended, as you, on your own machine.",
+  });
+
+  faqs.push({
+    question: `What does the ${name} agent need to run?`,
+    answer:
+      caps.length > 0
+        ? `Install Implexa into your Claude or Codex, then connect ${caps.join(
+            " and ",
+          )} so it can gather its own data and deliver hands-free. Implexa never touches your accounts or credentials.`
+        : "Just Implexa installed in your Claude or Codex. There are no fragile integrations to wire up, and Implexa never touches your accounts, passwords, or the contents of your work.",
+  });
+
+  faqs.push({
+    question: `Does the ${name} agent use my data? Is it private?`,
+    answer:
+      "It runs as you, on your own machine, on your real data. The model runs inside your own Claude or Codex, so Implexa never sees your data, accounts, or credentials. Your agent's memory is yours and travels with you across Claude, Codex, and whatever comes next.",
+  });
+
+  faqs.push({
+    question: `How do I build the ${name} agent?`,
+    answer: `Install Implexa into your Claude or Codex, then say "build the ${name} agent" and approve the schedule. Implexa assembles the ${
+      w.steps.length
+    } steps${
+      boundCount > 0 ? ` (${boundCount} from verified skills)` : ""
+    } and it runs on its own. About 5 minutes to your first real run.`,
+  });
+
+  faqs.push({
+    question: `Can I change what the ${name} agent does?`,
+    answer:
+      "Yes. Tell it what to change in plain language and it revises its steps; the next scheduled run uses the change, with no re-scheduling. Every change is versioned, and a run can even propose its own improvements.",
+  });
+
+  // query is woven into the first answer below only when it reads as a question,
+  // so the page also answers the literal high-intent search phrase.
+  if (query && /\?$|^(how|what|when|why|where|can|do|should)\b/i.test(query)) {
+    faqs.unshift({
+      question: query.endsWith("?") ? query : `${query}?`,
+      answer: `The ${name} agent. ${
+        w.primary_outcome || w.job || w.description || ""
+      }`.trim(),
+    });
+  }
+
+  return faqs;
 }
 
 export async function generateMetadata(props: {
@@ -271,6 +348,9 @@ export default async function WorkflowDetailPage(props: {
     Boolean(updatedAt) ||
     w.version != null;
 
+  // Derived FAQ (rendered below + emitted as FAQPage JSON-LD for AEO).
+  const faqs = buildAgentFaqs(w, query, boundCount);
+
   const pageUrl = absoluteUrl(`/workflows/${slug}`);
   const ldJson = jsonLdGraph(
     // QAPage: the page is literally a question; the agent is the accepted
@@ -284,13 +364,25 @@ export default async function WorkflowDetailPage(props: {
     }),
     // HowTo kept + sharpened: the procedure that answers the query. Naming it
     // with the query (not the agent name) is what answer engines lift for
-    // "how do i X" prompts.
+    // "how do i X" prompts. Each step now carries its authored detail as the
+    // machine-readable description, and the agent's hands-free capabilities are
+    // surfaced as HowToTool nodes, so the structured procedure is richer.
     howToSchema({
       name: queryIsH1 ? query : w.name,
       description: answer || undefined,
       url: pageUrl,
-      steps: w.steps.map((s) => ({ name: s.label })),
+      totalTime: "PT5M",
+      steps: w.steps.map((s) => ({
+        name: s.label,
+        description:
+          s.detail || s.ref_summary?.description || undefined,
+      })),
+      tools: w.capabilities.map((c) => ({ name: c.name })),
     }),
+    // FAQPage: the question set answer engines lift directly into AI Overviews
+    // and Perplexity. Grounded in the agent's real shape (cost, cadence, setup,
+    // privacy), never fabricated.
+    faqSchema(faqs),
     {
       "@type": "SoftwareApplication",
       name: w.name,
@@ -412,6 +504,47 @@ export default async function WorkflowDetailPage(props: {
             ) : null}
           </div>
         ) : null}
+
+        {/* at a glance: the key facts an answer engine lifts (cost, cadence,
+            shape, surfaces). Crawlable structured content next to the H1. */}
+        <dl className="grid grid-cols-2 sm:grid-cols-4 gap-px mb-8 rounded-lg overflow-hidden border border-zinc-900 bg-zinc-900">
+          <div className="bg-zinc-950 p-3.5">
+            <dt className="text-[10px] uppercase tracking-wider text-zinc-500 mb-1 inline-flex items-center gap-1">
+              <Wallet className="size-3" aria-hidden="true" /> Cost
+            </dt>
+            <dd className="text-sm text-white font-medium">Free</dd>
+            <dd className="text-[11px] text-zinc-500">on your own plan</dd>
+          </div>
+          <div className="bg-zinc-950 p-3.5">
+            <dt className="text-[10px] uppercase tracking-wider text-zinc-500 mb-1 inline-flex items-center gap-1">
+              <Calendar className="size-3" aria-hidden="true" /> Runs
+            </dt>
+            <dd className="text-sm text-white font-medium capitalize">
+              {w.cadence || "On demand"}
+            </dd>
+            <dd className="text-[11px] text-zinc-500">
+              {w.cadence ? "on a schedule" : "or scheduled"}
+            </dd>
+          </div>
+          <div className="bg-zinc-950 p-3.5">
+            <dt className="text-[10px] uppercase tracking-wider text-zinc-500 mb-1 inline-flex items-center gap-1">
+              <WorkflowIcon className="size-3" aria-hidden="true" /> Built from
+            </dt>
+            <dd className="text-sm text-white font-medium">
+              {w.steps.length} steps
+            </dd>
+            <dd className="text-[11px] text-zinc-500">
+              {boundCount > 0 ? `${boundCount} verified skills` : "plain language"}
+            </dd>
+          </div>
+          <div className="bg-zinc-950 p-3.5">
+            <dt className="text-[10px] uppercase tracking-wider text-zinc-500 mb-1 inline-flex items-center gap-1">
+              <Zap className="size-3" aria-hidden="true" /> Runs in
+            </dt>
+            <dd className="text-sm text-white font-medium">Claude or Codex</dd>
+            <dd className="text-[11px] text-zinc-500">as you</dd>
+          </div>
+        </dl>
 
         {/* what you get */}
         {w.primary_outcome ? (
@@ -631,6 +764,36 @@ export default async function WorkflowDetailPage(props: {
             <CopyableInstall />
           </CardContent>
         </Card>
+
+        {/* FAQ: visible Q&A grounded in the agent's real shape, paired with the
+            FAQPage JSON-LD above. The content is in the DOM (collapsed details
+            still crawl), so both Google and answer engines can lift it. */}
+        {faqs.length > 0 ? (
+          <div className="mb-8">
+            <h2 className="text-sm font-medium text-white uppercase tracking-wider mb-4 flex items-center gap-2">
+              <HelpCircle className="size-4 text-zinc-400" aria-hidden="true" />
+              common questions
+            </h2>
+            <div className="divide-y divide-zinc-900 rounded-lg border border-zinc-900 bg-zinc-950">
+              {faqs.map((f) => (
+                <details key={f.question} className="group px-5 py-3.5">
+                  <summary className="cursor-pointer list-none flex items-center justify-between gap-3 text-sm font-medium text-zinc-200 hover:text-white select-none">
+                    <span>{f.question}</span>
+                    <span
+                      className="flex-none text-zinc-600 group-open:rotate-45 transition-transform text-lg leading-none"
+                      aria-hidden="true"
+                    >
+                      +
+                    </span>
+                  </summary>
+                  <p className="mt-2 text-sm text-zinc-400 leading-relaxed">
+                    {f.answer}
+                  </p>
+                </details>
+              ))}
+            </div>
+          </div>
+        ) : null}
 
         {/* attribution / sources */}
         {w.sources.length > 0 ? (

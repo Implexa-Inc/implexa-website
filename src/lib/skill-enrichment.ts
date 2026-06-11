@@ -9,6 +9,8 @@
 // Enrichments rarely change (re-enriched only when source content fingerprint
 // shifts), so we cache aggressively at the edge (1 day revalidate).
 
+import { cache } from "react";
+
 const BACKEND = process.env.IMPLEXA_API_URL ?? "https://core.implexa.ai";
 const TOKEN = process.env.IMPLEXA_PUBLIC_SEARCH_TOKEN ?? "";
 
@@ -79,10 +81,13 @@ async function callMcpTool(
   }
 }
 
-export async function fetchSkillEnrichment(
+// cache() dedupes within a request (called in both generateMetadata and the
+// page body of the skill detail page) so a render does one upstream call, not
+// two. Pure CPU/latency win, no behavior change.
+export const fetchSkillEnrichment = cache(async (
   source: string,
   slug: string,
-): Promise<SkillEnrichment | null> {
+): Promise<SkillEnrichment | null> => {
   // Cache for 1 day: enrichments are re-run only when source content
   // fingerprint changes (rare, batch-triggered).
   const data = (await callMcpTool(
@@ -92,7 +97,7 @@ export async function fetchSkillEnrichment(
   )) as SkillEnrichment | null;
   if (!data || !data.ok) return null;
   return data;
-}
+});
 
 // Pull the first paragraph of the enriched body for use in <meta description>.
 // Skips frontmatter and headings. Returns trimmed plain text capped at maxLen.

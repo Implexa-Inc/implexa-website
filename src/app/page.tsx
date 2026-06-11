@@ -171,7 +171,7 @@ export default async function HomePage() {
   ]);
 
   // Hero A/B is PAUSED (founder chose variant A). Hardcoding it removes the
-  // only reason this page rendered dynamically per request (the cookie read) —
+  // only reason this page rendered dynamically per request (the cookie read) -
   // so the homepage is now statically generated + ISR-revalidated (the fetches
   // below cache for 1h), and bot/crawler hits serve from the CDN instead of
   // triggering a render. That's the edge-request fix. To resume a real A/B,
@@ -184,66 +184,70 @@ export default async function HomePage() {
       <main className="flex-1">
 
         {/* ============================================================
-            1 - HERO. asymmetric two-column. left: A/B headline + scoped
-            trust rail + CTA with a realistic time expectation. right:
-            animated agent demo. stacks on mobile.
+            1 - HERO. Lovable/Emergent shape: centered, the build box IS the
+            hero. headline -> one line of subcopy -> the big prompt box ->
+            a single trust rail. The animated agent demo sits below as a
+            framed "what a run looks like" visual, not a competing column.
             ============================================================ */}
-        <section className="mx-auto max-w-6xl px-4 sm:px-6 pt-20 pb-16">
-          <div className="grid gap-12 lg:gap-16 lg:grid-cols-[1.05fr_1fr] lg:items-center">
-
-            {/* left column */}
-            <div>
-              <div className="mb-6 inline-flex items-center gap-2 px-3 py-1 rounded-full border border-amber-900/40 bg-amber-500/5 text-xs text-amber-300">
-                <Sparkles className="size-3" aria-hidden="true" />
-                Runs on the Claude or Codex plan you already pay for
-              </div>
-
-              {/* A/B-ready locked headline pair */}
-              <HeroHeadline forced={heroVariant} />
-
-              <p className="text-lg text-zinc-400 leading-relaxed mb-6 max-w-xl">
-                Implexa builds the <span className="text-white">agents</span>{" "}
-                that run it for you. Tell it a recurring job in one sentence and
-                it runs inside your own Claude or Codex, as you, on your real
-                data, on a schedule. Unlimited agents, free, because they run on
-                the plan you already pay for.
-              </p>
-
-              {/* scoped trust rail (locked copy) */}
-              <ul className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2.5 mb-8 max-w-xl">
-                {TRUST_RAIL.map(({ icon: Icon, text }) => (
-                  <li
-                    key={text}
-                    className="flex items-center gap-2.5 text-sm text-zinc-300"
-                  >
-                    <Icon
-                      className="size-4 shrink-0 text-emerald-400"
-                      aria-hidden="true"
-                    />
-                    {text}
-                  </li>
-                ))}
-              </ul>
-
-              {/* The build box IS the primary CTA: type a job, hit Build, it
-                  carries your prompt through signup to your first real agent. */}
-              <HeroBuildBox />
-              <div className="mt-3 flex items-center gap-4">
-                <Link href="/workflows" className="text-sm text-zinc-400 hover:text-white transition-colors">
-                  or see example agents →
-                </Link>
-                <span className="text-sm text-zinc-600">About 5 minutes to your first real one.</span>
-              </div>
-            </div>
-
-            {/* right column: animated agent demo */}
-            <div className="lg:pl-4">
-              <AnimatedTerminal />
-              <p className="text-xs text-zinc-600 mt-3 text-center lg:text-left">
-                Running inside your own Claude Code. Also works in Codex.
-              </p>
-            </div>
+        <section className="mx-auto max-w-3xl px-4 sm:px-6 pt-20 pb-10 text-center">
+          <div className="mb-6 inline-flex items-center gap-2 px-3 py-1 rounded-full border border-amber-900/40 bg-amber-500/5 text-xs text-amber-300">
+            <Sparkles className="size-3" aria-hidden="true" />
+            Runs on the Claude or Codex plan you already pay for
           </div>
+
+          {/* A/B-ready locked headline pair (centered for the hero shape) */}
+          <div className="flex justify-center">
+            <HeroHeadline forced={heroVariant} />
+          </div>
+
+          <p className="text-lg text-zinc-400 leading-relaxed mb-8 max-w-2xl mx-auto">
+            Describe a recurring job in one sentence. Implexa builds the{" "}
+            <span className="text-white">agent</span> that runs it for you,
+            inside your own Claude or Codex, as you, on your real data, on a
+            schedule. Unlimited agents, free.
+          </p>
+
+          {/* The build box IS the primary CTA: type a job, hit Build, it
+              carries your prompt through signup to your first real agent. */}
+          <div className="max-w-2xl mx-auto text-left">
+            <HeroBuildBox size="hero" />
+          </div>
+
+          <div className="mt-4 flex flex-wrap items-center justify-center gap-x-4 gap-y-1">
+            <Link
+              href="/workflows"
+              className="text-sm text-zinc-400 hover:text-white transition-colors"
+            >
+              or start from an example agent →
+            </Link>
+            <span className="text-sm text-zinc-600">
+              About 5 minutes to your first real one.
+            </span>
+          </div>
+
+          {/* single centered trust rail (locked copy) */}
+          <ul className="mt-8 flex flex-wrap items-center justify-center gap-x-6 gap-y-2.5 max-w-2xl mx-auto">
+            {TRUST_RAIL.map(({ icon: Icon, text }) => (
+              <li
+                key={text}
+                className="flex items-center gap-2 text-sm text-zinc-300"
+              >
+                <Icon
+                  className="size-4 shrink-0 text-emerald-400"
+                  aria-hidden="true"
+                />
+                {text}
+              </li>
+            ))}
+          </ul>
+        </section>
+
+        {/* the agent demo, framed and centered below the hero */}
+        <section className="mx-auto max-w-3xl px-4 sm:px-6 pb-16">
+          <AnimatedTerminal />
+          <p className="text-xs text-zinc-600 mt-3 text-center">
+            A real run, inside your own Claude Code. Works the same in Codex.
+          </p>
         </section>
 
         {/* ============================================================
@@ -408,7 +412,7 @@ export default async function HomePage() {
                   </div>
                   <div className="flex gap-2">
                     <dt className="text-zinc-500 w-20 shrink-0">As</dt>
-                    <dd className="text-zinc-300">You, in your own Claude</dd>
+                    <dd className="text-zinc-300">You, in your own Claude or Codex</dd>
                   </div>
                   <div className="flex gap-2">
                     <dt className="text-zinc-500 w-20 shrink-0">Delivers</dt>

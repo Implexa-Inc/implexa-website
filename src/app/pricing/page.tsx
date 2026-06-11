@@ -8,53 +8,50 @@ import { absoluteUrl, DEFAULT_OG_IMAGE } from "@/lib/site";
 
 const DASHBOARD_URL = "https://app.implexa.ai";
 
-// Free / Pro / Enterprise feature lists. Single source of truth here; the
-// dashboard's /pricing page mirrors these for the authenticated checkout flow.
+// Free / Team / Enterprise. Single source of truth here; the dashboard's
+// /pricing page mirrors these. The model follows the locked vision: the whole
+// single-person product is FREE (your agents run on the Claude or Codex plan you
+// already pay for, so there is no inference for us to resell or meter). We make
+// money on teams and, later, enterprise, never on a solo user's agents.
 const FREE_FEATURES = [
-  "unlimited search across 19,300+ skills",
-  "unlimited inline-apply (no download, runs in your chat)",
-  "ambient recommender (watches your work, surfaces skills mid-task)",
-  "works in claude code, codex, cursor, gemini",
-  "privacy-by-discard (prompts that don't match are never logged)",
-  "5 personal skill captures / month + unlimited runs",
-  "fork any base playbook into your library",
-  "public sharing for founding creator status (free pro for life)",
+  "Build unlimited agents in plain language",
+  "They run in your own Claude or Codex, as you, on your real data",
+  "Put any agent on a schedule: hourly, daily, weekly",
+  "One dashboard for every agent, every run, every result",
+  "We never touch your accounts, passwords, or the contents of your work",
+  "No second AI bill and no per-run metering, ever",
 ];
 
-const PRO_FEATURES = [
-  "everything in free, plus:",
-  "work-signature opt-in for 3x better recommendations (SkillRank)",
-  "unlimited skill captures (free is 5/mo)",
-  "org-wide skill library: every teammate sees what's been saved",
-  "skill ROI dashboard: which skills drive real outcomes",
-  "outcome attribution from CRM / ATS / calendar",
-  "SSO (Google / Microsoft)",
-  "unlimited team members on the same workspace",
-  "priority email support",
+// Team price is a working number - confirm before a public push.
+const TEAM_FEATURES = [
+  "Everything in Free, plus:",
+  "Shared agent library: build once, the whole team can run it",
+  "Every teammate's runs and results in one place",
+  "Shared connections and a team-wide \"needs you\"",
+  "Roles: who can build, who can run",
+  "Priority support",
 ];
 
 const ENTERPRISE_FEATURES = [
-  "everything in pro, plus:",
-  "SAML SSO + custom identity providers",
-  "full audit log",
-  "compliance + security review documentation",
-  "white-label share pages with your branding",
-  "custom integrations + dedicated MCP server hosting",
-  "dedicated success manager",
-  "on-prem deployment option",
+  "Everything in Team, plus:",
+  "SSO / SAML + SCIM provisioning",
+  "Audit log and data-retention controls",
+  "Self-host / on-prem option",
+  "Security review and compliance documentation",
+  "Dedicated support with an SLA",
 ];
 
 export const metadata: Metadata = {
-  title: "pricing",
+  title: "Pricing",
   description:
-    "implexa pricing: free forever for unlimited cross-vendor search + inline-apply. pro $19/mo for SkillRank work-signature recommendations + org library. enterprise custom.",
+    "Implexa is free for one person, forever: build, run, and manage unlimited agents on the Claude or Codex plan you already pay for. Team for shared agents across a workspace. Enterprise for SSO, audit, and on-prem.",
   alternates: { canonical: "/pricing" },
   openGraph: {
     type: "website",
     url: absoluteUrl("/pricing"),
-    title: "pricing | implexa",
+    title: "Pricing | Implexa",
     description:
-      "free forever for cross-vendor skill search + inline-apply. pro for SkillRank + org library.",
+      "Free forever for one person: unlimited agents on your own Claude or Codex plan. Team for shared agents. Enterprise for SSO + on-prem.",
     images: [DEFAULT_OG_IMAGE],
   },
 };
@@ -74,21 +71,23 @@ function jsonLdOffers(): string {
         "itemOffered": {
           "@type": "Service",
           "name": "Implexa Free",
-          "description": "Unlimited cross-vendor skill search + inline-apply across Claude Code, Codex, Cursor, Gemini CLI.",
+          "description":
+            "Build, run, schedule, and manage unlimited agents inside your own Claude Code or Codex. Free forever for one person.",
         },
       },
       {
         "@type": "Offer",
-        "@id": absoluteUrl("/pricing#pro"),
-        "name": "Implexa Pro",
-        "price": "19",
+        "@id": absoluteUrl("/pricing#team"),
+        "name": "Implexa Team",
+        "price": "20",
         "priceCurrency": "USD",
         "category": "subscription",
-        "url": `${DASHBOARD_URL}/signup?plan=pro`,
+        "url": `${DASHBOARD_URL}/signup?plan=team`,
         "itemOffered": {
           "@type": "Service",
-          "name": "Implexa Pro",
-          "description": "SkillRank work-signature recommendations + org library + outcome attribution.",
+          "name": "Implexa Team",
+          "description":
+            "A shared agent library, shared runs and results, and roles for a small team running agents together.",
         },
       },
       {
@@ -100,7 +99,8 @@ function jsonLdOffers(): string {
         "itemOffered": {
           "@type": "Service",
           "name": "Implexa Enterprise",
-          "description": "SSO + audit log + custom integrations + on-prem option + dedicated CSM.",
+          "description":
+            "SSO/SAML, audit log, self-host, security review, and dedicated support for companies.",
         },
       },
     ],
@@ -115,35 +115,40 @@ export default function PricingPage() {
         {/* hero */}
         <section className="text-center mb-16">
           <h1 className="text-4xl sm:text-5xl font-semibold tracking-tight text-white mb-4">
-            pricing
+            Free for you. Priced for your team.
           </h1>
           <p className="text-lg text-zinc-400 max-w-2xl mx-auto leading-relaxed">
-            free forever for unlimited cross-vendor search + inline-apply. pro
-            for the SkillRank cohort matching + org library. team and enterprise
-            for org-tier needs.
+            The whole single-person product is free, forever. Your agents run on
+            the Claude or Codex plan you already pay for, so there is no AI bill
+            for us to resell and nothing to meter. You only pay when a team needs
+            to run agents together.
           </p>
         </section>
 
         {/* tier cards */}
         <section className="grid gap-6 md:grid-cols-3">
-          {/* free */}
+          {/* free - the headline tier */}
           <div
             id="free"
-            className="rounded-lg border border-zinc-800 bg-zinc-950 p-6 flex flex-col"
+            className="rounded-lg border border-zinc-700 bg-zinc-950 p-6 flex flex-col relative shadow-2xl"
           >
+            <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-white text-black text-[11px] font-semibold uppercase tracking-wider inline-flex items-center gap-1">
+              <Sparkles className="size-3" aria-hidden="true" />
+              For one person
+            </div>
             <div className="mb-6">
-              <h2 className="text-xl font-semibold text-white mb-1">free</h2>
-              <p className="text-sm text-zinc-500">forever</p>
+              <h2 className="text-xl font-semibold text-white mb-1">Free</h2>
+              <p className="text-sm text-zinc-500">Forever</p>
               <div className="mt-3 text-3xl font-semibold text-white">$0</div>
             </div>
             <ul className="space-y-3 mb-6 flex-1">
               {FREE_FEATURES.map((f) => (
                 <li
                   key={f}
-                  className="flex items-start gap-2 text-sm text-zinc-300 leading-relaxed"
+                  className="flex items-start gap-2 text-sm text-zinc-200 leading-relaxed"
                 >
                   <Check
-                    className="size-4 text-zinc-500 mt-0.5 shrink-0"
+                    className="size-4 text-emerald-400 mt-0.5 shrink-0"
                     aria-hidden="true"
                   />
                   <span>{f}</span>
@@ -154,43 +159,33 @@ export default function PricingPage() {
               href={`${DASHBOARD_URL}/signup?plan=free`}
               className={buttonVariants({
                 size: "lg",
-                variant: "outline",
                 className:
-                  "border-zinc-700 text-white hover:bg-zinc-900 hover:text-white h-11 w-full",
+                  "bg-white text-black hover:bg-zinc-200 h-11 w-full font-medium",
               })}
             >
-              start free
+              Start free
             </Link>
           </div>
 
-          {/* pro — highlighted */}
+          {/* team */}
           <div
-            id="pro"
-            className="rounded-lg border border-zinc-700 bg-zinc-950 p-6 flex flex-col relative shadow-2xl"
+            id="team"
+            className="rounded-lg border border-zinc-800 bg-zinc-950 p-6 flex flex-col"
           >
-            <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-white text-black text-[11px] font-semibold uppercase tracking-wider inline-flex items-center gap-1">
-              <Sparkles className="size-3" aria-hidden="true" />
-              most popular
-            </div>
             <div className="mb-6">
-              <h2 className="text-xl font-semibold text-white mb-1">pro</h2>
+              <h2 className="text-xl font-semibold text-white mb-1">Team</h2>
               <p className="text-sm text-zinc-500">per seat / month</p>
               <div className="mt-3 flex items-baseline gap-2">
-                <div className="text-3xl font-semibold text-white">$15.83</div>
-                <div className="text-sm text-zinc-500">/mo billed annually</div>
-              </div>
-              <div className="text-xs text-zinc-500 mt-1">
-                or $19 / month billed monthly
+                <div className="text-3xl font-semibold text-white">$20</div>
+                <div className="text-sm text-zinc-500">/ seat / month</div>
               </div>
             </div>
             <ul className="space-y-3 mb-6 flex-1">
-              {PRO_FEATURES.map((f, i) => (
+              {TEAM_FEATURES.map((f, i) => (
                 <li
                   key={f}
                   className={`flex items-start gap-2 text-sm leading-relaxed ${
-                    i === 0
-                      ? "text-zinc-500 italic"
-                      : "text-zinc-200"
+                    i === 0 ? "text-zinc-500 italic" : "text-zinc-200"
                   }`}
                 >
                   {i === 0 ? null : (
@@ -204,14 +199,15 @@ export default function PricingPage() {
               ))}
             </ul>
             <Link
-              href={`${DASHBOARD_URL}/signup?plan=pro`}
+              href={`${DASHBOARD_URL}/signup?plan=team`}
               className={buttonVariants({
                 size: "lg",
+                variant: "outline",
                 className:
-                  "bg-white text-black hover:bg-zinc-200 h-11 w-full font-medium",
+                  "border-zinc-700 text-white hover:bg-zinc-900 hover:text-white h-11 w-full",
               })}
             >
-              start pro
+              Start a team
             </Link>
           </div>
 
@@ -222,11 +218,11 @@ export default function PricingPage() {
           >
             <div className="mb-6">
               <h2 className="text-xl font-semibold text-white mb-1">
-                enterprise
+                Enterprise
               </h2>
-              <p className="text-sm text-zinc-500">custom</p>
+              <p className="text-sm text-zinc-500">Custom</p>
               <div className="mt-3 text-3xl font-semibold text-white">
-                let&apos;s talk
+                Let&apos;s talk
               </div>
             </div>
             <ul className="space-y-3 mb-6 flex-1">
@@ -256,87 +252,87 @@ export default function PricingPage() {
                   "border-zinc-700 text-white hover:bg-zinc-900 hover:text-white h-11 w-full",
               })}
             >
-              contact sales
+              Contact sales
             </Link>
           </div>
         </section>
 
-        {/* founding creator callout */}
+        {/* the why-free reassurance (replaces the old skill-publishing callout) */}
         <section className="mt-16 rounded-lg border border-emerald-900/50 bg-zinc-950 p-8 text-center">
-          <h2 className="text-2xl font-semibold text-white mb-2 inline-flex items-center gap-2">
-            🏆 founding creator
+          <h2 className="text-2xl font-semibold text-white mb-2">
+            Why free is not a trial
           </h2>
           <p className="text-zinc-400 max-w-2xl mx-auto leading-relaxed mb-4">
-            publish a skill that earns 50+ runs on implexa and you get pro for
-            life, free. the bootstrap incentive: power users who make implexa
-            useful get rewarded with material value, not just karma.
+            Your Claude or Codex plan can run agents all day, but you only touch
+            it when you sit down to chat. Implexa puts the rest of it to work.
+            Everyone else resells you lab APIs at a markup and meters every run.
+            We never run the AI ourselves, so a single person&apos;s agents cost
+            us almost nothing, and they stay free.
           </p>
           <Link
-            href={`${DASHBOARD_URL}/signup`}
+            href={`${DASHBOARD_URL}/signup?plan=free`}
             className="text-sm text-white hover:underline"
           >
-            start publishing -&gt;
+            Start building, free &rarr;
           </Link>
         </section>
 
         {/* faq */}
         <section className="mt-16">
           <h2 className="text-2xl font-semibold text-white mb-8 text-center">
-            common questions
+            Common questions
           </h2>
           <div className="grid gap-6 md:grid-cols-2 max-w-4xl mx-auto">
             <div>
               <h3 className="text-base font-medium text-white mb-2">
-                what counts as an inline-apply?
+                Is it really free?
               </h3>
               <p className="text-sm text-zinc-400 leading-relaxed">
-                when implexa surfaces a skill recommendation and you say
-                &quot;yes apply,&quot; the SKILL.md gets injected into your
-                claude session and runs inline. unlimited on every tier.
+                Yes. Your agents run on the Claude or Codex subscription you
+                already pay for, so there is no inference for us to resell or
+                meter. The single-person product is free forever, no card to
+                start.
               </p>
             </div>
             <div>
               <h3 className="text-base font-medium text-white mb-2">
-                what makes pro better than free?
+                How does it run on my own Claude or Codex?
               </h3>
               <p className="text-sm text-zinc-400 leading-relaxed">
-                pro unlocks work-signature opt-in: implexa learns your
-                personal patterns + cohort matches you against similar users.
-                rec quality goes up ~3x over time. plus unlimited captures and
-                org library.
+                Implexa installs a small plugin into your Claude Code or Codex.
+                Your agents run there, as you, on your data. We are the control
+                plane: we build, schedule, and show results. We never run the AI
+                ourselves.
               </p>
             </div>
             <div>
               <h3 className="text-base font-medium text-white mb-2">
-                can i try pro before paying?
+                Do you see my data or credentials?
               </h3>
               <p className="text-sm text-zinc-400 leading-relaxed">
-                yes. all pro features have a 14-day trial when you start. no
-                card required to start free.
+                No. Implexa never touches your accounts, passwords, or the
+                contents of your work. Agents act with the access you already
+                have, on your own machine.
               </p>
             </div>
             <div>
               <h3 className="text-base font-medium text-white mb-2">
-                what about the data you collect?
+                When would I need Team?
               </h3>
               <p className="text-sm text-zinc-400 leading-relaxed">
-                privacy-by-discard is the default everywhere. prompts that
-                don&apos;t match a skill are never logged. work-signature data
-                is opt-in only on pro, with monthly salt rotation and 90-day
-                auto-expiry.
+                When more than one person needs to build, run, or see the same
+                agents. Free is per person. Team shares the agent library, the
+                runs, and the connections across a workspace.
               </p>
             </div>
           </div>
 
-          {/* read-more link to the developer-flavored tutorial — closes the
-              loop for engineers who land on pricing and want to see what
-              authoring a skill actually looks like before buying in. */}
           <p className="text-sm text-zinc-500 text-center mt-10">
             <Link
-              href="/blog/how-to-create-a-claude-skill"
+              href="/install"
               className="text-zinc-400 hover:text-white underline decoration-zinc-700 hover:decoration-white"
             >
-              read more: how to create a claude skill (step-by-step)
+              See how to connect Claude or Codex in two minutes &rarr;
             </Link>
           </p>
         </section>

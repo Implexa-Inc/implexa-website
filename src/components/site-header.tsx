@@ -32,12 +32,6 @@ export function SiteHeader() {
             What next
           </Link>
           <Link
-            href="/scores"
-            className="px-3 py-1.5 text-zinc-400 hover:text-white transition-colors hidden sm:inline-block"
-          >
-            Top skills
-          </Link>
-          <Link
             href="/pricing"
             className="px-3 py-1.5 text-zinc-400 hover:text-white transition-colors"
           >

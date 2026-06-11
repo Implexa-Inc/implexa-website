@@ -14,6 +14,14 @@ export default function robots(): MetadataRoute.Robots {
       {
         userAgent: "*",
         allow: "/",
+        // /search is an infinite ?q= query space (a crawl trap) with no SEO
+        // value: the canonical content lives on /s/<source>/<slug> skill pages,
+        // which stay fully crawlable. Disallowing it stops compliant crawlers
+        // from burning render budget on result pages we never want indexed.
+        // (Bad scrapers ignore robots entirely; the Vercel Firewall handles
+        // those.) The skill + agent catalogs (/s/, /workflows) are intentionally
+        // NOT disallowed, so they keep ranking and feeding answer engines.
+        disallow: ["/search", "/api/"],
       },
     ],
     sitemap: `${SITE_URL}/sitemap.xml`,

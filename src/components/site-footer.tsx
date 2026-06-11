@@ -18,11 +18,16 @@ export function SiteFooter() {
           >
             What next
           </Link>
-          <Link href="/scores" className="hover:text-white transition-colors">
-            Top skills
+          <Link href="/pricing" className="hover:text-white transition-colors">
+            Pricing
           </Link>
           <Link href="/resources" className="hover:text-white transition-colors">
             Resources
+          </Link>
+          {/* Kept in the footer (not the primary nav) so /scores and the skill
+              pages it links to retain a site-wide internal link for SEO. */}
+          <Link href="/scores" className="hover:text-white transition-colors">
+            Skill rankings
           </Link>
           <Link href="/install" className="hover:text-white transition-colors">
             Install

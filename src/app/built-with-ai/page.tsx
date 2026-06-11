@@ -254,7 +254,7 @@ export default function BuiltWithAiPage() {
                   </div>
                   <div className="flex gap-2">
                     <dt className="text-zinc-500 w-20 shrink-0">as</dt>
-                    <dd className="text-zinc-300">you, in your own Claude</dd>
+                    <dd className="text-zinc-300">you, in your own Claude or Codex</dd>
                   </div>
                   <div className="flex gap-2">
                     <dt className="text-zinc-500 w-20 shrink-0">delivers</dt>
