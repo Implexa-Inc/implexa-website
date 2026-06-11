@@ -6,6 +6,8 @@
 // + list-skill-scores.js. Both are public-read (service-role at the backend,
 // SECURITY DEFINER postgres functions for the read path).
 
+import { cache } from "react";
+
 const BACKEND = process.env.IMPLEXA_API_URL ?? "https://core.implexa.ai";
 const TOKEN = process.env.IMPLEXA_PUBLIC_SEARCH_TOKEN ?? "";
 
@@ -109,19 +111,25 @@ async function callMcpTool(
   }
 }
 
-export async function fetchSkillScore(
+// cache() dedupes within a request: the skill detail page calls this in BOTH
+// generateMetadata and the page body, which would otherwise be two identical
+// POSTs (Next only auto-memoizes GET). Wrapping halves the upstream calls per
+// render, the dominant Fluid CPU cost on the 40k-page skill catalog.
+export const fetchSkillScore = cache(async (
   source: string,
   slug: string,
-): Promise<SkillScore | null> {
-  // Cache for 5 min: scores are batch-updated, not per-request.
+): Promise<SkillScore | null> => {
+  // Cache for 1 day: scores are batch-updated, not per-request, and these are
+  // SEO pages where an hour-old score is fine. (Was 5 min, far too short across
+  // 40k pages -> a flood of cold renders under crawl.)
   const data = (await callMcpTool(
     "get_skill_score",
     { source, slug },
-    { revalidate: 300 },
+    { revalidate: 86400 },
   )) as SkillScore | null;
   if (!data || !data.ok) return null;
   return data;
-}
+});
 
 export async function fetchLeaderboard(opts: {
   source?: string;

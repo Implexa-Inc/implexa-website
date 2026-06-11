@@ -1,3 +1,4 @@
+import { cache } from "react";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
@@ -71,10 +72,16 @@ const TOKEN = process.env.IMPLEXA_PUBLIC_SEARCH_TOKEN ?? "";
 // Server-side fetch of one aggregated_skills row via the get_aggregated_skill
 // MCP tool. Read-only, no side effects. Returns null on any failure path so
 // the detail page can fall back to a graceful 404 / placeholder state.
-async function fetchAggregatedSkill(
+//
+// cache()-wrapped: this is called in BOTH generateMetadata and the page body
+// with the same (source, slug). Without it, every skill render does two
+// identical POSTs (Next only auto-memoizes GET). Deduping halves the dominant
+// per-render cost across the 40k-page catalog. The fetch's own ISR cache
+// (revalidate below) still handles cross-request caching.
+const fetchAggregatedSkill = cache(async (
   source: string,
   slug: string,
-): Promise<AggregatedSkill | null> {
+): Promise<AggregatedSkill | null> => {
   if (!TOKEN) return null;
 
   try {
@@ -100,7 +107,7 @@ async function fetchAggregatedSkill(
       // ISR they were the second-biggest Fluid CPU consumer after author
       // pages. Bumped 2026-05-28 from 300s → 21600s after Vercel free-tier
       // warning. Cuts function invocations on this route by 72x.
-      next: { revalidate: 21600 },
+      next: { revalidate: 86400 },
     });
 
     if (!upstream.ok) return null;
@@ -119,7 +126,7 @@ async function fetchAggregatedSkill(
   } catch {
     return null;
   }
-}
+});
 
 export async function generateMetadata(props: {
   params: Promise<RouteParams>;
