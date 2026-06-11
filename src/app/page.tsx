@@ -23,6 +23,7 @@ import { SkillCard } from "@/components/skill-card";
 import { CopyableInstall } from "@/components/copyable-install";
 import { AnimatedTerminal } from "@/components/animated-terminal";
 import { HeroHeadline } from "@/components/hero-headline";
+import { HeroBuildBox } from "@/components/hero-build-box";
 import { ExampleThoughtsBox } from "@/components/example-thoughts-box";
 import type { SkillCard as SkillCardData } from "@/lib/placeholder-data";
 import { CATEGORIES } from "@/lib/placeholder-data";
@@ -223,34 +224,15 @@ export default async function HomePage() {
                 ))}
               </ul>
 
-              {/* CTA + realistic time expectation (honesty guardrail) */}
-              <div className="flex flex-wrap items-center gap-3 mb-2">
-                <Link
-                  href="/install"
-                  className={buttonVariants({
-                    size: "lg",
-                    className:
-                      "bg-white text-black hover:bg-zinc-200 h-12 px-6 text-base inline-flex items-center gap-2",
-                  })}
-                >
-                  Build your first agent
-                  <ArrowRight className="size-4" aria-hidden="true" />
+              {/* The build box IS the primary CTA: type a job, hit Build, it
+                  carries your prompt through signup to your first real agent. */}
+              <HeroBuildBox />
+              <div className="mt-3 flex items-center gap-4">
+                <Link href="/workflows" className="text-sm text-zinc-400 hover:text-white transition-colors">
+                  or see example agents →
                 </Link>
-                <Link
-                  href="/workflows"
-                  className={buttonVariants({
-                    variant: "outline",
-                    size: "lg",
-                    className:
-                      "border-zinc-700 text-zinc-300 hover:bg-zinc-950 hover:text-white h-12 px-6 text-base",
-                  })}
-                >
-                  See example agents
-                </Link>
+                <span className="text-sm text-zinc-600">About 5 minutes to your first real one.</span>
               </div>
-              <p className="text-sm text-zinc-500">
-                About 5 minutes to your first real one.
-              </p>
             </div>
 
             {/* right column: animated agent demo */}
