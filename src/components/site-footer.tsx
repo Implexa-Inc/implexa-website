@@ -18,8 +18,8 @@ export function SiteFooter() {
           >
             What next
           </Link>
-          <Link href="/scores" className="hover:text-white transition-colors">
-            Top skills
+          <Link href="/pricing" className="hover:text-white transition-colors">
+            Pricing
           </Link>
           <Link href="/resources" className="hover:text-white transition-colors">
             Resources

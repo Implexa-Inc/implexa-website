@@ -46,7 +46,7 @@ const SCRIPTS: Script[] = [
       {
         mode: "answer",
         text:
-          "💡 I'll build you an agent for that. It runs at 7am, as you,\n   on your real data. Free on the Claude plan you already have.",
+          "💡 I'll build you an agent for that. It runs at 7am, as you,\n   on your real data. Free on the Claude or Codex plan you already have.",
         afterMs: 1200,
       },
       { mode: "pulse", text: "Building the agent + setting the schedule...", afterMs: 1000 },
