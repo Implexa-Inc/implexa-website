@@ -200,10 +200,11 @@ export default async function HomePage() {
               <HeroHeadline forced={heroVariant} />
 
               <p className="text-lg text-zinc-400 leading-relaxed mb-6 max-w-xl">
-                Tell Implexa a recurring job in one sentence. It builds an{" "}
-                <span className="text-white">agent</span> that runs inside your
-                own Claude or Codex, as you, on your real data, on a schedule,
-                and gets sharper every run.
+                Implexa builds the <span className="text-white">agents</span>{" "}
+                that run it for you. Tell it a recurring job in one sentence and
+                it runs inside your own Claude or Codex, as you, on your real
+                data, on a schedule. Unlimited agents, free, because they run on
+                the plan you already pay for.
               </p>
 
               {/* scoped trust rail (locked copy) */}
@@ -273,13 +274,14 @@ export default async function HomePage() {
                 why it is free
               </div>
               <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight text-white mb-4 leading-tight">
-                You already pay for the AI. Why pay again to use it?
+                You pay for a supercomputer. You use a sliver of it.
               </h2>
               <p className="text-base sm:text-lg text-zinc-400 leading-relaxed">
-                You already pay for Claude or Codex. Everyone else resells you
-                the same lab APIs at a markup, then bills you for the API usage
-                on top. Implexa runs on the subscription you already own, so your
-                agents are free. Build as many as you want.
+                Your Claude or Codex plan can run agents all day, but you only
+                touch it when you sit down to chat. Implexa puts the rest of it
+                to work. Everyone else resells you the same lab APIs at a markup
+                and meters every run on top. We run on the plan you already own,
+                so your agents are free. Build as many as you want.
               </p>
             </div>
 

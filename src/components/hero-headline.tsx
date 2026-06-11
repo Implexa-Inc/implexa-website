@@ -5,9 +5,10 @@ import { track } from "@vercel/analytics";
 
 // A/B-ready hero headline. Ships BOTH locked candidates as a pair:
 //
-//   variant "a" (primary): "Agents that run your business and do your
-//                           professional chores. For free."
-//   variant "b":           "Describe a job once. It runs every morning."
+//   variant "a" (primary): "Building with AI got easy. Running your business
+//                           with it didn't." (the post-Replit/Lovable insight)
+//   variant "b":           "Run your whole business with a team of agents.
+//                           Yours is a team of one." (the leverage angle)
 //
 // How the A/B works without a flash for the primary cohort:
 //   - Server renders variant "a" (the locked primary), so SSR + the first
@@ -30,11 +31,11 @@ const STORAGE_KEY = "implexa_hero_variant";
 function HeadlineA() {
   return (
     <>
-      Agents that run your business and do your{" "}
+      Building with AI got easy.{" "}
       <span className="underline decoration-amber-400 decoration-2 underline-offset-[6px]">
-        professional chores
-      </span>
-      . <span className="text-amber-300">For free.</span>
+        Running your business
+      </span>{" "}
+      with it didn&apos;t.
     </>
   );
 }
@@ -42,11 +43,11 @@ function HeadlineA() {
 function HeadlineB() {
   return (
     <>
-      Describe a job once. It runs{" "}
+      Run your whole business with a{" "}
       <span className="underline decoration-amber-400 decoration-2 underline-offset-[6px]">
-        every morning
+        team of agents
       </span>
-      .
+      . Yours is a team of one.
     </>
   );
 }
