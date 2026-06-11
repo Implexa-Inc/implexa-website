@@ -18,18 +18,21 @@ const COOKIE = "implexa_hero_variant";
 
 export function proxy(request: NextRequest) {
   const existing = request.cookies.get(COOKIE)?.value;
-  const variant =
-    existing === "a" || existing === "b"
-      ? existing
-      : Math.random() < 0.5
-        ? "a"
-        : "b";
 
-  // Make the (possibly new) assignment visible to this request's render.
+  // A/B PAUSED: the founder chose headline A. A live 50/50 split made the hero
+  // differ across devices (one phone on "b", desktop on "a"), which reads as
+  // "the mobile site didn't update." Force every visitor to "a" for a single,
+  // consistent headline, and OVERWRITE any sticky "b" cookie from the prior
+  // test so returning visitors flip to A on their next load.
+  // To resume a real test, restore: existing in {a,b} ? existing : random().
+  const variant = "a";
+
+  // Make the assignment visible to this request's render.
   request.cookies.set(COOKIE, variant);
   const res = NextResponse.next({ request });
 
-  // Persist a freshly-rolled assignment to the browser.
+  // Persist whenever the browser's stored value isn't already "a" (covers both
+  // unset and a leftover "b" from the paused test).
   if (existing !== variant) {
     res.cookies.set(COOKIE, variant, {
       path: "/",
