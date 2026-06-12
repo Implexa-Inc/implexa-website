@@ -200,9 +200,7 @@ export default async function HomePage() {
           </div>
 
           <p className="text-lg text-zinc-400 leading-relaxed mb-8 max-w-xl mx-auto">
-            You don&apos;t need to be a developer. Describe a job in one
-            sentence; Implexa builds the agent, schedules it, and runs it for
-            you.
+            You don&apos;t need to be a developer.
           </p>
 
           {/* The build box IS the primary CTA: type (or tap an example to
@@ -212,7 +210,28 @@ export default async function HomePage() {
             <HeroBuildBox />
           </div>
 
-          <p className="mt-5 text-sm text-zinc-600">
+          {/* objection-killers at the decision point. Three, no overlaps, and
+              none repeat the headline's claims (free lives up there only). */}
+          <ul className="mt-6 space-y-1.5 max-w-md mx-auto text-left">
+            {[
+              "Works with the Claude or Codex subscription you already have",
+              "No new tools, no API integrations to wire up",
+              "You describe the job. Implexa builds and runs the agent for you.",
+            ].map((t) => (
+              <li
+                key={t}
+                className="flex items-start gap-2.5 text-sm text-zinc-400"
+              >
+                <CircleCheck
+                  className="size-4 shrink-0 mt-0.5 text-emerald-400"
+                  aria-hidden="true"
+                />
+                {t}
+              </li>
+            ))}
+          </ul>
+
+          <p className="mt-6 text-sm text-zinc-600">
             About 5 minutes to your first agent ·{" "}
             <Link
               href="/workflows"

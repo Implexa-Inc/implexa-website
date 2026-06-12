@@ -37,60 +37,76 @@ type Script = {
 // don't repeat "Implexa:", the bulb already conveys it's Implexa
 // speaking. System status lines (✓ running / scanning...) get no prefix.
 // This matches how a real claude code session reads.
+// The three scripts mirror the three example chips in the hero build box, in
+// the same order; clicking a chip plays the matching script here (the
+// "implexa-demo" CustomEvent below). Each script compresses the full arc:
+// describe -> Implexa picks the stack -> approve -> scheduled -> compounding
+// results. The named tools (Remotion / HeyGen / Runway) are the real stack the
+// founder's own daily-reel agent uses; results are illustrative, hence the
+// "example run" pill in the title bar.
 const SCRIPTS: Script[] = [
   {
-    id: "build-agent",
-    label: "Build an agent",
+    id: "daily-reel",
+    label: "Daily Instagram Reel",
     steps: [
-      { mode: "prompt", text: "Implexa, find me new customers every morning" },
+      { mode: "prompt", text: "Implexa, build and post my daily Instagram Reel" },
       {
         mode: "answer",
         text:
-          "💡 I'll build you an agent for that. It runs at 7am, as you,\n   on your real data. Free on the Claude or Codex plan you already have.",
-        afterMs: 1200,
-      },
-      { mode: "pulse", text: "Building the agent + setting the schedule...", afterMs: 1000 },
-      {
-        mode: "answer",
-        text: "✓ Agent built. First run tomorrow, 7:00am. Nothing to babysit.",
-        afterMs: 800,
-      },
-    ],
-  },
-  {
-    id: "runs-itself",
-    label: "It runs on its own",
-    steps: [
-      { mode: "pulse", text: "7:00am · Your agent is running, as you...", afterMs: 1100 },
-      {
-        mode: "answer",
-        text:
-          "💡 Done before you woke up.\n   12 new accounts found, outreach drafted, waiting in your inbox.",
-        afterMs: 1300,
-      },
-      { mode: "prompt", text: "Nice. Same again tomorrow" },
-      {
-        mode: "answer",
-        text: "✓ Already scheduled. You manage me, I manage the work.",
-        afterMs: 900,
-      },
-    ],
-  },
-  {
-    id: "gets-better",
-    label: "It gets better",
-    steps: [
-      { mode: "prompt", text: "What did my agent learn this week?" },
-      {
-        mode: "answer",
-        text:
-          "💡 This week it caught 2 leads last week's run missed,\n   and learned to skip the duplicates you kept deleting.",
+          "💡 I'll build that agent. For production quality I recommend:\n   Remotion (motion graphics) · HeyGen (avatar) · Runway (b-roll).\n   Set it up to run daily at 9am? (Y/n)",
         afterMs: 1400,
       },
+      { mode: "prompt", text: "Y" },
+      { mode: "pulse", text: "Building the agent + connecting the tools...", afterMs: 1000 },
       {
-        mode: "pulse",
-        text: "Its memory is yours. It travels across Claude + Codex.",
+        mode: "answer",
+        text: "✓ Agent built. Runs daily at 9:00am. Nothing to babysit.",
+        afterMs: 900,
+      },
+      {
+        mode: "answer",
+        text:
+          "Day 1 ▸ reel #1 rendered + posted\nDay 2 ▸ reel #2 posted · hook rewritten from Day 1 feedback\nDay 10 ▸ 10 reels shipped · avg watch time up",
+        afterMs: 1500,
+      },
+    ],
+  },
+  {
+    id: "daily-seo",
+    label: "Daily SEO improvements",
+    steps: [
+      { mode: "prompt", text: "Implexa, improve my SEO daily and email me what changed" },
+      {
+        mode: "answer",
+        text:
+          "💡 Built. Every morning it audits your pages, fixes what it can,\n   and emails you the diff. Runs as you, on your real site.",
+        afterMs: 1300,
+      },
+      { mode: "pulse", text: "7:00am · running on its own...", afterMs: 1000 },
+      {
+        mode: "answer",
+        text:
+          "✓ This morning: 3 pages improved, 2 posts drafted,\n  1 broken link fixed. Summary in your inbox.",
         afterMs: 1200,
+      },
+    ],
+  },
+  {
+    id: "competitor-watch",
+    label: "Competitor watch",
+    steps: [
+      { mode: "prompt", text: "Implexa, watch my competitors and flag pricing changes" },
+      {
+        mode: "answer",
+        text: "💡 Built. It checks their pages daily and only pings you on a real change.",
+        afterMs: 1200,
+      },
+      { mode: "pulse", text: "Tuesday · change detected...", afterMs: 1000 },
+      {
+        mode: "answer",
+        text:
+          "✓ Acme moved Pro from $29 to $39 and dropped the free tier.\n  Here is the diff + a suggested response, waiting for your review.",
+        afterMs: 1300,
       },
     ],
   },
@@ -213,6 +229,21 @@ export function AnimatedTerminal() {
     }
   };
 
+  // Chip-sync: the hero build box dispatches "implexa-demo" with the index of
+  // the example the visitor tapped; the demo follows along and plays that
+  // story. Restart unconditionally (index + nonce) so tapping the chip for the
+  // already-active script replays it from the top.
+  useEffect(() => {
+    const onDemo = (e: Event) => {
+      const i = (e as CustomEvent<{ index?: number }>).detail?.index;
+      if (typeof i !== "number" || i < 0 || i >= SCRIPTS.length) return;
+      setScriptIndex(i);
+      setReplayNonce((n) => n + 1);
+    };
+    window.addEventListener("implexa-demo", onDemo);
+    return () => window.removeEventListener("implexa-demo", onDemo);
+  }, []);
+
   return (
     <div className="bg-zinc-950 border border-zinc-900 rounded-lg overflow-hidden shadow-2xl">
       {/* terminal title bar, muted dark, no longer claude-orange. cleaner. */}
@@ -225,6 +256,11 @@ export function AnimatedTerminal() {
           </div>
           <span className="text-xs text-zinc-500 ml-1 font-mono truncate">
             Claude Code · {SCRIPTS[scriptIndex].label}
+          </span>
+          {/* honesty guardrail: results shown are illustrative, never implied
+              to have run on the visitor's data */}
+          <span className="hidden sm:inline-block text-[9px] uppercase tracking-wider text-zinc-600 border border-zinc-800 rounded-full px-1.5 py-0.5 shrink-0">
+            example run
           </span>
         </div>
 

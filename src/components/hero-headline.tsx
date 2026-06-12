@@ -31,11 +31,12 @@ const STORAGE_KEY = "implexa_hero_variant";
 function HeadlineA() {
   return (
     <>
-      Build, run and manage powerful agents inside your Claude or Codex.
+      Build and run powerful agents.
+      <span className="block">Inside Claude or Codex.</span>
       <span className="block mt-2">
-        Unlimited agents,{" "}
+        Unlimited agents.{" "}
         <span className="underline decoration-amber-400 decoration-2 underline-offset-[6px]">
-          free
+          Free forever
         </span>
         .
       </span>

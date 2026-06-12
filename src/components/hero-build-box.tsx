@@ -21,11 +21,13 @@ import { ArrowRight } from "lucide-react";
 
 const APP_URL = "https://app.implexa.ai";
 
-// Real, on-audience jobs (post-Lovable solopreneurs + indie builders).
+// Real, on-audience jobs (solopreneurs + small businesses, NOT sales-tool
+// positioning; founder call 2026-06-12). Order matters: index i maps to the
+// demo terminal's SCRIPTS[i], so tapping a chip plays its matching story.
 const EXAMPLES = [
-  "Write and schedule my posts for the week",
-  "Find 10 leads a day and draft the outreach",
-  "Grow my new app's traffic while I sleep",
+  "Build and post my daily Instagram Reel",
+  "Improve my SEO daily and email me what changed",
+  "Watch my competitors and flag pricing changes",
 ];
 
 const ROTATE_MS = 3200;
@@ -89,13 +91,24 @@ export function HeroBuildBox() {
         </button>
       </div>
 
-      {/* tap an example to fill the box with real, editable text */}
+      {/* tap an example to fill the box with real, editable text. It also
+          nudges the demo terminal below to play that example's story
+          (CustomEvent; the terminal listens for "implexa-demo"). */}
       <div className="mt-3 flex flex-wrap items-center justify-center gap-2">
-        {EXAMPLES.map((ex) => (
+        {EXAMPLES.map((ex, i) => (
           <button
             key={ex}
             type="button"
-            onClick={() => setValue(ex)}
+            onClick={() => {
+              setValue(ex);
+              try {
+                window.dispatchEvent(
+                  new CustomEvent("implexa-demo", { detail: { index: i } }),
+                );
+              } catch {
+                /* demo sync is best-effort */
+              }
+            }}
             className="text-xs px-2.5 py-1 rounded-full border border-zinc-800 text-zinc-400 hover:border-zinc-600 hover:bg-zinc-950 hover:text-white transition-colors"
           >
             {ex}
