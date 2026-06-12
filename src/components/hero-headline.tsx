@@ -31,11 +31,14 @@ const STORAGE_KEY = "implexa_hero_variant";
 function HeadlineA() {
   return (
     <>
-      Build and run powerful agents,{" "}
-      <span className="underline decoration-amber-400 decoration-2 underline-offset-[6px]">
-        free
+      Build, run and manage powerful agents inside your Claude or Codex.
+      <span className="block mt-2">
+        Unlimited agents,{" "}
+        <span className="underline decoration-amber-400 decoration-2 underline-offset-[6px]">
+          free
+        </span>
+        .
       </span>
-      .
     </>
   );
 }
@@ -91,7 +94,7 @@ export function HeroHeadline({ forced }: { forced?: HeroVariant }) {
   return (
     <h1
       data-hero-variant={variant}
-      className="text-4xl lg:text-5xl xl:text-6xl font-semibold tracking-tight text-white leading-[1.07] mb-5"
+      className="text-3xl sm:text-4xl lg:text-5xl font-semibold tracking-tight text-white leading-[1.12] mb-5"
     >
       {variant === "b" ? <HeadlineB /> : <HeadlineA />}
     </h1>
