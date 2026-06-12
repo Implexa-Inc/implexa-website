@@ -31,14 +31,14 @@ import { CATEGORIES } from "@/lib/placeholder-data";
 // variant (e.g. ?utm=x). Title + description come from layout.tsx defaults
 // (src/lib/site.ts), which now carry the locked agents positioning.
 export const metadata: Metadata = {
-  title: "Implexa: agents that run your business",
+  title: "Implexa: build and run powerful agents, free",
   description:
-    "Describe a recurring job once and Implexa builds an agent that runs it every morning inside your own Claude or Codex, on your real data. Unlimited agents, free, because they run on the subscription you already pay for.",
+    "Build and run powerful AI agents for free, in your own Claude or Codex, from a single sentence. You don't need to be a developer. Implexa is the AI manager that builds, schedules, and runs your agents on the plan you already pay for.",
   alternates: { canonical: "/" },
   openGraph: {
-    title: "Implexa: agents that run your business",
+    title: "Implexa: build and run powerful agents, free",
     description:
-      "Describe a recurring job once and Implexa builds an agent that runs it every morning inside your own Claude or Codex. Unlimited agents, free.",
+      "Build and run powerful AI agents for free, in your own Claude or Codex, from a single sentence. No developer needed.",
   },
 };
 
@@ -200,30 +200,28 @@ export default async function HomePage() {
             <HeroHeadline forced={heroVariant} />
           </div>
 
-          <p className="text-lg text-zinc-400 leading-relaxed mb-8 max-w-2xl mx-auto">
-            Describe a recurring job in one sentence. Implexa builds the{" "}
-            <span className="text-white">agent</span> that runs it for you,
-            inside your own Claude or Codex, as you, on your real data, on a
-            schedule. Unlimited agents, free.
+          {/* the value prop, line 2 + 3 of the headline idea */}
+          <p className="text-xl sm:text-2xl text-zinc-200 font-medium leading-snug mb-4">
+            In your own Claude or Codex. From a single sentence.
           </p>
 
-          {/* The build box IS the primary CTA: type a job, hit Build, it
-              carries your prompt through signup to your first real agent. */}
-          <div className="max-w-2xl mx-auto text-left">
-            <HeroBuildBox size="hero" />
+          <p className="text-lg text-zinc-400 leading-relaxed mb-8 max-w-2xl mx-auto">
+            You don&apos;t need to be a developer. Implexa is the AI manager that
+            builds, schedules, and runs your agents for you, on the plan you
+            already pay for.
+          </p>
+
+          {/* The build box IS the primary CTA: a terminal that self-types real
+              jobs; tap one to fill it, hit Build, and your prompt rides through
+              signup to your first real agent. */}
+          <div className="max-w-2xl mx-auto">
+            <HeroBuildBox />
           </div>
 
-          <div className="mt-4 flex flex-wrap items-center justify-center gap-x-4 gap-y-1">
-            <Link
-              href="/workflows"
-              className="text-sm text-zinc-400 hover:text-white transition-colors"
-            >
-              or start from an example agent →
-            </Link>
-            <span className="text-sm text-zinc-600">
-              About 5 minutes to your first real one.
-            </span>
-          </div>
+          <p className="mt-4 text-sm text-zinc-600">
+            Free, on the Claude or Codex plan you already pay for. About 5 minutes
+            to your first real agent.
+          </p>
 
           {/* single centered trust rail (locked copy) */}
           <ul className="mt-8 flex flex-wrap items-center justify-center gap-x-6 gap-y-2.5 max-w-2xl mx-auto">
@@ -266,9 +264,10 @@ export default async function HomePage() {
               <p className="text-base sm:text-lg text-zinc-400 leading-relaxed">
                 Your Claude or Codex plan can run agents all day, but you only
                 touch it when you sit down to chat. Implexa puts the rest of it
-                to work. Everyone else resells you the same lab APIs at a markup
-                and meters every run on top. We run on the plan you already own,
-                so your agents are free. Build as many as you want.
+                to work. Every other agent product is a wrapper: it resells you
+                someone else&apos;s AI at a markup and meters every run on top.
+                We never run the AI at all, yours does, so your agents are free.
+                Build as many as you want.
               </p>
             </div>
 
@@ -298,22 +297,54 @@ export default async function HomePage() {
         </section>
 
         {/* ============================================================
-            3 - THE MANAGER METAPHOR. one scroll down, explains the why.
+            3 - NOW WHAT + WHY NOT BUILD IT DIRECTLY + THE IKEA MOMENT. the
+            objection-handler arc: you have the tools, here is why you still
+            need a manager, and (the skeptic's question) is it really free.
             ============================================================ */}
         <section className="mx-auto max-w-5xl px-4 sm:px-6 py-20">
-          <div className="max-w-3xl mx-auto text-center">
+          <div className="max-w-3xl mx-auto">
             <div className="text-xs uppercase tracking-wider text-zinc-500 mb-3 font-mono">
-              the shape of it
+              you shipped it. now what?
             </div>
             <h2 className="text-3xl sm:text-4xl font-semibold tracking-tight text-white mb-5 leading-tight">
-              You manage one thing. Implexa manages the rest.
+              You built your product. You bought the Claude plan. Now what?
             </h2>
-            <p className="text-lg text-zinc-400 leading-relaxed">
-              Think of Implexa as the manager you hire. You manage one thing,
-              Implexa. It manages the agents that do the work, running on the AI
-              subscriptions you already pay for. You check in when you want. Most
-              days the work is already done.
+            <p className="text-lg text-zinc-400 leading-relaxed mb-10">
+              Claude and Codex are incredibly powerful, but they are built for
+              developers. To really use them you have to wire up agents yourself,
+              piece by piece. Most people never do, and all that capability sits
+              idle.
             </p>
+
+            {/* the Ikea moment: setup, then Implexa one-ups it (it assembles
+                for you, where Ikea still makes you do the assembly). */}
+            <div className="rounded-2xl border border-zinc-800 bg-gradient-to-b from-zinc-950 to-black p-6 sm:p-8 mb-6">
+              <div className="text-xs uppercase tracking-wider text-amber-400 mb-3 font-mono">
+                the Ikea moment for AI agents
+              </div>
+              <p className="text-base sm:text-lg text-zinc-300 leading-relaxed">
+                Before Ikea, furniture meant hiring an expert. Ikea made it
+                something anyone could put together. Implexa goes one step
+                further: you do not even assemble it. You describe the job in a
+                sentence, and your AI agent manager builds it, runs it on a
+                schedule, and sharpens it over time. You manage one thing,
+                Implexa. It manages the agents.
+              </p>
+            </div>
+
+            {/* the skeptic's question, answered out loud (trust > hiding it) */}
+            <div className="rounded-xl border border-emerald-900/40 bg-emerald-500/[0.04] p-5 sm:p-6">
+              <h3 className="text-base font-semibold text-white mb-1.5">
+                Is it really free?
+              </h3>
+              <p className="text-sm sm:text-base text-zinc-400 leading-relaxed">
+                Yes. We are not a wrapper sitting on top of someone else&apos;s
+                LLM. Builders like you already pay for Claude or Codex. Implexa
+                just helps you get the full value of what you already pay for, so
+                there is no second AI bill and no per-run charge. It does need a
+                paid Claude or Codex plan, because that is where your agents run.
+              </p>
+            </div>
           </div>
         </section>
 
