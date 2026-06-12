@@ -31,11 +31,11 @@ const STORAGE_KEY = "implexa_hero_variant";
 function HeadlineA() {
   return (
     <>
-      Building with AI got easy.{" "}
+      Build and run powerful agents,{" "}
       <span className="underline decoration-amber-400 decoration-2 underline-offset-[6px]">
-        Running your business
-      </span>{" "}
-      with it didn&apos;t.
+        free
+      </span>
+      .
     </>
   );
 }
