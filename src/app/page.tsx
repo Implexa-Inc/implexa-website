@@ -10,7 +10,6 @@ import {
   RefreshCw,
   Boxes,
   CircleCheck,
-  Sparkles,
 } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -189,55 +188,39 @@ export default async function HomePage() {
             a single trust rail. The animated agent demo sits below as a
             framed "what a run looks like" visual, not a competing column.
             ============================================================ */}
-        <section className="mx-auto max-w-3xl px-4 sm:px-6 pt-20 pb-10 text-center">
-          <div className="mb-6 inline-flex items-center gap-2 px-3 py-1 rounded-full border border-amber-900/40 bg-amber-500/5 text-xs text-amber-300">
-            <Sparkles className="size-3" aria-hidden="true" />
-            Runs on the Claude or Codex plan you already pay for
-          </div>
-
+        {/* Kept deliberately SPARSE (founder feedback 2026-06-12: "too much
+            happening"): headline -> one subcopy line -> the box -> one quiet
+            footer line. Free/Claude/Codex each said ONCE (in the headline);
+            the badge pill, second tagline, and duplicate micro-lines are gone.
+            The full trust rail still lives in the final CTA section. */}
+        <section className="mx-auto max-w-3xl px-4 sm:px-6 pt-24 pb-12 text-center">
           {/* A/B-ready locked headline pair (centered for the hero shape) */}
           <div className="flex justify-center">
             <HeroHeadline forced={heroVariant} />
           </div>
 
-          {/* the value prop, line 2 + 3 of the headline idea */}
-          <p className="text-xl sm:text-2xl text-zinc-200 font-medium leading-snug mb-4">
-            In your own Claude or Codex. From a single sentence.
+          <p className="text-lg text-zinc-400 leading-relaxed mb-8 max-w-xl mx-auto">
+            You don&apos;t need to be a developer. Describe a job in one
+            sentence; Implexa builds the agent, schedules it, and runs it for
+            you.
           </p>
 
-          <p className="text-lg text-zinc-400 leading-relaxed mb-8 max-w-2xl mx-auto">
-            You don&apos;t need to be a developer. Implexa is the AI manager that
-            builds, schedules, and runs your agents for you, on the plan you
-            already pay for.
-          </p>
-
-          {/* The build box IS the primary CTA: a terminal that self-types real
-              jobs; tap one to fill it, hit Build, and your prompt rides through
-              signup to your first real agent. */}
+          {/* The build box IS the primary CTA: type (or tap an example to
+              fill), hit Build, and the prompt rides through signup to your
+              first real agent. */}
           <div className="max-w-2xl mx-auto">
             <HeroBuildBox />
           </div>
 
-          <p className="mt-4 text-sm text-zinc-600">
-            Free, on the Claude or Codex plan you already pay for. About 5 minutes
-            to your first real agent.
+          <p className="mt-5 text-sm text-zinc-600">
+            About 5 minutes to your first agent ·{" "}
+            <Link
+              href="/workflows"
+              className="text-zinc-400 hover:text-white transition-colors"
+            >
+              or start from an example →
+            </Link>
           </p>
-
-          {/* single centered trust rail (locked copy) */}
-          <ul className="mt-8 flex flex-wrap items-center justify-center gap-x-6 gap-y-2.5 max-w-2xl mx-auto">
-            {TRUST_RAIL.map(({ icon: Icon, text }) => (
-              <li
-                key={text}
-                className="flex items-center gap-2 text-sm text-zinc-300"
-              >
-                <Icon
-                  className="size-4 shrink-0 text-emerald-400"
-                  aria-hidden="true"
-                />
-                {text}
-              </li>
-            ))}
-          </ul>
         </section>
 
         {/* the agent demo, framed and centered below the hero */}
