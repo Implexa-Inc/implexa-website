@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { ArrowRight } from "lucide-react";
+import { track } from "@vercel/analytics";
 
 /**
  * Hero build box - the "type a job, hit Build" entry point.
@@ -55,9 +56,28 @@ export function HeroBuildBox() {
   function build() {
     const intent = value.trim();
     if (!intent) return;
+    // Mint a stable intent_id at the FIRST step of the funnel so this build
+    // can be traced + de-duped end to end: it rides the cross-origin hop to
+    // signup (alongside ?intent=) and becomes the dedup key on the resulting
+    // build run-request. crypto.randomUUID is in every evergreen browser;
+    // fall back to a timestamp id on the rare engine that lacks it.
+    const intentId =
+      typeof crypto !== "undefined" && "randomUUID" in crypto
+        ? crypto.randomUUID()
+        : `i_${Date.now().toString(36)}_${Math.random()
+            .toString(36)
+            .slice(2, 10)}`;
+    // funnel_event = the first measurable conversion step. Best-effort: never
+    // block the build hop on analytics (Vercel <Analytics/> is mounted in the
+    // root layout, so this lands in real conversion data).
+    try {
+      track("funnel_event", { step: "hero_cta_build", intent_id: intentId });
+    } catch {
+      /* analytics is best-effort */
+    }
     window.location.href = `${APP_URL}/signup?intent=${encodeURIComponent(
       intent.slice(0, 500),
-    )}`;
+    )}&intent_id=${encodeURIComponent(intentId)}`;
   }
 
   return (
