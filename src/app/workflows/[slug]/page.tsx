@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import {
   ArrowLeft,
+  ArrowRight,
   Calendar,
   Target,
   CheckCircle2,
@@ -744,24 +745,48 @@ export default async function WorkflowDetailPage(props: {
 
         {/* CTA: build-and-run. Ownership + portability framing (locked copy
             guardrail: never "data never leaves your machine"). Free because it
-            runs on the Claude/Codex subscription the user already pays for. */}
+            runs on the Claude/Codex subscription the user already pays for.
+
+            Primary path carries the visitor's intent through signup (mirrors
+            SkillAgentBanner / hero-build-box): the encoded prompt is stashed in
+            localStorage by the signup page and replayed as a build run-request
+            by GetStartedIntent, so the agent is already building when they
+            connect. Raw terminal install is kept as a secondary, no-account
+            option for the terminal-first crowd. */}
         <Card className="bg-zinc-950 border-zinc-800 mb-8">
           <CardContent className="p-5">
             <h2 className="text-base font-medium text-white mb-1">
               Build and run this on your own Claude or Codex, free
             </h2>
             <p className="text-sm text-zinc-400 mb-4">
-              Install Implexa, then say{" "}
-              <span className="text-zinc-200 font-mono text-xs bg-zinc-900 px-1.5 py-0.5 rounded">
-                build the {w.name} agent
-              </span>{" "}
-              and approve the schedule. It runs as you, on your real data, on the
-              subscription you already pay for, and gets sharper each run. Your
-              agent&apos;s memory is yours and travels with you across Claude,
-              Codex, and whatever comes next. About 5 minutes to your first real
-              run.
+              Start the build and approve the schedule. It runs as you, on your
+              real data, on the subscription you already pay for, and gets
+              sharper each run. Your agent&apos;s memory is yours and travels
+              with you across Claude, Codex, and whatever comes next. About 5
+              minutes to your first real run.
             </p>
-            <CopyableInstall />
+            <Link
+              href={`https://app.implexa.ai/signup?intent=${encodeURIComponent(
+                `Build the "${w.name}" agent that runs on a schedule in my own Claude or Codex`.slice(
+                  0,
+                  500,
+                ),
+              )}`}
+              className="inline-flex items-center justify-center gap-1.5 rounded-lg bg-amber-400 px-5 py-2.5 text-sm font-semibold text-black transition-colors hover:bg-amber-300"
+            >
+              Build this agent
+              <ArrowRight className="size-4" aria-hidden="true" />
+            </Link>
+            <div className="mt-5 border-t border-zinc-900 pt-4">
+              <p className="text-xs text-zinc-500 mb-2">
+                Prefer the terminal? Install Implexa and say{" "}
+                <span className="text-zinc-300 font-mono bg-zinc-900 px-1.5 py-0.5 rounded">
+                  build the {w.name} agent
+                </span>
+                .
+              </p>
+              <CopyableInstall />
+            </div>
           </CardContent>
         </Card>
 

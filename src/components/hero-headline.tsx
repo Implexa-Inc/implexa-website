@@ -3,10 +3,17 @@
 import { useEffect, useState } from "react";
 import { track } from "@vercel/analytics";
 
-// A/B-ready hero headline. Ships BOTH locked candidates as a pair:
+// A/B-ready hero headline. Ships BOTH candidates as a pair:
 //
-//   variant "a" (primary): "Building with AI got easy. Running your business
-//                           with it didn't." (the post-Replit/Lovable insight)
+//   variant "a" (primary): "Build and run powerful agents. Inside Claude or
+//                           Codex. Unlimited agents. Free forever."
+//                           LOCKED by the founder (2026-06-13). The "invert the
+//                           payload" candidate ("Building with AI got easy.
+//                           Running your business with it didn't.") was
+//                           considered and explicitly NOT shipped. Do not flip
+//                           HeadlineA to the inversion without a new founder
+//                           decision. (This comment previously certified a change
+//                           that never shipped, which is what kept it re-flagged.)
 //   variant "b":           "Run your whole business with a team of agents.
 //                           Yours is a team of one." (the leverage angle)
 //
