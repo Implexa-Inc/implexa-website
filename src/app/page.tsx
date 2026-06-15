@@ -614,7 +614,7 @@ export default async function HomePage() {
         <section className="mx-auto max-w-6xl px-4 sm:px-6 py-24">
           <div className="max-w-3xl mx-auto text-center mb-10">
             <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight text-white mb-4">
-              The skills your agents are built from
+              What your agents are built from
             </h2>
             <p className="text-base text-zinc-400 leading-relaxed">
               Under the hood, every agent is assembled from skills, the indexed,
