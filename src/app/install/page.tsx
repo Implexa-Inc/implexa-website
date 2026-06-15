@@ -3,7 +3,6 @@ import type { Metadata } from "next";
 import {
   ArrowLeft,
   ArrowRight,
-  Clock,
   Download,
   Monitor,
   Terminal,
@@ -15,11 +14,16 @@ import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 
 const DASHBOARD_URL = "https://app.implexa.ai";
+// Stable "latest" link — always resolves to the newest published universal dmg
+// (Apple Silicon + Intel), signed + notarized. Hosted on the public releases repo
+// so the desktop source stays private.
+const MAC_DOWNLOAD_URL =
+  "https://github.com/Implexa-Inc/implexa-releases/releases/latest/download/Implexa-universal.dmg";
 
 export const metadata: Metadata = {
   title: "Get started with Implexa",
   description:
-    "Create your free account, then paste one command into your own Claude Code or Codex to connect Implexa. Your agents build and run on the plan you already pay for. The one-click macOS app is coming soon.",
+    "Download the one-click macOS app, or paste one command into your own Claude Code or Codex to connect Implexa. Your agents build and run on the plan you already pay for.",
   alternates: { canonical: "/install" },
 };
 
@@ -196,42 +200,33 @@ export default function InstallPage() {
 
         <Separator className="bg-zinc-900 mb-12" />
 
-        {/* The desktop app collapses all of this to one click - coming soon. */}
+        {/* The desktop app collapses all of this to one click - now downloadable. */}
         <Card className="bg-zinc-950 border-zinc-800 mb-12">
           <CardHeader>
             <CardTitle className="text-white text-lg flex items-center gap-2">
               <Monitor className="size-5" aria-hidden="true" />
               One-click app for macOS
-              <span className="text-xs font-normal text-amber-300/80 inline-flex items-center gap-1">
-                <Clock className="size-3" aria-hidden="true" />
-                Coming soon
-              </span>
             </CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-sm text-zinc-400 mb-4">
               The desktop app does Step 2 and 3 for you: it installs Implexa into
               your Claude Code and Codex, keeps your scheduled agents running, and
-              shows their results in one place. We are finishing Apple
-              notarization so the download is safe and one-click. Leave your email
-              and we will tell you the moment it is ready.
+              shows their results in one place. Signed and notarized by Apple, so
+              it opens with no warning, and one universal download runs on both
+              Apple Silicon and Intel Macs.
             </p>
             <div className="flex flex-wrap items-center gap-3">
-              <button
-                type="button"
-                disabled
-                className="inline-flex items-center gap-2 rounded-md bg-zinc-800 text-zinc-500 px-4 py-2 text-sm font-medium cursor-not-allowed"
-                aria-disabled="true"
+              <a
+                href={MAC_DOWNLOAD_URL}
+                className={buttonVariants({ size: "lg" })}
               >
                 <Download className="size-4" aria-hidden="true" />
                 Download for macOS
-              </button>
-              <Link
-                href="mailto:hello@implexa.ai?subject=Notify%20me%20when%20the%20Implexa%20macOS%20app%20is%20ready"
-                className="text-sm text-amber-300/90 hover:text-amber-200 transition-colors"
-              >
-                Notify me when it is ready &rarr;
-              </Link>
+              </a>
+              <span className="text-xs text-zinc-500">
+                Universal &middot; macOS 11+ &middot; free
+              </span>
             </div>
           </CardContent>
         </Card>
