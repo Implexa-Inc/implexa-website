@@ -77,6 +77,37 @@ Most skills you'll find online cover 1, 2, 3, and 5. The two that consistently g
 
 Full breakdown in the [pillar guide](/claude-skills).
 
+## How do Claude Skills actually work?
+
+Claude loads a skill in two stages, and that detail is the whole reason you can install a lot of them without slowing anything down. At all times Claude can see only the short `description` line from every installed skill. The full `SKILL.md` body stays on disk. The moment a request semantically matches one of those descriptions, Claude pulls that one file into the working context and follows it.
+
+People call this progressive disclosure. The practical effect is that a 2,000-word skill you never trigger costs you zero tokens in the conversation where it never came up. You pay for a skill's instructions only in the runs that actually use it.
+
+This is also why the `description` does so much heavy lifting. It is the only part of your skill Claude reads on every request, so it is the part that decides whether the skill fires at all. A specific description gets matched; a vague one sits on disk forever. Anthropic shipped this loading model as part of the Agent Skills format in late 2025, and the same two-stage behavior is what lets a single agent carry hundreds of skills without bloating its context window.
+
+## Claude Skills vs. Projects vs. custom instructions
+
+Skills, Projects, and custom instructions look similar because all three shape how Claude behaves, but they operate at different scopes. A skill is a single task Claude triggers when it is relevant. A Project is a persistent workspace that holds files and context for a body of related work. Custom instructions are always-on preferences that color every response. You reach for a different one depending on whether you are encoding a *task*, a *workspace*, or a *preference*.
+
+| | what it is | scope | when it applies |
+|---|---|---|---|
+| **Claude Skill** | a `SKILL.md` task pack | one repeatable workflow | only when its description matches a request |
+| **Project** | a saved workspace + files | a body of related work | whenever you're working inside that Project |
+| **Custom instructions** | standing preferences | your whole account | every message, always on |
+
+They compose rather than compete. You can keep custom instructions for tone, work inside a Project for a given client, and trigger a skill for one repeatable task within it. If you find yourself writing the same multi-step procedure into a Project's instructions over and over, that procedure wants to be a skill.
+
+## When a Claude Skill is the wrong tool
+
+A skill is the wrong tool when the work runs once, changes shape every time, or is faster to just ask for directly. Skills earn their keep through repetition and a stable output, so a task that has neither gains nothing from being wrapped in a `SKILL.md`. Cases where you should not bother:
+
+- **One-off tasks.** If you'll run it once, a plain prompt is faster than authoring, testing, and installing a skill.
+- **Work with no fixed output.** Open-ended brainstorming or exploration has no output contract to hold steady, so the main thing a skill gives you does not apply.
+- **A single tool call.** If the whole job is "call this one API," an MCP server or a direct request is the right layer, not a skill wrapping it.
+- **Anything that needs human judgment mid-flight.** A skill that stops to ask you to decide on every run is just a checklist with extra steps.
+
+The honest test is the second-time rule from earlier in this page. If you have not done the task twice and expect to do it again, hold off. Premature skills are the SKILL.md equivalent of premature abstraction, and a folder full of skills you never trigger is its own kind of clutter. The companion piece on [how many Claude Skills is too many](/blog/how-many-claude-skills-is-too-many) goes deeper on keeping the set tight.
+
 ## Are Claude Skills just prompts with extra steps?
 
 No. A prompt lives in one conversation and disappears. A skill is a named, reusable unit that Claude triggers on its own, runs the same way every time, can call tools by name, and can be shared as a single artifact. That combination is what a raw prompt cannot do.
@@ -111,7 +142,7 @@ These are four different layers that work together, not four names for the same 
 | **subagent** | a delegated worker | runs a focused sub-task in its own context, reports back |
 | **plugin** | a distributable bundle | packages skills, commands, and MCP servers as one installable unit |
 
-The clean mental model: a skill often *uses* one or more MCP servers as its execution backend, can *delegate* a step to a subagent, and can ship *inside* a plugin. They stack. You do not pick one instead of the others.
+The clean mental model: a skill often *uses* one or more MCP servers as its execution backend, can *delegate* a step to a subagent, and can ship *inside* a plugin. They stack. You do not pick one instead of the others. The deeper comparison lives in [Claude Skills vs. MCP](/blog/claude-skills-vs-mcp).
 
 ## How skills get triggered
 
@@ -186,6 +217,14 @@ No. `SKILL.md` is plain markdown. The procedure describes what tools to call, bu
 ### Are Claude Skills free?
 
 The format is free and open. A `SKILL.md` file costs nothing to write, store, or run, and the auto-loader is built into Claude Code. You only pay for the underlying Claude usage the skill consumes, plus any third-party host you choose for sharing or tracking.
+
+### Are Claude Skills available on the Claude free plan?
+
+The `SKILL.md` format itself is plan-agnostic, since it is just a file. What varies by plan is the surface that runs it: the Claude Code auto-loader and Claude's tool use are where skills do their work, so the practical answer depends on your access to those, not on the skill files. If you can run Claude Code, you can run skills.
+
+### How many Claude Skills can you install at once?
+
+There is no hard cap. Because Claude only loads a skill's full body when its description matches, hundreds of installed skills add almost nothing to a given conversation. The real limit is description overlap, not count. Two skills with fuzzy, similar descriptions will compete and misfire long before you run out of room. The detail is in [how many Claude Skills is too many](/blog/how-many-claude-skills-is-too-many).
 
 ### Can a skill call other skills?
 
