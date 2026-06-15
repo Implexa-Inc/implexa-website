@@ -65,11 +65,24 @@ export default function InstallPage() {
         <h1 className="text-3xl sm:text-4xl font-semibold tracking-tight text-white mb-3">
           Get started in two minutes
         </h1>
-        <p className="text-lg text-zinc-400 mb-10">
-          Create your free account, then paste one command into your own Claude
-          or Codex to connect Implexa. Your agents build and run on the plan you
-          already pay for.
+        <p className="text-lg text-zinc-400 mb-6">
+          Download the one-click app, or paste one command into your own Claude
+          or Codex. Your agents build and run on the plan you already pay for.
         </p>
+
+        {/* Primary path, top of page: the one-click macOS app (live, notarized). */}
+        <div className="flex flex-col sm:flex-row sm:items-center gap-3 mb-10">
+          <a
+            href={MAC_DOWNLOAD_URL}
+            className="inline-flex items-center justify-center gap-2 rounded-md bg-white text-black px-5 py-2.5 text-sm font-semibold hover:bg-zinc-200 transition-colors"
+          >
+            <Download className="size-4" aria-hidden="true" />
+            Download for macOS
+          </a>
+          <span className="text-xs text-zinc-500">
+            Universal &middot; macOS 11+ &middot; signed &amp; notarized &middot; free &mdash; or use the command below for Claude Code / Codex.
+          </span>
+        </div>
 
         {/* Step 1 - the honey-trap: sign up first, so the idea is captured and we
             can show the connect command on the dashboard, scoped to the user. */}

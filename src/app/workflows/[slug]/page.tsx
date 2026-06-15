@@ -46,6 +46,11 @@ import {
   isCardProven,
 } from "@/lib/workflow-query";
 
+const DASHBOARD_URL = "https://app.implexa.ai";
+// Live, notarized universal macOS app (stable "latest" link).
+const MAC_DOWNLOAD_URL =
+  "https://github.com/Implexa-Inc/implexa-releases/releases/latest/download/Implexa-universal.dmg";
+
 type RouteParams = { slug: string };
 
 function hostOf(url: string): string {
@@ -748,10 +753,10 @@ export default async function WorkflowDetailPage(props: {
         <Card className="bg-zinc-950 border-zinc-800 mb-8">
           <CardContent className="p-5">
             <h2 className="text-base font-medium text-white mb-1">
-              Build and run this on your own Claude or Codex, free
+              Run this agent in Implexa, on your own Claude or Codex, free
             </h2>
             <p className="text-sm text-zinc-400 mb-4">
-              Install Implexa, then say{" "}
+              Get the Implexa app (or connect your Claude Code / Codex), then say{" "}
               <span className="text-zinc-200 font-mono text-xs bg-zinc-900 px-1.5 py-0.5 rounded">
                 build the {w.name} agent
               </span>{" "}
@@ -761,6 +766,21 @@ export default async function WorkflowDetailPage(props: {
               Codex, and whatever comes next. About 5 minutes to your first real
               run.
             </p>
+            <div className="flex flex-col sm:flex-row sm:items-center gap-3 mb-4">
+              <a
+                href={`${DASHBOARD_URL}/signup?intent=${encodeURIComponent(`build the ${w.name} agent`)}`}
+                className="inline-flex items-center justify-center rounded-md bg-white text-black px-4 py-2 text-sm font-semibold hover:bg-zinc-200 transition-colors"
+              >
+                Run this agent in Implexa &rarr;
+              </a>
+              <a
+                href={MAC_DOWNLOAD_URL}
+                className="text-sm text-zinc-300 hover:text-white transition-colors"
+              >
+                Download the Mac app
+              </a>
+            </div>
+            <p className="text-xs text-zinc-500 mb-2">Prefer the terminal? Connect Claude Code or Codex:</p>
             <CopyableInstall />
           </CardContent>
         </Card>
