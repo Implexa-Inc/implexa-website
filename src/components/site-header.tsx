@@ -26,6 +26,12 @@ export function SiteHeader() {
             Agents
           </Link>
           <Link
+            href="/built-with-ai"
+            className="px-3 py-1.5 text-zinc-400 hover:text-white transition-colors hidden sm:inline-block"
+          >
+            Why Implexa
+          </Link>
+          <Link
             href="/pricing"
             className="px-3 py-1.5 text-zinc-400 hover:text-white transition-colors"
           >
