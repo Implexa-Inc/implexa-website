@@ -162,6 +162,16 @@ You can find Claude Skills in three places: Anthropic's own bundled and document
 
 A quick note on quality: the comprehensive "100 skills I tried" lists are useful for discovery, but most listed skills cover only intent, inputs, procedure, and output. Before you rely on one, check whether it also encodes decision points and an outcome signal. Those two are what keep it from drifting.
 
+## The three kinds of Claude Skills
+
+There are three kinds of Claude Skills, split by who builds and maintains them: Anthropic skills, custom skills, and partner skills. They share one format and differ only in origin.
+
+- **Anthropic skills.** Built and maintained by Anthropic, including the document skills that let Claude produce Excel, Word, PowerPoint, and PDF files. Claude invokes these on its own when a task matches, and they need no setup on your end.
+- **Custom skills.** The ones you or your organization write for your own workflows, anything from a sales-call prep to an internal incident template. This is most of what this page is about.
+- **Partner skills.** Professionally built skills published by companies like Notion, Figma, Atlassian, and Canva, listed in Anthropic's Skills Directory at [claude.com](https://claude.com) and designed to pair with each partner's connector. A Canva skill can build an on-brand deck; an Atlassian skill can open a Jira ticket.
+
+For teams, the directory grew admin controls in 2025. An organization can publish its own skills and decide which ones everyone gets, so a company standard no longer lives in one person's local folder. If you want that same shareable, tracked layer without waiting on a directory listing, a [skill-graph host](/resources/what-is-a-skill-graph) gives any skill a link and an outcome record.
+
 ## Claude Skills examples
 
 The clearest way to understand skills is a few concrete ones, because the pattern is always the same: a repeatable task with a fixed output. A handful that map cleanly to the `SKILL.md` format:
@@ -175,9 +185,9 @@ Each one is something you would otherwise re-explain from scratch. Writing it on
 
 ## Do Claude Skills work outside Claude Code?
 
-Skills work most fully inside Claude Code, where the `SKILL.md` auto-loader lives, but the format is portable enough that several other coding agents can read it too. The auto-discovery behavior is the part that varies.
+Yes. Skills run natively across Claude.ai, Claude Code, and the Claude developer API, and the same `SKILL.md` works in all three without edits. That was not always the case. When the format shipped in late 2025 the auto-loader lived only in Claude Code, but in December 2025 Anthropic published Agent Skills as an open standard, and skills became first-class in the Claude apps and the API too.
 
-Inside Claude Code, skills load and trigger automatically. In Claude Desktop or through the Anthropic API, there is no auto-loader, so you paste the skill into a system prompt or wrap it in an agent. Several third-party coding agents now read the same `SKILL.md` format. The full cross-vendor walkthrough is in [use Claude Skills in Cursor, Codex, and Gemini](/blog/use-claude-skills-in-cursor-codex-gemini).
+The part that still varies is auto-discovery. Inside Claude Code and the Claude apps, an installed skill loads and triggers on its own when its description matches the request. Through the API you make a skill available to a request rather than relying on a background loader, which gives you tighter control over which skills are in play. And because the format is an open standard, several third-party coding agents read the same `SKILL.md` file. The full cross-vendor walkthrough is in [use Claude Skills in Cursor, Codex, and Gemini](/blog/use-claude-skills-in-cursor-codex-gemini).
 
 ## "Claude Skills" vs. "Claude Code Skills" vs. "Anthropic Skills" vs. "SKILL.md"
 
@@ -226,6 +236,14 @@ The `SKILL.md` format itself is plan-agnostic, since it is just a file. What var
 
 There is no hard cap. Because Claude only loads a skill's full body when its description matches, hundreds of installed skills add almost nothing to a given conversation. The real limit is description overlap, not count. Two skills with fuzzy, similar descriptions will compete and misfire long before you run out of room. The detail is in [how many Claude Skills is too many](/blog/how-many-claude-skills-is-too-many).
 
+### Where is the Claude Skills directory?
+
+Anthropic's Skills Directory lives at claude.com, alongside the connectors that the partner skills pair with. It lists partner-built skills from companies like Notion, Figma, Atlassian, and Canva, and an organization can publish its own skills there for its team.
+
+### Can I use Claude Skills through the API?
+
+Yes. Since Agent Skills became an open standard in December 2025, the same `SKILL.md` runs across Claude.ai, Claude Code, and the Claude developer API. Through the API you make a skill available to a request instead of leaning on Claude Code's background auto-loader.
+
 ### Can a skill call other skills?
 
 Yes. A skill's procedure can reference another skill by name. Best practice is to keep skills focused on one workflow and compose them rather than building one mega-skill.
@@ -240,7 +258,7 @@ Yes. Either commit the skill directory to a repo (project-level skills live in `
 
 ### Do skills work in Claude Desktop or only in Claude Code?
 
-The `SKILL.md` auto-loader is a Claude Code feature. Claude Desktop and the Anthropic API don't auto-discover skills the same way. You'd paste contents into a system prompt or wrap the skill in an agent.
+The `SKILL.md` auto-loader started as a Claude Code feature, but since Agent Skills became an open standard skills also run in the Claude apps and through the Anthropic API. Auto-discovery is fullest in Claude Code and the Claude apps; through the API you attach a skill to a request yourself.
 
 ### What's the relationship between Skills and MCP?
 
