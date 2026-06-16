@@ -23,7 +23,6 @@ import { SiteFooter } from "@/components/site-footer";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { CopyableInstall } from "@/components/copyable-install";
 import { absoluteUrl } from "@/lib/site";
 import {
   jsonLdGraph,
@@ -47,9 +46,6 @@ import {
 } from "@/lib/workflow-query";
 
 const DASHBOARD_URL = "https://app.implexa.ai";
-// Live, notarized universal macOS app (stable "latest" link).
-const MAC_DOWNLOAD_URL =
-  "https://github.com/Implexa-Inc/implexa-releases/releases/latest/download/Implexa-universal.dmg";
 
 type RouteParams = { slug: string };
 
@@ -766,22 +762,16 @@ export default async function WorkflowDetailPage(props: {
               Codex, and whatever comes next. About 5 minutes to your first real
               run.
             </p>
-            <div className="flex flex-col sm:flex-row sm:items-center gap-3 mb-4">
-              <a
-                href={`${DASHBOARD_URL}/signup?intent=${encodeURIComponent(`build the ${w.name} agent`)}`}
-                className="inline-flex items-center justify-center rounded-md bg-white text-black px-4 py-2 text-sm font-semibold hover:bg-zinc-200 transition-colors"
-              >
-                Run this agent in Implexa &rarr;
-              </a>
-              <a
-                href={MAC_DOWNLOAD_URL}
-                className="text-sm text-zinc-300 hover:text-white transition-colors"
-              >
-                Download the Mac app
-              </a>
-            </div>
-            <p className="text-xs text-zinc-500 mb-2">Prefer the terminal? Connect Claude Code or Codex:</p>
-            <CopyableInstall />
+            {/* ONE primary CTA. Everything else (download the app vs. connect a
+                terminal) is decided AFTER signup by the dashboard, which detects
+                whether the desktop app is installed — so the marketing page does
+                not fork the user with competing buttons. */}
+            <a
+              href={`${DASHBOARD_URL}/signup?intent=${encodeURIComponent(`build the ${w.name} agent`)}`}
+              className="inline-flex items-center justify-center rounded-md bg-white text-black px-5 py-2.5 text-sm font-semibold hover:bg-zinc-200 transition-colors"
+            >
+              Run this agent in Implexa &rarr;
+            </a>
           </CardContent>
         </Card>
 

@@ -16,7 +16,7 @@ export function SiteFooter() {
             href="/built-with-ai"
             className="hover:text-white transition-colors"
           >
-            What next
+            Built with AI?
           </Link>
           <Link href="/pricing" className="hover:text-white transition-colors">
             Pricing
