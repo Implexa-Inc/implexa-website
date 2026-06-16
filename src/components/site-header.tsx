@@ -29,7 +29,7 @@ export function SiteHeader() {
             href="/built-with-ai"
             className="px-3 py-1.5 text-zinc-400 hover:text-white transition-colors hidden sm:inline-block"
           >
-            What next
+            Why Implexa
           </Link>
           <Link
             href="/pricing"
@@ -48,14 +48,6 @@ export function SiteHeader() {
             className="px-3 py-1.5 text-zinc-400 hover:text-white transition-colors hidden sm:inline-block"
           >
             Install
-          </Link>
-          <Link
-            href="https://github.com/Implexa-Inc"
-            className="px-3 py-1.5 text-zinc-400 hover:text-white transition-colors hidden sm:inline-block"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            GitHub
           </Link>
           <Link
             href="https://app.implexa.ai/login"

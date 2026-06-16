@@ -16,7 +16,7 @@ export function SiteFooter() {
             href="/built-with-ai"
             className="hover:text-white transition-colors"
           >
-            What next
+            Why Implexa
           </Link>
           <Link href="/pricing" className="hover:text-white transition-colors">
             Pricing
