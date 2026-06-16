@@ -9,7 +9,6 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
-import { RunInClaudeButton } from "@/components/run-in-claude-button";
 import { SkillScorePanel } from "@/components/skill-score-panel";
 import { SkillEnrichmentPanel } from "@/components/skill-enrichment-panel";
 import { fetchSkillScore } from "@/lib/skill-score";
@@ -406,8 +405,10 @@ export default async function SkillDetailPage(props: {
           <SkillAgentBanner skillName={title} />
         </div>
 
+        {/* "run inline in claude" was removed: the page's job is to funnel into
+            building an AGENT from this skill (the banner above), not to teach the
+            old inline-run wedge. "view source" stays for the curious. */}
         <div className="flex flex-wrap items-start gap-4 mb-10">
-          <RunInClaudeButton slug={slug} source={source} />
           <Link
             href={sourceUrl}
             target="_blank"
