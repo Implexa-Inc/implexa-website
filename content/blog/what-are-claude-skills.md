@@ -1,7 +1,7 @@
 ---
-title: "What are Claude Skills? The 2026 builder's guide"
+title: "Claude Skills explained: the 2026 builder's guide"
 slug: "what-are-claude-skills"
-description: "Claude Skills are reusable instruction packs loaded on demand. What's inside a SKILL.md, skill vs prompt, where to find them, and how they differ from MCP."
+description: "Claude Skills are reusable instruction packs loaded on demand. What's in a SKILL.md, skills vs prompts and MCP, where to find them, and how to build one."
 publishedAt: "2026-05-18"
 tags: ["claude-skills", "SKILL.md", "anthropic", "explainer"]
 ---
