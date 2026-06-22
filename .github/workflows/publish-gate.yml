@@ -1,0 +1,44 @@
+name: publish-gate
+
+# Human-approval gate for AUTO-GENERATED content PRs.
+#
+# The SEO agent (seo-content-brief-drafter) runs as the founder's own GitHub
+# identity, so nothing at the git layer can perfectly tell "agent" from "human".
+# What this DOES do: an auto-generated PR cannot merge until a human adds the
+# `approved` label. Wired as a REQUIRED status check (enforced for admins) so a
+# plain `gh pr merge` is refused until the label is on — turning "the agent just
+# merges" into "the agent must take a deliberate, instruction-forbidden step."
+#
+# Manual PRs (any title that isn't "auto-generated"/"auto generated") pass freely,
+# so the founder's own edits aren't burdened. To approve an agent post: add the
+# `approved` label, the check re-runs and goes green, then merge.
+
+on:
+  pull_request:
+    types: [opened, reopened, synchronize, edited, labeled, unlabeled]
+
+permissions:
+  contents: read
+
+jobs:
+  publish-gate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require human 'approved' label on auto-generated PRs
+        env:
+          TITLE: ${{ github.event.pull_request.title }}
+          LABELS: ${{ join(github.event.pull_request.labels.*.name, ',') }}
+        run: |
+          set -euo pipefail
+          echo "PR title: $TITLE"
+          echo "Labels:   $LABELS"
+          if [[ ! "$TITLE" =~ [Aa]uto[-\ ]?[Gg]enerated ]]; then
+            echo "Not an auto-generated PR — gate not required. ✓"
+            exit 0
+          fi
+          if [[ ",$LABELS," == *",approved,"* ]]; then
+            echo "Human 'approved' label present — cleared to merge. ✓"
+            exit 0
+          fi
+          echo "::error::This auto-generated content PR is not human-approved. Review it, then add the 'approved' label to allow merge."
+          exit 1
