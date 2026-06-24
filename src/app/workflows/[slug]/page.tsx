@@ -21,6 +21,8 @@ import {
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { Badge } from "@/components/ui/badge";
+import { AgentGradeBadge } from "@/components/agent-grade-badge";
+import { fetchAgentGrade } from "@/lib/agent-grade";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { absoluteUrl } from "@/lib/site";
@@ -299,9 +301,10 @@ export default async function WorkflowDetailPage(props: {
   params: Promise<RouteParams>;
 }) {
   const { slug } = await props.params;
-  const [w, allWorkflows] = await Promise.all([
+  const [w, allWorkflows, grade] = await Promise.all([
     getWorkflow(slug),
     listWorkflows(),
+    fetchAgentGrade(slug),
   ]);
   if (!w) notFound();
 
@@ -503,6 +506,13 @@ export default async function WorkflowDetailPage(props: {
                 v{w.version}
               </span>
             ) : null}
+          </div>
+        ) : null}
+
+        {/* The proof-layer grade: graded on real runs, not a benchmark (0091). */}
+        {grade ? (
+          <div className="mb-8">
+            <AgentGradeBadge grade={grade} />
           </div>
         ) : null}
 
