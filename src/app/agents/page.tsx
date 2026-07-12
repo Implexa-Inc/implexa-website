@@ -35,7 +35,8 @@ export default function AgentsIndex() {
         Every agent here does a recurring job on a schedule — free, inside the
         Claude or Codex subscription you already pay for, on your real data, and
         without ever touching your accounts or credentials. Pick a category to
-        see the best agents for it, ranked by verified track record.
+        see the best agents for it, ranked by proof — real run history first,
+        never popularity.
       </p>
 
       <ul className="mt-10 space-y-4">

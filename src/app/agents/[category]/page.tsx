@@ -52,9 +52,11 @@ function hubFaq(category: string) {
   ];
 }
 
+// verified = run-proven (measured), reviewed = hand-vetted web-seed (no run
+// proof yet), seeded = auto-generated. Colour tracks proof strength.
 const TIER_STYLE: Record<string, string> = {
   verified: "border-emerald-800 text-emerald-400",
-  measured: "border-sky-800 text-sky-400",
+  reviewed: "border-amber-800 text-amber-400",
   seeded: "border-zinc-800 text-zinc-500",
 };
 
@@ -165,6 +167,23 @@ export default async function HubPage(props: {
             ? `${agents.length} ${hub.category} agent${agents.length === 1 ? "" : "s"}`
             : `${hub.category} agents`}
         </h2>
+        {agents.length > 0 ? (
+          // Honest badge legend — "verified" is reserved for real run proof,
+          // never hand-curation. Keeps the trust tiers legible on-page.
+          <p className="mb-4 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-zinc-500">
+            <span>
+              <span className="text-emerald-400">verified</span> = proven by
+              real runs
+            </span>
+            <span>
+              <span className="text-amber-400">reviewed</span> = hand-vetted by
+              us, not yet run-proven
+            </span>
+            <span>
+              <span className="text-zinc-400">seeded</span> = new, unproven
+            </span>
+          </p>
+        ) : null}
         {agents.length === 0 ? (
           <p className="rounded-lg border border-zinc-900 bg-zinc-950 p-6 text-sm text-zinc-400">
             No agents are seeded for {hub.category} yet — but you can build one
