@@ -9,8 +9,14 @@ export function SiteFooter() {
           plan you already pay for
         </div>
         <nav className="flex flex-wrap gap-x-6 gap-y-2 text-sm text-zinc-400">
+          <Link href="/agents" className="hover:text-white transition-colors">
+            Agents by category
+          </Link>
           <Link href="/workflows" className="hover:text-white transition-colors">
-            Agents
+            All agents
+          </Link>
+          <Link href="/compare" className="hover:text-white transition-colors">
+            Compare
           </Link>
           <Link
             href="/built-with-ai"

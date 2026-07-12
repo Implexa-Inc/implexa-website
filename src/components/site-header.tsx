@@ -20,7 +20,7 @@ export function SiteHeader() {
         </Link>
         <nav className="flex items-center gap-1 text-sm">
           <Link
-            href="/workflows"
+            href="/agents"
             className="px-3 py-1.5 text-zinc-400 hover:text-white transition-colors"
           >
             Agents
