@@ -517,6 +517,27 @@ export function qaPageSchema(input: QAPageInput): JsonLdNode | null {
  * dangerouslySetInnerHTML wants. Newlines/indent are dropped — minified is
  * what crawlers see anyway.
  */
+// ── ItemList for category-hub pages ("Best AI agents for X") ───────────────
+// A ranked list of the agents on a hub page. Answer engines lift ItemList to
+// render "best X" carousels; positions carry our trust-tier ranking (never
+// popularity). Composed with breadcrumb + FAQ via jsonLdGraph().
+export function itemListSchema(
+  name: string,
+  items: Array<{ name: string; url: string }>,
+): JsonLdNode | null {
+  if (!items.length) return null;
+  return {
+    "@type": "ItemList",
+    name,
+    itemListElement: items.map((it, i) => ({
+      "@type": "ListItem",
+      position: i + 1,
+      name: it.name,
+      url: it.url,
+    })),
+  };
+}
+
 export function jsonLdGraph(...nodes: Array<JsonLdNode | null | undefined>): string {
   const present = nodes.filter((n): n is JsonLdNode => n != null);
   return JSON.stringify({

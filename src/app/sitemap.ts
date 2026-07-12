@@ -5,6 +5,7 @@ import { listResources } from "@/lib/resources";
 import { listBlogPosts } from "@/lib/blog";
 import { listAllSkillsForSitemap } from "@/lib/skill-catalog";
 import { listWorkflows } from "@/lib/workflow-catalog";
+import { HUBS } from "@/lib/hub-catalog";
 import { submitToIndexNow } from "@/lib/indexnow";
 
 // Dynamic sitemap for the SEO surface. Lists:
@@ -149,6 +150,25 @@ async function workflowPages(): Promise<MetadataRoute.Sitemap> {
   }));
 }
 
+// Category hubs ("Best AI agents for X") — the pSEO/AEO landing surface that
+// routes into workflow pages. Static set from HUBS + the /agents index.
+function hubPages(now: Date): MetadataRoute.Sitemap {
+  return [
+    {
+      url: absoluteUrl("/agents"),
+      lastModified: now,
+      changeFrequency: "weekly",
+      priority: 0.8,
+    },
+    ...HUBS.map<SitemapEntry>((h) => ({
+      url: absoluteUrl(`/agents/${h.slug}`),
+      lastModified: now,
+      changeFrequency: "weekly",
+      priority: 0.8,
+    })),
+  ];
+}
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const now = new Date();
   // Parallel: independent IO, makes a real difference when the skill catalog
@@ -161,6 +181,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   ]);
   const entries = [
     ...staticPages(now),
+    ...hubPages(now),
     ...resources,
     ...blog,
     ...skills,
