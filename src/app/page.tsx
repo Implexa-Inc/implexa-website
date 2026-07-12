@@ -214,7 +214,7 @@ export default async function HomePage() {
               none repeat the headline's claims (free lives up there only). */}
           <ul className="mt-6 space-y-1.5 max-w-md mx-auto text-left">
             {[
-              "Works with the Claude or Codex subscription you already have",
+              "Runs on the Claude or Codex plan you already pay for, no second bill from us",
               "No new tools, no API integrations to wire up",
               "You describe the job. Implexa builds and runs the agent for you.",
             ].map((t) => (

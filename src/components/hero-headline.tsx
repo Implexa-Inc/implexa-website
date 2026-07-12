@@ -5,8 +5,16 @@ import { track } from "@vercel/analytics";
 
 // A/B-ready hero headline. Ships BOTH locked candidates as a pair:
 //
-//   variant "a" (primary): "Building with AI got easy. Running your business
-//                           with it didn't." (the post-Replit/Lovable insight)
+//   variant "a" (primary, LOCKED 2026-06-13): "Build and run powerful agents.
+//                           Inside Claude or Codex. Unlimited agents. Free
+//                           forever." Do NOT swap this for the "Building with AI
+//                           got easy..." inversion: the founder considered and
+//                           explicitly rejected it (see hero-copy-locked memory
+//                           + boardroom/WEBSITE_POSITIONING.md). The "free
+//                           forever" claim is scoped one layer down in the hero
+//                           objection-rail ("runs on the plan you already pay
+//                           for, no second bill from us"), founder decision
+//                           2026-06-23.
 //   variant "b":           "Run your whole business with a team of agents.
 //                           Yours is a team of one." (the leverage angle)
 //
