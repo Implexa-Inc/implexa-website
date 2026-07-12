@@ -6,6 +6,7 @@ import { listBlogPosts } from "@/lib/blog";
 import { listAllSkillsForSitemap } from "@/lib/skill-catalog";
 import { listWorkflows } from "@/lib/workflow-catalog";
 import { HUBS } from "@/lib/hub-catalog";
+import { COMPARISONS } from "@/lib/comparisons";
 import { submitToIndexNow } from "@/lib/indexnow";
 
 // Dynamic sitemap for the SEO surface. Lists:
@@ -169,6 +170,27 @@ function hubPages(now: Date): MetadataRoute.Sitemap {
   ];
 }
 
+// Judo / comparison pages ("<incumbent> alternative", "run <registry> skills
+// safely", the anchor comparison article) — the incumbent-capture AEO surface
+// that routes into the category hubs. Static set from COMPARISONS + the
+// /compare index. Same shape as hubPages().
+function comparePages(now: Date): MetadataRoute.Sitemap {
+  return [
+    {
+      url: absoluteUrl("/compare"),
+      lastModified: now,
+      changeFrequency: "weekly",
+      priority: 0.8,
+    },
+    ...COMPARISONS.map<SitemapEntry>((c) => ({
+      url: absoluteUrl(`/compare/${c.slug}`),
+      lastModified: now,
+      changeFrequency: "weekly",
+      priority: 0.8,
+    })),
+  ];
+}
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const now = new Date();
   // Parallel: independent IO, makes a real difference when the skill catalog
@@ -182,6 +204,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const entries = [
     ...staticPages(now),
     ...hubPages(now),
+    ...comparePages(now),
     ...resources,
     ...blog,
     ...skills,
