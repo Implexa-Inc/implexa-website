@@ -168,7 +168,20 @@ async function main() {
   // "one sentence repeated ~60x" incident through (it cleared 400 words), so
   // three cheap diversity checks back it up. Thresholds sit well below what
   // real prose hits, so legit posts pass and degenerate drafts do not.
-  const contentLines = body
+  //
+  // The diversity checks measure PROSE, so fenced code is excluded first: every
+  // block contributes a closing ``` line, and commands legitimately recur, so a
+  // code-heavy tutorial trips the repeated-line check on structure alone rather
+  // than on anything degenerate. The word floor above still counts the whole body.
+  const prose = body.replace(/```[\s\S]*?```/g, "");
+  // Excluding code from those checks must not become a way to void them, so the
+  // prose left over has to clear the floor on its own: a code dump is not an
+  // article. The thinnest live post carries ~1,000 words of prose.
+  const proseWords = prose.split(/\s+/).filter(Boolean).length;
+  if (proseWords < MIN_WORDS) {
+    fail(`body has ${proseWords} words of prose outside fenced code, under the ${MIN_WORDS}-word floor (a code dump is not an article).`);
+  }
+  const contentLines = prose
     .split("\n")
     .map((l) => l.trim())
     .filter((l) => l.length > 0 && !l.startsWith("#") && l !== "---");
@@ -178,7 +191,7 @@ async function main() {
   if (maxLineRepeat > 3) {
     fail(`a single line repeats ${maxLineRepeat} times (max 3). reads as degenerate/repetitive content.`);
   }
-  const sentences = body
+  const sentences = prose
     .replace(/\s+/g, " ")
     .split(/(?<=[.!?])\s+/)
     .map((s) => s.trim().toLowerCase())
@@ -189,7 +202,7 @@ async function main() {
       fail(`only ${Math.round(uniqueRatio * 100)}% of sentences are unique (min 50%). reads as repetitive content.`);
     }
   }
-  const tokens = body.toLowerCase().match(/[a-z0-9']+/g) || [];
+  const tokens = prose.toLowerCase().match(/[a-z0-9']+/g) || [];
   if (tokens.length >= 200) {
     const ttr = new Set(tokens).size / tokens.length;
     if (ttr < 0.18) {
