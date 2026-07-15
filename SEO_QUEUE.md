@@ -53,6 +53,32 @@ is, by construction, inert.
 - **Follow-up (separate repo, NOT this queue):** the `app.implexa.ai` signup page
   should read `?intent_id=` and use it as the dedup key on the build run-request.
 
+### 3. IN-REVIEW — Blog is invisible to Google: sitemap never re-read + orphaned (W3)
+- **Status:** `IN-REVIEW` — PR https://github.com/Implexa-Inc/implexa-website/pull/67
+  opened 2026-07-15 by the weekly SEO cron. Code change, so it does NOT
+  auto-merge. Needs a human.
+- **What:** The blog has 30 posts and 0 impressions / 0 clicks over 28 days.
+  Two confirmed causes, one fix each:
+  1. The root sitemap is one 3.3MB / ~20,212-entry file (~99% auto-generated
+     `/s/` catalog pages). GSC: submitted May 20, **last read Jun 2**, still
+     not re-read as of Jul 15. 26 of 30 posts were published inside that
+     43-day gap. URL inspection on `/blog/claude-code-hooks` returns "URL is
+     unknown to Google" / "No referring sitemaps detected" — never crawled.
+     → Added `src/app/blog/sitemap.ts` (`/blog/sitemap.xml`, 30 URLs, ~5KB,
+     revalidate 3600) + advertised it in `robots.txt`. Root sitemap left
+     untouched so the ~20k already-discovered catalog URLs don't regress.
+  2. The blog was orphaned: only `/resources` and `/claude-skills` linked to
+     it, so the homepage had no crawl path to any post ("Referring page: None
+     detected"). → Added "Blog" to the site footer (renders on every page).
+- **Acceptance:** `curl -s https://implexa.ai/blog/sitemap.xml | grep -c "<loc>"`
+  == 30, and `curl -s https://implexa.ai/ | grep -c 'href="/blog"'` >= 1.
+- **Source:** weekly SEO cron 2026-07-15, GSC performance + index + URL
+  inspection. Supersedes "write another article" for this surface.
+- **Human follow-up AFTER merge (the cron cannot do this):** submit the new
+  sitemap in Search Console → Sitemaps → Add a new sitemap → `blog/sitemap.xml`.
+  Then re-check `/blog/` impressions in 1-2 weeks. Until this is submitted and
+  read, publishing more articles has no measurable effect.
+
 ---
 
 <!--
