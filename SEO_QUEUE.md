@@ -53,6 +53,29 @@ is, by construction, inert.
 - **Follow-up (separate repo, NOT this queue):** the `app.implexa.ai` signup page
   should read `?intent_id=` and use it as the dedup key on the build run-request.
 
+### 3. IN-REVIEW — make the blog discoverable (dedicated sitemap + footer link)
+- **Status:** `IN-REVIEW` — PR open and green since 2026-07-15, awaiting a human merge.
+  https://github.com/Implexa-Inc/implexa-website/pull/67
+- **What:** adds `src/app/blog/sitemap.ts` (a ~5KB, 30-URL `/blog/sitemap.xml` with
+  `revalidate = 3600`, advertised in `robots.txt`) and puts a "Blog" link in the
+  site-wide footer so the homepage gives the posts a crawl path. The 3.5MB root
+  sitemap is deliberately left untouched.
+- **Why it is the top row:** re-verified live in Search Console on 2026-07-18.
+  The root sitemap was last read by Google on **Jun 2, 2026**, 46 days ago, and
+  `/blog/sitemap.xml` still returns 404 in production. The 31 blog URLs do sit in
+  the root sitemap, so they are not missing, just never re-read. Over the trailing
+  28 days the `Page: /blog/` filter returns **0 rows**: no impressions, no clicks,
+  no position, across all 31 posts. Every one of the site's 4.07K impressions lands
+  on auto-generated `/s/clawhub/*` catalog pages at 0.1% CTR.
+- **Acceptance:** after merge, `curl -so /dev/null -w '%{http_code}' https://implexa.ai/blog/sitemap.xml`
+  returns `200` (it returns `404` today).
+- **Blocked on a human, two steps:** (1) merge PR #67; (2) in Search Console go to
+  Sitemaps and submit `blog/sitemap.xml`, which triggers the first read instead of
+  waiting on the crawler. The cron deliberately does not submit sitemaps itself.
+- **Source:** `implexa-weekly-seo-aeo` run 2026-07-18, Step 1 GSC pull.
+- **Note:** this is a CODE row, so it never auto-merges. Until it lands, publishing
+  another article mostly adds to the pile Google cannot see.
+
 ---
 
 <!--
