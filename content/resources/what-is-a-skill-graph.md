@@ -29,7 +29,7 @@ The [Graph of Skills research](https://arxiv.org/pdf/2604.05333) shows the pract
 
 **A skill library is a flat list of skills; a skill graph is a navigable structure where one skill can lead the agent (or human) to the next.** This distinction matters once you scale.
 
-A library works fine when you have 5 to 10 skills. You search by name, you remember what each does. Past 10 to 20, search-by-name breaks. Skill names start to overlap in domain, and users (including the people who authored the skills) can't remember which one to invoke. Even small teams hit this limit fast.
+A library works fine when you have 5 to 10 skills. You search by name, you remember what each does. Past 10 to 20, search-by-name breaks. Skill names start to overlap in domain, and users (including the people who authored the skills) can't remember which one to invoke. Even small teams hit this limit fast. There is a whole write-up on that failure mode in [how many Claude skills is too many](/blog/how-many-claude-skills-is-too-many).
 
 A skill graph solves this by adding three primitives:
 
@@ -49,13 +49,30 @@ A skill graph's nodes are capabilities, not work items. Where a work graph recor
 
 The two connect through attribution. When a skill run produces a tracked outcome that lands on a work-graph node (a task closed, a deal won, a ticket resolved), an attribution edge links the capability to the result, and two separate diagrams become one measurement system. The skill graph learns which capabilities move real work, and the work graph gains a record of how each outcome was produced.
 
+## what is a work graph, exactly?
+
+**A work graph is a connected map of the work itself: the tasks, projects, goals, and the people, files, and conversations attached to them, along with the relationships among all of those.** The term was popularized by Asana, whose Work Graph is a registered trademark, as a way to describe a data model where any piece of work can hold a one-to-many relationship to any other. A task rolls up to a project, a project ladders to a goal, a goal has an owner, and the same task can appear in two portfolios without being copied.
+
+The point of a work graph is clarity at scale. When work lives in disconnected lists, a status update means asking five people. When it lives in a graph, the status is queryable: what does this launch depend on, who owns the blocked piece, and which goal slips if it stays blocked. That is a different question from the one a skill graph answers, which is closer to "what is the reusable way we produce launch announcements, and does it still work."
+
+Here is how a skill graph sits next to the neighboring structures it gets confused with:
+
+| structure | nodes | edges | question it answers | example |
+| --- | --- | --- | --- | --- |
+| skill graph | reusable capabilities (a SKILL.md) | composition, dependency, lineage, attribution | what can be done, and what composes with what | agentskills.io, implexa |
+| work graph | work items: tasks, projects, goals | assignment, dependency, hierarchy, rollup | what is being done, by whom, and its status | Asana Work Graph |
+| knowledge graph | facts and entities | semantic relations | what is true about these entities | Google Knowledge Graph |
+| skill library | skills, unlinked | none | which skills exist (a flat list) | a plain skills folder |
+
+Read down the "edges" column and the difference lands: a skill graph is defined by composition and attribution, a work graph by assignment and rollup. Same graph data structure, different job.
+
 ## why skill graphs matter for AI agents
 
 **AI agents that operate on a skill graph can chain workflows automatically, learn from past compositions, and attribute outcomes back to the specific skills that produced them.** That is what separates a useful agent from a novelty demo.
 
 When a skill collection grows past a few dozen entries, an agent with no structure falls back to scanning markdown files, doing rough keyword matching, or re-planning from scratch on every task. A skill graph replaces that with semantic routing over a structured index: the agent narrows to the relevant region of the graph, follows composition and co-occurrence edges to assemble a chain, and updates its routing as outcomes come back. The library stops being a flat pile and becomes something the agent can reason over.
 
-The [Agent Skills open standard](https://agentskills.io/home) released by Anthropic in late 2025 made SKILL.md the universal file format for AI agent capabilities. The format itself solved authoring and portability. The same SKILL.md runs in Claude Code, Cursor, Gemini CLI, Hermes, and 30+ other agents.
+The [Agent Skills open standard](https://agentskills.io/home) released by Anthropic in late 2025 made SKILL.md the universal file format for AI agent capabilities. The format itself solved authoring and portability. The same SKILL.md runs in Claude Code, Cursor, Gemini CLI, Hermes, and 30+ other agents. If you have not written one yet, [how to create a Claude skill](/blog/how-to-create-a-claude-skill) walks through the file from scratch, and [what are Claude skills](/blog/what-are-claude-skills) covers the format at a higher level.
 
 But the standard intentionally stops at the file format. It does not define how a skill graph emerges across teams. That layer (who authored what, who forked what, which chains produced which outcomes) is where the next generation of skill platforms competes. Anthropic's own [agent-skills engineering post](https://www.anthropic.com/engineering/equipping-agents-for-the-real-world-with-agent-skills) acknowledges it. Skills are the format, but the surrounding infrastructure (discovery, attribution, governance) is where teams need help.
 
@@ -77,7 +94,7 @@ The structural similarity to AI agent skill graphs is not accidental. Both field
 
 Right now, AI-agent skill graphs and workforce skill graphs live in separate stacks. A sales team runs AI agents that author proposals, and HR tracks which employees can author proposals, but no system records that Ashish ran the proposal-draft agent 47 times last quarter and closed 8 deals from it. The agent's skill graph and the employee's skill graph are disconnected.
 
-Outcome attribution closes that loop. When a skill run produces a tracked outcome (a deal closed, a PR merged, a hire made), the attribution edge connects three nodes: the skill, the human runner, and the outcome. The graph becomes a measurement system, not just a directory.
+Outcome attribution closes that loop. When a skill run produces a tracked outcome (a deal closed, a PR merged, a hire made), the attribution edge connects three nodes: the skill, the human runner, and the outcome. The graph becomes a measurement system, not just a directory. Grading those outcomes rather than guessing at them is the idea behind [SkillRank](/resources/skill-rank), which ranks skills on real run results instead of star ratings.
 
 This is the substrate that turns skills from a productivity feature into a real-time competency map. It works for AI agents, it works for human teams, and the same data structure handles both.
 
@@ -93,7 +110,7 @@ The practical sequence:
 4. **attribute outcomes** so when a skill run produces a tracked result, log the edge
 5. **query the graph** to find central skills, identify duplicates, surface forgotten capabilities
 
-Anthropic's [skill-creator](https://github.com/anthropics/skills) is a good starting point for authoring the first node. Cross-vendor platforms add the team layer (sharing, forking, attribution) so the graph spans more than one user's local folder.
+Anthropic's [skill-creator](https://github.com/anthropics/skills) is a good starting point for authoring the first node. Cross-vendor platforms add the team layer (sharing, forking, attribution) so the graph spans more than one user's local folder. For the discovery half of that, a [cross-vendor recommender](/resources/ambient-cross-vendor-recommender) surfaces the next skill to run before you go looking for it.
 
 ## FAQ
 
@@ -104,6 +121,18 @@ An agent skill is a single workflow (one SKILL.md file). A skill graph is the st
 ### what is a work graph, and how is it different from a skill graph?
 
 A work graph maps the work itself: tasks, projects, goals, and the people assigned to them. A skill graph maps the reusable capabilities that get work done. The work graph tracks the state of a project; the skill graph tracks the machinery that produces it. Connect them with attribution edges and you can see which capability produced which result.
+
+### what is an AI skill graph?
+
+An AI skill graph is a skill graph whose nodes are agent workflows (SKILL.md files) rather than human capabilities. It lets an agent route to the right workflow, chain workflows together, and learn from which chains produced good outcomes, instead of scanning a flat folder of markdown on every task.
+
+### is a talent graph or expertise graph the same as a skill graph?
+
+Close, in HR tech. Talent graph, expertise graph, and workforce graph are near-synonyms for a skill graph applied to people: capabilities as nodes, relationships as edges. The AI-agent version keeps the structure but swaps employee skills for agent workflows.
+
+### what does "graph of skills" mean?
+
+"Graph of skills" is another way to say skill graph, and it is also the name of 2026 agent research showing that routing over a dependency-aware graph beats loading every skill at once. Same core idea: skills as nodes, relationships as edges.
 
 ### is a skill graph the same as a knowledge graph?
 
@@ -126,5 +155,7 @@ Claude Code, Cursor, Gemini CLI, Hermes, and 30+ others support the agentskills.
 In HR tech, nodes are employee capabilities. In AI, nodes are agent workflows. The graph topology and use cases (gap analysis, composition, recommendation) are nearly identical.
 
 ---
+
+*related reading: [what are Claude skills](/blog/what-are-claude-skills), [how to create a Claude skill](/blog/how-to-create-a-claude-skill), [where to find Claude skills](/blog/where-to-find-claude-skills), [SkillRank](/resources/skill-rank), and [the two consolidation problems](/resources/two-consolidation-problems).*
 
 *if you want to capture your own workflows as skill graph nodes, [implexa](/) records one demonstration and emits a portable SKILL.md, which runs in Claude Code, Cursor, and 30+ other agents.*
