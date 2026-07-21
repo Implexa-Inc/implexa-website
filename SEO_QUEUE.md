@@ -54,9 +54,13 @@ is, by construction, inert.
   should read `?intent_id=` and use it as the dedup key on the build run-request.
 
 ### 3. IN-REVIEW — make the blog discoverable (dedicated sitemap + footer link)
-- **Status:** `IN-REVIEW` — PR open, green, and **MERGEABLE** since 2026-07-15.
-  Five days waiting on a human merge as of 2026-07-20.
+- **Status:** `IN-REVIEW` — PR open since 2026-07-15. **Six days waiting on a human
+  merge as of 2026-07-21.** `/blog/sitemap.xml` still returns 404 in production.
   https://github.com/Implexa-Inc/implexa-website/pull/67
+- **2026-07-21 re-verify:** blog filter is *still* 0 clicks / 0 impressions / position 0
+  over the trailing 28 days. Third consecutive week dark. But see row 4 — this run found
+  that the unread sitemap is a **symptom**, not the root cause, and merging #67 alone
+  will probably not switch the blog back on.
 - **What:** adds `src/app/blog/sitemap.ts` (a ~5KB, 30-URL `/blog/sitemap.xml` with
   `revalidate = 3600`, advertised in `robots.txt`) and puts a "Blog" link in the
   site-wide footer so the homepage gives the posts a crawl path. The 3.4MB root
@@ -90,6 +94,60 @@ is, by construction, inert.
   would enter the same 20,216-URL file that has not been read since Jun 2. Content
   work on this site is gated behind this merge, and the queue will keep declining to
   ship articles until it lands.
+
+### 4. HELD — `/s/*` catalog pages are being rejected at scale (needs a founder call)
+
+- **Status:** `HELD` — **not paused, awaiting a founder decision.** The fix is a code
+  change that reverses an apparent product bet (the bulk catalog seed), so the cron
+  deliberately did not write it unilaterally. Pick option (a) or (b) below and flip
+  this row to `READY`; the next run will then open the PR for human review.
+- **What the 2026-07-21 GSC pull found.** Page indexing report, sc-domain:implexa.ai:
+  - **Indexed: 2,830. Not indexed: 8,300.** Of those, **8,198 are
+    "Crawled - currently not indexed"** — Google fetched the page and decided it was
+    not worth indexing. That is the classic thin/duplicate-content verdict.
+  - **Every example URL in that bucket is `/s/clawhub/*`.** Sampled: ai-prompt-optimization-expert,
+    outlook, zoho-support-claw, seo-blog-planner, how-to-use-agent, fl-dental-assistant,
+    video-cli. All last crawled **Jul 11, 2026**.
+  - First detected **May 25, 2026**; the bucket ramped from ~0 to 8.2K through early June
+    and is still climbing. The blog went dark from roughly **Jun 10**. The two curves line up.
+  - Meanwhile the root sitemap has not been read since **Jun 2 (49 days)**. So Google is
+    actively crawling the mirror pages every week while ignoring the sitemap that
+    carries the editorial content.
+- **Why this outranks row 3 as the real problem.** The catalog pages are served
+  `<meta name="robots" content="index, follow">` with a **self-referencing canonical**,
+  while their `<meta name="description">` is the **upstream skill description copied
+  verbatim** — including raw non-English text. Example, `/s/clawhub/meego-skill`:
+  title `meego-skill: Claude skill | implexa`, description is the full Chinese Feishu/Meego
+  blurb. The site is telling Google that 20,000 mirrored pages are original, index-worthy
+  documents. Google has crawled ~11K of them and rejected 8,198.
+  That is a **site-level quality signal**, and the 32 genuine articles inherit it. Merging
+  PR #67 gives the blog a crawl path but does not fix the reason the crawler stopped valuing
+  the domain.
+- **Corroborating performance data (28d):** 3 clicks / 3.09K impressions / 0.1% CTR /
+  position 6.5, and effectively **all of it is `/s/clawhub/*`**. The traffic that does land
+  is junk-intent: top queries are raw API strings like `"/openapi/v2/media/upload/binary" runninghub`
+  (17 impressions) and `"query_transfer_history" moviepilot`, i.e. developers hunting the
+  upstream repo, not buyers. `/s/clawhub/meego-skill` holds **position 3.0 on 139 impressions
+  with 0 clicks** — ranking well for searches where a mirror is not what the searcher wanted.
+  The brand query `implexa` drew **1 impression at position 82** in the same window.
+- **The founder call — two options, real tradeoff:**
+  - **(a) `noindex, follow` the `/s/*` pages.** Formalizes what Google already decided for
+    8,198 of them, drops the thin-page mass off the domain, keeps the pages live for users
+    and keeps link flow. **Cost:** gives up the 2,830 currently indexed and the 3 clicks/28d.
+  - **(b) Point the canonical at the upstream source.** Keeps the pages crawlable and honest
+    about where the original lives. **Cost:** cedes the ranking to the source; slower to take
+    effect than (a).
+  - A hybrid is possible (index only catalog entries carrying original implexa content such
+    as a real SkillRank score or run data; noindex the pure mirrors), but that needs a rule
+    for "original enough" that only the founder can set.
+- **Acceptance (once a direction is chosen):** for option (a),
+  `curl -s https://implexa.ai/s/clawhub/meego-skill | grep -c 'noindex'` returns ≥ 1, and the
+  "Crawled - currently not indexed" bucket trends down from 8,198 over the following weeks.
+- **Source:** `implexa-weekly-seo-aeo` run 2026-07-21, Step 1 GSC pull (Performance +
+  Page indexing reports, live via Chrome).
+- **Note:** this is a CODE row, so it never auto-merges. The cron also declined to publish an
+  article this run — the **third** week running. Shipping post #33 into a domain where Google
+  is rejecting 8,198 pages as not-worth-indexing would not get read either.
 
 ---
 
