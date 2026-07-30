@@ -26,6 +26,7 @@ import { fetchAgentGrade } from "@/lib/agent-grade";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { absoluteUrl } from "@/lib/site";
+import { isWorkflowIndexable } from "@/lib/workflow-indexability";
 import {
   jsonLdGraph,
   breadcrumbSchema,
@@ -186,10 +187,20 @@ export async function generateMetadata(props: {
   const title = isQuery ? `${query}: the agent that answers it` : w.name;
   // query is sentence case (resolveQuery); the suffix stays lowercase after the
   // colon, which is valid sentence case for a continuation clause.
+  //
+  // Day 2 item 5 (2026-07-30): noindex unless the PERSISTED publication_state
+  // says otherwise -- isWorkflowIndexable, same predicate the sitemap's
+  // workflowPages() filters on. Before this, all workflow pages were
+  // implicitly indexable (no robots field was ever set here). `follow` is
+  // deliberate, same reasoning as the skills-surface fix (#72): the page
+  // stays live, usable, and internally linked; this withdraws an index
+  // claim, not the page itself.
+  const indexable = isWorkflowIndexable(w.publication_state);
   return {
     title,
     description: desc,
     alternates: { canonical: `/workflows/${slug}` },
+    ...(indexable ? {} : { robots: { index: false, follow: true } }),
     // og:image / twitter:image are injected automatically from the colocated
     // opengraph-image.tsx (the dynamic card generator), no images field here.
     openGraph: {

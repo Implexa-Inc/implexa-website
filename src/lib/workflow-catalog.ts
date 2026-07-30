@@ -31,6 +31,12 @@ export type WorkflowCard = {
   curated: boolean; // proven, hand-curated workflow (source = web-seed)
   unproven: boolean; // auto-generated, no real runs yet
   last_seen_at: string | null;
+  // PERSISTED search-eligibility decision (backend#0141, 2026-07-30). null
+  // when the backend predates the migration or the row has not been
+  // reviewed. Callers deciding index/sitemap membership import
+  // isWorkflowIndexable() from lib/workflow-indexability rather than reading
+  // this field's raw value -- see that file's header for why.
+  publication_state?: string | null;
   // ── BACKEND INTEGRATION SLOT (query-addressable pages) ──────────────────
   // The high-intent query this agent answers ("how do i grow my instagram").
   // The parallel backend stream will return this per agent; until it lands it
@@ -142,6 +148,7 @@ export type WorkflowDetail = {
   updated_at: string | null;
   generated: boolean;
   unproven: boolean;
+  publication_state: string | null;
   activity: WorkflowActivity;
   version: number | null; // current (newest applied) version number
   versions: WorkflowVersionEntry[]; // applied changelog, newest first
@@ -227,6 +234,7 @@ export async function listWorkflows(): Promise<WorkflowCard[]> {
     curated: w.curated === true,
     unproven: w.unproven === true,
     last_seen_at: w.last_seen_at ?? null,
+    publication_state: typeof w.publication_state === "string" ? w.publication_state : null,
     // backend slot; null until the query read path lands (see workflow-query.ts)
     query: typeof w.query === "string" && w.query ? w.query : null,
   }));
@@ -261,6 +269,7 @@ async function _getWorkflow(
     updated_at?: string | null;
     generated?: boolean;
     unproven?: boolean;
+    publication_state?: string | null;
     activity?: {
       run_count?: number;
       apply_count?: number;
@@ -349,6 +358,7 @@ async function _getWorkflow(
     updated_at: raw.updated_at ?? null,
     generated: raw.generated === true,
     unproven: raw.unproven === true,
+    publication_state: typeof raw.publication_state === "string" ? raw.publication_state : null,
     activity: {
       run_count: num(raw.activity?.run_count),
       apply_count: num(raw.activity?.apply_count),

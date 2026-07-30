@@ -5,6 +5,7 @@ import { listResources } from "@/lib/resources";
 import { listBlogPosts } from "@/lib/blog";
 import { listAllSkillsForSitemap } from "@/lib/skill-catalog";
 import { listWorkflows } from "@/lib/workflow-catalog";
+import { isWorkflowIndexable } from "@/lib/workflow-indexability";
 import { HUBS } from "@/lib/hub-catalog";
 import { COMPARISONS } from "@/lib/comparisons";
 import { submitToIndexNow } from "@/lib/indexnow";
@@ -154,12 +155,20 @@ async function skillPages(): Promise<MetadataRoute.Sitemap> {
 
 async function workflowPages(): Promise<MetadataRoute.Sitemap> {
   const entries = await listWorkflows();
-  return entries.map<SitemapEntry>((w) => ({
-    url: absoluteUrl(`/workflows/${w.slug}`),
-    lastModified: w.last_seen_at ? new Date(w.last_seen_at) : undefined,
-    changeFrequency: "weekly",
-    priority: 0.7,
-  }));
+  // Day 2 item 5 (2026-07-30): membership follows the PERSISTED
+  // publication_state, via the same predicate the detail page's noindex
+  // decision uses (isWorkflowIndexable) -- see that file's header for why a
+  // second, independently-computed rule here would be exactly the
+  // sitemap/metadata disagreement the plan forbids. Before this, all ~172
+  // workflows entered the sitemap unconditionally regardless of proof state.
+  return entries
+    .filter((w) => isWorkflowIndexable(w.publication_state))
+    .map<SitemapEntry>((w) => ({
+      url: absoluteUrl(`/workflows/${w.slug}`),
+      lastModified: w.last_seen_at ? new Date(w.last_seen_at) : undefined,
+      changeFrequency: "weekly",
+      priority: 0.7,
+    }));
 }
 
 // Category hubs ("Best AI agents for X") — the pSEO/AEO landing surface that
