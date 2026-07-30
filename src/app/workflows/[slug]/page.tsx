@@ -26,6 +26,7 @@ import { fetchAgentGrade } from "@/lib/agent-grade";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { absoluteUrl } from "@/lib/site";
+import { buildWorkflowMetadata } from "@/lib/workflow-metadata";
 import {
   jsonLdGraph,
   breadcrumbSchema,
@@ -169,41 +170,11 @@ export async function generateMetadata(props: {
 }): Promise<Metadata> {
   const { slug } = await props.params;
   const w = await getWorkflow(slug);
-  if (!w) {
-    return {
-      title: "Agent not found",
-      description: "This agent is not in the catalog.",
-      alternates: { canonical: `/workflows/${slug}` },
-    };
-  }
-  // The page IS the query: lead the title tag with the high-intent thought, so
-  // it matches the searcher's phrasing in the SERP and in answer-engine cites.
-  const query = resolveQuery(w);
-  const isQuery = hasResolvedQuery(w);
-  const desc =
-    (w.primary_outcome || w.job || w.description || "").slice(0, 200) ||
-    "A whole-job AI agent you build once and run on a schedule inside your own Claude or Codex.";
-  const title = isQuery ? `${query}: the agent that answers it` : w.name;
-  // query is sentence case (resolveQuery); the suffix stays lowercase after the
-  // colon, which is valid sentence case for a continuation clause.
-  return {
-    title,
-    description: desc,
-    alternates: { canonical: `/workflows/${slug}` },
-    // og:image / twitter:image are injected automatically from the colocated
-    // opengraph-image.tsx (the dynamic card generator), no images field here.
-    openGraph: {
-      type: "article",
-      url: absoluteUrl(`/workflows/${slug}`),
-      title: isQuery ? query : `${w.name} | implexa agent`,
-      description: desc,
-    },
-    twitter: {
-      card: "summary_large_image",
-      title: isQuery ? query : w.name,
-      description: desc,
-    },
-  };
+  // buildWorkflowMetadata (lib/workflow-metadata.ts) owns the actual title/
+  // description/robots construction, including the Day 2 item 5 noindex
+  // decision -- extracted so it's directly unit-testable outside this .tsx
+  // route file. See that file's header for why.
+  return buildWorkflowMetadata(w, slug);
 }
 
 function StepRow({

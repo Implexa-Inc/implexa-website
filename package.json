@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test": "node --experimental-strip-types --test src/lib/skill-indexability.test.ts src/lib/skill-catalog.test.ts"
+    "test": "node --experimental-strip-types --test src/lib/skill-indexability.test.ts src/lib/skill-catalog.test.ts src/lib/workflow-indexability.test.ts src/lib/workflow-catalog.test.ts src/lib/workflow-sitemap.test.ts src/lib/workflow-metadata.test.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.5.0",

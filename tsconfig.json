@@ -9,6 +9,12 @@
     "esModuleInterop": true,
     "module": "esnext",
     "moduleResolution": "bundler",
+    // Lets lib files use explicit ".ts" extensions on relative imports
+    // (required for those files to also resolve under plain
+    // `node --experimental-strip-types` in tests -- Node's ESM resolver,
+    // unlike Next's bundler, never infers extensions). Safe under
+    // moduleResolution: bundler + noEmit, which this config already has.
+    "allowImportingTsExtensions": true,
     "resolveJsonModule": true,
     "isolatedModules": true,
     "jsx": "react-jsx",
