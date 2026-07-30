@@ -1,4 +1,5 @@
 import { cache } from "react";
+import { isSkillIndexable } from "@/lib/skill-indexability";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
@@ -191,7 +192,7 @@ export async function generateMetadata(props: {
   //        928  have enriched_content    <- original body copy we wrote. This is the
   //                                         signal, and it is the whole corpus that
   //                                         should be competing for the index.
-  const hasOriginalBody = Boolean(enrichment?.enriched && enrichment.enriched_content);
+  const hasOriginalBody = isSkillIndexable(enrichment);
 
   return {
     title: pageTitle,
