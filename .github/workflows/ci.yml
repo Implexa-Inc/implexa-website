@@ -1,0 +1,32 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+# Cancel a stale run when a newer commit lands on the same ref.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test-and-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          # >=22.6 for --experimental-strip-types, used by `npm test` to run
+          # .ts test files without a bundler/ts-node dependency.
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      # ADDED 2026-07-30 (AGENT_SEO_AEO_EXECUTION_PLAN_2026-07-30 Day 2).
+      # Vercel's own build step never ran `npm test` -- it only runs
+      # `next build`, so the sitemap/metadata invariant tests added in this
+      # PR existed on disk but nothing ever executed them. Same "tests exist,
+      # nobody runs them" gap the plan's Day-1 gate flagged for this repo
+      # originally; this workflow closes it for good rather than per-PR.
+      - run: npm test
+      - run: npm run build
