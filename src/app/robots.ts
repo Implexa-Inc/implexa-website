@@ -24,7 +24,13 @@ export default function robots(): MetadataRoute.Robots {
         disallow: ["/search", "/api/"],
       },
     ],
-    sitemap: `${SITE_URL}/sitemap.xml`,
+    // Both sitemaps are advertised. /sitemap.xml carries the full ~20k-entry
+    // catalog; /sitemap-blog.xml carries just the blog. The blog is listed in
+    // both on purpose: the big file is only re-read every few weeks (Google
+    // read it on 2026-06-02 and not again for the next 43 days), which left
+    // every post published in that window undiscovered. The small file is
+    // cheap to re-read, so posts get picked up in hours instead.
+    sitemap: [`${SITE_URL}/sitemap.xml`, `${SITE_URL}/blog/sitemap.xml`],
     host: SITE_URL,
   };
 }

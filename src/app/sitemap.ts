@@ -20,8 +20,19 @@ import { submitToIndexNow } from "@/lib/indexnow";
 // catalog churns slowly (the crawler runs nightly) and crawlers re-fetch
 // the sitemap roughly daily anyway.
 //
-// At 11k+ entries we're well under Google's 50k-per-sitemap limit so a
-// single file is fine. If we ever hit 50k we'll split via generateSitemaps.
+// At 20k+ entries we're still under Google's 50k-per-sitemap limit, but the
+// limit was never the binding constraint. A 3.3MB sitemap that is ~99%
+// slow-churning catalog pages gets re-read on Google's schedule, not ours:
+// submitted 2026-05-20, re-read once on 2026-06-02, still "last read Jun 2"
+// as of 2026-07-15. Every blog post published in that 43-day gap was
+// therefore "unknown to Google" despite being listed here from day one.
+//
+// The fix is not to split this file (that would risk the 20k catalog URLs
+// Google has already discovered through it). Content that ships often lives
+// in its own small sitemap as well — see src/app/blog/sitemap.ts — because a
+// few-KB file that actually changes gets re-read far more often. Any future
+// fast-churning surface should get the same treatment rather than relying on
+// this file to carry it.
 
 export const revalidate = 86400; // 1 day
 

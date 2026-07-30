@@ -30,6 +30,13 @@ export function SiteFooter() {
           <Link href="/resources" className="hover:text-white transition-colors">
             Resources
           </Link>
+          {/* Same reasoning as /scores below: /blog was reachable only from
+              /resources and /claude-skills, so the homepage (the site's
+              highest-authority page) had no path to any post and Search
+              Console reported "Referring page: None detected" on them. */}
+          <Link href="/blog" className="hover:text-white transition-colors">
+            Blog
+          </Link>
           {/* Kept in the footer (not the primary nav) so /scores and the skill
               pages it links to retain a site-wide internal link for SEO. */}
           <Link href="/scores" className="hover:text-white transition-colors">
