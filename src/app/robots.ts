@@ -24,13 +24,20 @@ export default function robots(): MetadataRoute.Robots {
         disallow: ["/search", "/api/"],
       },
     ],
-    // Both sitemaps are advertised. /sitemap.xml carries the full ~20k-entry
-    // catalog; /sitemap-blog.xml carries just the blog. The blog is listed in
-    // both on purpose: the big file is only re-read every few weeks (Google
-    // read it on 2026-06-02 and not again for the next 43 days), which left
-    // every post published in that window undiscovered. The small file is
-    // cheap to re-read, so posts get picked up in hours instead.
-    sitemap: [`${SITE_URL}/sitemap.xml`, `${SITE_URL}/blog/sitemap.xml`],
+    // Three sitemaps are advertised. /sitemap.xml carries the full
+    // ~20k-entry catalog; /blog/sitemap.xml and /workflows/sitemap.xml each
+    // carry just their own fast-moving surface. Both are listed redundantly
+    // alongside the root sitemap on purpose: the big file is only re-read
+    // every few weeks (Google read it on 2026-06-02 and not again for the
+    // next 43 days), which left every post published in that window
+    // undiscovered. The small files are cheap to re-read, so new posts and
+    // newly-promoted agent pages (Day 6, AGENT_SEO_AEO_EXECUTION_PLAN_2026-
+    // 07-30) get picked up in hours instead.
+    sitemap: [
+      `${SITE_URL}/sitemap.xml`,
+      `${SITE_URL}/blog/sitemap.xml`,
+      `${SITE_URL}/workflows/sitemap.xml`,
+    ],
     host: SITE_URL,
   };
 }

@@ -60,6 +60,79 @@ export const QUERY_MAP: Record<string, string> = {
   "youtube-to-blog": "How do I turn my videos into blog posts that rank",
 };
 
+// ── CLUSTERS: curated internal-linking groups (Day 3-4/10) ──────────────────
+// The plan's launch clusters (AGENT_SEO_AEO_EXECUTION_PLAN_2026-07-30,
+// "Initial content clusters") group agents by real task adjacency -- a
+// visitor comparing the SEO brief drafters, or the video-editing chain, wants
+// to see the other agents in that same job, not just whatever happens to
+// share the same generic `vertical` tag. The video cluster in particular
+// spans FOUR different vertical values (builder/creator/marketing/video
+// production), so the vertical-only related-agents logic below would not
+// connect them to each other at all without this.
+//
+// This is additive to, not a replacement for, the vertical-based fallback:
+// resolveRelatedWorkflows() prefers cluster siblings when the current page is
+// in a defined cluster, and falls back to the existing same-vertical logic
+// otherwise (most of the catalog isn't in a cluster yet).
+const CLUSTERS: string[][] = [
+  // Cluster A: creator and video production
+  [
+    "raw-recording-clean-cut-claude-remotion",
+    "cinematic-b-roll-generator",
+    "cinematic-b-roll-generator-with-avatar-presenter",
+    "markdown-brief-to-remotion-text-animations",
+    "final-video-editor-with-avatar-presenter",
+  ],
+  // Cluster B: SEO and AEO
+  [
+    "seo-content-brief-drafter",
+    "weekly-seo-content-brief",
+    "verify-gsc-wire-search-data-into-seo-brief",
+  ],
+  // Cluster C: recurring growth and research
+  ["daily-hn-comment-drafts", "daily-ig-reel-research-bundle"],
+];
+
+const CLUSTER_SIBLINGS: Map<string, Set<string>> = new Map();
+for (const cluster of CLUSTERS) {
+  for (const slug of cluster) {
+    CLUSTER_SIBLINGS.set(slug, new Set(cluster.filter((s) => s !== slug)));
+  }
+}
+
+/**
+ * resolveRelatedWorkflows - internal-linking selection for the "related
+ * agents" section. Prefers curated cluster siblings (real task adjacency,
+ * not a coincidental shared tag), fills any remaining slots with same-
+ * vertical siblings (the existing fallback), then the rest of the catalog --
+ * proven agents ranked first at each tier, same amplification discipline as
+ * before. Caps at `limit`.
+ */
+export function resolveRelatedWorkflows(
+  w: Pick<WorkflowDetail, "slug" | "vertical">,
+  allWorkflows: WorkflowCard[],
+  limit = 4,
+): WorkflowCard[] {
+  const others = allWorkflows.filter((x) => x.slug !== w.slug);
+  const provenFirst = (a: WorkflowCard, b: WorkflowCard) =>
+    (isCardProven(b) ? 1 : 0) - (isCardProven(a) ? 1 : 0);
+
+  const siblingSlugs = CLUSTER_SIBLINGS.get(w.slug);
+  const clusterSiblings = siblingSlugs
+    ? others.filter((x) => siblingSlugs.has(x.slug)).sort(provenFirst)
+    : [];
+
+  const sameVertical = others
+    .filter((x) => w.vertical && x.vertical === w.vertical && !clusterSiblings.includes(x))
+    .sort(provenFirst);
+
+  const rest = others
+    .filter((x) => !clusterSiblings.includes(x) && !sameVertical.includes(x))
+    .sort(provenFirst);
+
+  return [...clusterSiblings, ...sameVertical, ...rest].slice(0, limit);
+}
+
 // ── isProven: the amplification gate (locked discipline) ────────────────────
 // Only an agent with real, non-degraded run history earns the proof treatment
 // (the "improved this week" line) and internal promotion. Unproven agents are
@@ -238,4 +311,22 @@ export function resolveExampleResult(
     format: "text",
     derived: true,
   };
+}
+
+// ── resolveLimitations: "limits and recovery" (Day 3-4) ─────────────────────
+/**
+ * resolveLimitations - prefers the authored `limitations` field (Day 3-4,
+ * human-reviewed, the same field the indexability evaluator requires to be
+ * non-empty for an indexable page) over the auto-parsed `caveat` (extracted
+ * from the workflow's raw markdown content at read time). Both describe the
+ * same kind of thing -- boundaries, failure modes, what the agent doesn't do
+ * -- but an authored field is more deliberate than a parsed one, so it wins
+ * when both are present. Returns null only when neither exists.
+ */
+export function resolveLimitations(
+  w: Pick<WorkflowDetail, "limitations" | "caveat">,
+): string | null {
+  if (w.limitations && w.limitations.trim()) return w.limitations.trim();
+  if (w.caveat && w.caveat.trim()) return w.caveat.trim();
+  return null;
 }
