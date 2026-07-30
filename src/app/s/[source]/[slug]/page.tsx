@@ -165,10 +165,40 @@ export async function generateMetadata(props: {
   const pageTitle = `${title}: Claude skill${trust}`;
   const socialTitle = `${pageTitle} | implexa`;
 
+  // ── EARN INDEXATION (2026-07-30 founder call) ──────────────────────────────
+  //
+  // These pages shipped `index, follow` with a self-referencing canonical while the
+  // description was the upstream blurb copied verbatim — telling Google that ~20k
+  // mirrored pages were original documents. Google crawled ~11k and REJECTED 8,198
+  // ("Crawled - currently not indexed"), a bucket that ramped from ~0 in late May and
+  // is still climbing.
+  //
+  // WHY noindex AND NOT A CROSS-DOMAIN CANONICAL: `noindex` is a DIRECTIVE Google
+  // obeys. A canonical pointing at the upstream source is a HINT it routinely ignores
+  // on thin mirrors — so that option might simply not take effect, and we would wait
+  // weeks of crawl cycles to find out, still spending crawl budget on 56k mirrors.
+  //
+  // `follow` is deliberate: the pages stay live, usable and internally linked, and
+  // link equity still flows. This withdraws an INDEX CLAIM; it does not delete the
+  // catalog or reverse the catalog-seed bet.
+  //
+  // THE RULE IS INVERTED — a page must EARN indexation by carrying something Google
+  // cannot get upstream. Measured against production on 2026-07-30:
+  //     56,603  active catalog skills
+  //     34,645  have a SkillRank score   <- NOT sufficient: that is more pages than
+  //                                         the sitemap lists today. A number is not
+  //                                         original content.
+  //        928  have enriched_content    <- original body copy we wrote. This is the
+  //                                         signal, and it is the whole corpus that
+  //                                         should be competing for the index.
+  const hasOriginalBody = Boolean(enrichment?.enriched && enrichment.enriched_content);
+
   return {
     title: pageTitle,
     description,
     alternates: { canonical: canonicalPath },
+    // Omitted entirely when indexable, so the site-wide default applies.
+    ...(hasOriginalBody ? {} : { robots: { index: false, follow: true } }),
     openGraph: {
       type: "article",
       url: absoluteUrl(canonicalPath),
