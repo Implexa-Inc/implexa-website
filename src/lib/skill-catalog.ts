@@ -85,20 +85,33 @@ async function callMcpTool<T>(
 /**
  * listAllSkillsForSitemap() — walk the paginated list_aggregated_skills
  * MCP tool until the server says "no more rows". Returns every active,
- * well-embedded (source, slug, last_seen_at) tuple in the index.
+ * well-embedded, ENRICHED (source, slug, last_seen_at) tuple in the index.
  *
- * At ~11k rows + 1000/page that's ~12 paginated calls. Wrapped at the edge
- * with revalidate: 86400 so we touch the backend at most daily per region.
+ * enrichedOnly:true (2026-07-30, AGENT_SEO_AEO_EXECUTION_PLAN Day 1). The /s/
+ * detail page ships `noindex` unless the skill carries skill_enrichments
+ * original body copy (website#72, backend#111) — measured 928 of 56,603
+ * active skills. Before this flag the sitemap listed every active+embedded
+ * skill regardless of enrichment, advertising ~19k URLs that render noindex —
+ * a sitemap/metadata disagreement, which is itself a quality signal search
+ * engines penalize and the exact thing the plan's guardrails forbid.
  *
- * Returns [] (empty sitemap) if the backend tool isn't deployed yet so the
- * static pages still render correctly during the deploy gap.
+ * At ~928 rows + 1000/page that's now ~1 paginated call (down from ~21 over
+ * the unfiltered ~20k). Wrapped at the edge with revalidate: 86400 so we
+ * touch the backend at most daily per region.
+ *
+ * Returns [] (empty sitemap) if the backend tool isn't deployed yet, OR if
+ * it's deployed but predates enrichedOnly (unknown Zod keys are stripped
+ * server-side, so an old backend would silently return the UNFILTERED
+ * ~20k-row list instead — this function does not special-case that; the
+ * backend enrichedOnly deploy (backend#111) landed before this file changed,
+ * per the plan's stated dependency order).
  */
 export async function listAllSkillsForSitemap(): Promise<CatalogEntry[]> {
   const out: CatalogEntry[] = [];
   let cursor: string | undefined;
   // Safety bound: even at 5k pageSize cap, 20 iterations = 100k rows. Real
-  // catalog is ~11k. This guards against an infinite loop if a backend bug
-  // ever returns the same cursor forever.
+  // (enriched) catalog is ~928 rows, ~1 page. This guards against an
+  // infinite loop if a backend bug ever returns the same cursor forever.
   const MAX_PAGES = 20;
 
   type ListResponse = {
@@ -108,7 +121,7 @@ export async function listAllSkillsForSitemap(): Promise<CatalogEntry[]> {
   };
 
   for (let i = 0; i < MAX_PAGES; i++) {
-    const args: Record<string, unknown> = { pageSize: 1000 };
+    const args: Record<string, unknown> = { pageSize: 1000, enrichedOnly: true };
     if (cursor) args.cursor = cursor;
 
     const resp = await callMcpTool<ListResponse>(

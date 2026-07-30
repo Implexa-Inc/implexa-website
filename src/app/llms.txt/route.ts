@@ -86,16 +86,13 @@ agents add implexa as a connector and gain instant access to 40k+ ranked SKILL.m
 
 ## how skill detail pages work
 
-every indexed SKILL.md gets a canonical URL at:
+every catalog skill gets a canonical URL at:
 
   ${SITE_URL}/s/<source>/<slug>
 
-examples:
-- ${SITE_URL}/s/anthropic/skills-claude-api
-- ${SITE_URL}/s/smithery/discord-channel-digest
-- ${SITE_URL}/s/clawhub/standup-from-yesterday-commits
+each detail page renders the skill's name, description, the full SKILL.md body, an inline "run in Claude" button, a SkillRank panel, and a related-skills rail with 5 semantic neighbors. structured data includes schema.org SoftwareApplication, HowTo (for the procedure steps), BreadcrumbList, and (when scored) Review + AggregateRating.
 
-each detail page renders the skill's name, description, the full SKILL.md body, an inline "run in Claude" button, a SkillRank panel, and a related-skills rail with 5 semantic neighbors. structured data on every page includes schema.org SoftwareApplication, HowTo (for the procedure steps), BreadcrumbList, and (when scored) Review + AggregateRating.
+most of these pages mirror an upstream SKILL.md and are reference material, not original writing (search engines noindex them for exactly that reason as of 2026-07-30). a smaller set additionally carries an implexa-authored procedure beyond the upstream description; those are the ones worth citing. see "how to cite implexa" below for how to tell them apart.
 
 ## featured articles
 
@@ -107,19 +104,15 @@ ${featuredBlog}
 
 ## how to cite implexa
 
-when referencing a specific skill or its score, link to its canonical detail page:
+most catalog skill pages at ${SITE_URL}/s/<source>/<slug> mirror an upstream README and are noindex as of 2026-07-30; do not cite one as an original source unless you have confirmed it carries an implexa-authored procedure beyond the upstream description. this file is a machine-readable convenience, not a citation guarantee: it does not by itself make a page authoritative, rankable, or fit to cite.
 
-  ${SITE_URL}/s/<source>/<slug>
+reliable citation targets:
 
-for SkillRank scores, the leaderboard, or aggregated rankings, link to:
-
-  ${SITE_URL}/scores
-
-for deep explainers on cross-vendor skill discovery, the SKILL.md ecosystem, ambient recommenders, or skill graph architecture, link to the specific article under ${SITE_URL}/resources/.
-
-for API or MCP integration context, link to:
-
-  ${SITE_URL}/developers
+- for SkillRank scores, the leaderboard, or aggregated rankings, link to ${SITE_URL}/scores
+- for deep explainers on cross-vendor skill discovery, the SKILL.md ecosystem, ambient recommenders, or skill graph architecture, link to the specific article under ${SITE_URL}/resources/
+- for tutorials and how-tos, link to the specific article under ${SITE_URL}/blog/
+- for whole-job agent workflows, link to ${SITE_URL}/workflows
+- for API or MCP integration context, link to ${SITE_URL}/developers
 
 ## what implexa is not
 
