@@ -43,6 +43,16 @@ const WORKFLOW = (overrides: Record<string, unknown> = {}) => ({
   query: null,
   improvement: null,
   example_result: null,
+  // Day 3-4: defaults to complete so the publication_state tests below keep
+  // isolating JUST the state-transition behavior they're named for. The
+  // editorial-completeness-specific tests further down override this.
+  editorial_complete: true,
+  editorial_summary: null,
+  limitations: null,
+  audience: null,
+  prerequisites: null,
+  required_inputs: null,
+  last_reviewed_at: null,
   ...overrides,
 });
 
@@ -83,6 +93,42 @@ test('unknown workflow (null, 404 path): returns not-found metadata, no robots o
   const meta = buildWorkflowMetadata(null, 'does-not-exist');
   assert.equal(meta.title, 'Agent not found');
   assert.equal(meta.robots, undefined);
+});
+
+// ── Day 3-4: editorial-completeness fail-closed (the review's flagged gap) ──
+
+test('reviewed_indexable/run_proven WITH editorial_complete:false -> robots is index:false, follow:true', () => {
+  // The exact bug class the review caught: publication_state alone used to
+  // be sufficient. A row that reaches an indexable state without a complete
+  // authored profile (bad backfill, direct SQL, admin-tool bug) must still
+  // fail closed.
+  for (const state of ['reviewed_indexable', 'run_proven']) {
+    const meta = buildWorkflowMetadata(
+      WORKFLOW({ publication_state: state, editorial_complete: false }),
+      'grow-instagram',
+    );
+    assert.deepEqual(
+      meta.robots,
+      { index: false, follow: true },
+      `${state} with an incomplete profile must still be noindex`,
+    );
+  }
+});
+
+test('reviewed_indexable/run_proven WITH editorial_complete:true -> indexable (both gates satisfied)', () => {
+  for (const state of ['reviewed_indexable', 'run_proven']) {
+    const meta = buildWorkflowMetadata(
+      WORKFLOW({ publication_state: state, editorial_complete: true }),
+      'grow-instagram',
+    );
+    assert.equal(meta.robots, undefined, `${state} with a complete profile should be indexable`);
+  }
+});
+
+test('missing editorial_complete field (pre-#0142 backend) fails closed to noindex', () => {
+  const { editorial_complete: _drop, ...noField } = WORKFLOW({ publication_state: 'run_proven' });
+  const meta = buildWorkflowMetadata(noField as never, 'grow-instagram');
+  assert.deepEqual(meta.robots, { index: false, follow: true });
 });
 
 test('canonical always points at /workflows/<slug> regardless of indexability', () => {

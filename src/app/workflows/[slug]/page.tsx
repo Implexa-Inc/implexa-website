@@ -17,6 +17,8 @@ import {
   FileText,
   HelpCircle,
   Wallet,
+  Users,
+  ClipboardList,
 } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
@@ -44,8 +46,9 @@ import {
   hasResolvedQuery,
   resolveExampleResult,
   resolveImprovement,
+  resolveLimitations,
+  resolveRelatedWorkflows,
   isProven,
-  isCardProven,
 } from "@/lib/workflow-query";
 
 const DASHBOARD_URL = "https://app.implexa.ai";
@@ -122,8 +125,12 @@ function buildAgentFaqs(
 
   faqs.push({
     question: `What does the ${name} agent need to run?`,
-    answer:
-      caps.length > 0
+    // Day 3-4: prefers the authored `prerequisites` (a human's specific,
+    // real answer to exactly this question) over the generic
+    // capabilities-derived fallback.
+    answer: w.prerequisites
+      ? w.prerequisites
+      : caps.length > 0
         ? `Install Implexa into your Claude or Codex, then connect ${caps.join(
             " and ",
           )} so it can gather its own data and deliver hands-free. Implexa never touches your accounts or credentials.`
@@ -287,27 +294,22 @@ export default async function WorkflowDetailPage(props: {
   const exampleResult = resolveExampleResult(w);
   const improvement = resolveImprovement(w); // null unless proven + recent
   const proven = isProven(w);
-  // The agent's one-line answer to the query.
+  // The agent's one-line answer to the query. Kept short deliberately -- it
+  // renders inline right after the agent name (see the H1 block below).
+  // w.editorial_summary (Day 3-4, longer/more substantive) gets its own
+  // section instead of overloading this one.
   const answer = w.job || w.primary_outcome || w.description || "";
+  // Day 3-4: authored limitations win over the auto-parsed caveat.
+  const limitations = resolveLimitations(w);
 
-  // related agents: prefer same-vertical siblings, fill with the rest, cap 4.
-  // interlinks the query-addressable pages with each other (internal linking
-  // for ranking, since these are the surface we lean into for higher-intent
-  // queries). Amplification discipline: proven agents (real run history) are
-  // promoted ahead of unproven ones in the internal link graph, so we never
-  // rank up an un-vetted page. listWorkflows is cached and tiny (~12 rows).
-  const otherWorkflows = allWorkflows.filter((x) => x.slug !== w.slug);
-  const provenFirst = (a: typeof otherWorkflows[number], b: typeof a) =>
-    (isCardProven(b) ? 1 : 0) - (isCardProven(a) ? 1 : 0);
-  const sameVertical = otherWorkflows
-    .filter((x) => w.vertical && x.vertical === w.vertical)
-    .sort(provenFirst);
-  const relatedWorkflows = [
-    ...sameVertical,
-    ...otherWorkflows
-      .filter((x) => !sameVertical.includes(x))
-      .sort(provenFirst),
-  ].slice(0, 4);
+  // related agents: curated cluster siblings first (Day 3-4/10 -- real task
+  // adjacency, e.g. the SEO brief drafters or the video-editing chain), then
+  // same-vertical siblings, then the rest, cap 4. Interlinks the query-
+  // addressable pages with each other for internal linking. Amplification
+  // discipline: proven agents (real run history) are promoted ahead of
+  // unproven ones at each tier, so we never rank up an un-vetted page.
+  // listWorkflows is cached and tiny (~12 rows).
+  const relatedWorkflows = resolveRelatedWorkflows(w, allWorkflows);
 
   const boundCount = w.steps.filter((s) => s.ref && !s.gap).length;
 
@@ -317,6 +319,11 @@ export default async function WorkflowDetailPage(props: {
   const activity = w.activity;
   const lastRun = timeAgo(activity.last_run_at);
   const updatedAt = shortDate(w.updated_at);
+  // Day 3-4: when a human last confirmed this page's content is still
+  // accurate (last_content_reviewed_at, backend field name; surfaced here as
+  // last_reviewed_at) -- a distinct freshness signal from `updatedAt` (which
+  // tracks the underlying agent definition, not editorial review).
+  const lastReviewed = shortDate(w.last_reviewed_at);
   const hasActivity =
     activity.run_count > 0 ||
     activity.scheduled_count > 0 ||
@@ -344,7 +351,11 @@ export default async function WorkflowDetailPage(props: {
     // surfaced as HowToTool nodes, so the structured procedure is richer.
     howToSchema({
       name: queryIsH1 ? query : w.name,
-      description: answer || undefined,
+      // Day 3-4: the authored editorial_summary, when present, is a fuller
+      // and more accurate description than the short inline `answer` -- and
+      // it's safe to use here because the page ALSO renders it visibly (the
+      // "how it works" section below), so schema and visible content agree.
+      description: w.editorial_summary || answer || undefined,
       url: pageUrl,
       totalTime: "PT5M",
       steps: w.steps.map((s) => ({
@@ -353,6 +364,10 @@ export default async function WorkflowDetailPage(props: {
           s.detail || s.ref_summary?.description || undefined,
       })),
       tools: w.capabilities.map((c) => ({ name: c.name })),
+      // Only emitted when w.audience is set AND the page renders it visibly
+      // (same section as editorial_summary) -- see howToSchema's own comment
+      // for why this must never be inferred.
+      audience: w.audience || undefined,
     }),
     // FAQPage: the question set answer engines lift directly into AI Overviews
     // and Perplexity. Grounded in the agent's real shape (cost, cadence, setup,
@@ -363,7 +378,7 @@ export default async function WorkflowDetailPage(props: {
       name: w.name,
       applicationCategory: "AI Agent",
       operatingSystem: "Cross-platform (Claude Code, Cursor, Codex, Gemini CLI)",
-      description: answer || undefined,
+      description: w.editorial_summary || answer || undefined,
       offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
       url: pageUrl,
     },
@@ -446,6 +461,18 @@ export default async function WorkflowDetailPage(props: {
           </>
         )}
 
+        {/* Day 3-4 "how it works" / direct-answer summary: the authored
+            editorial_summary, when present. Distinct from the short inline
+            `answer` above -- this is the fuller, human-written explanation of
+            the real mechanism, and what howToSchema/SoftwareApplication's
+            JSON-LD description mirrors above (never shown to a crawler
+            without also being shown here). */}
+        {w.editorial_summary ? (
+          <p className="text-base text-zinc-300 leading-relaxed mb-8">
+            {w.editorial_summary}
+          </p>
+        ) : null}
+
         {/* activity strip: live usage signal + freshness (aggregate only) */}
         {hasActivity ? (
           <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-zinc-500 mb-8">
@@ -470,6 +497,11 @@ export default async function WorkflowDetailPage(props: {
             {updatedAt ? (
               <span className="inline-flex items-center gap-1.5 text-zinc-600">
                 Updated {updatedAt}
+              </span>
+            ) : null}
+            {lastReviewed ? (
+              <span className="inline-flex items-center gap-1.5 text-zinc-600">
+                Content reviewed {lastReviewed}
               </span>
             ) : null}
             {w.version != null ? (
@@ -556,10 +588,59 @@ export default async function WorkflowDetailPage(props: {
           </Card>
         ) : null}
 
+        {/* Day 3-4: who it's for + what it needs before/each run. Plan page
+            contract items 2 ("finished outcome") is the card above; this is
+            item 4 ("inputs and setup"). Each field is independent -- an agent
+            can have an audience without prerequisites, etc. */}
+        {w.audience || w.prerequisites || w.required_inputs ? (
+          <Card className="bg-zinc-950 border-zinc-900 mb-8">
+            <CardContent className="p-5 space-y-4">
+              {w.audience ? (
+                <div>
+                  <div className="flex items-center gap-2 mb-1.5">
+                    <Users className="size-4 text-sky-400" aria-hidden="true" />
+                    <h2 className="text-sm font-medium text-white uppercase tracking-wider">
+                      who this is for
+                    </h2>
+                  </div>
+                  <p className="text-sm text-zinc-300">{w.audience}</p>
+                </div>
+              ) : null}
+              {w.prerequisites ? (
+                <div>
+                  <div className="flex items-center gap-2 mb-1.5">
+                    <ClipboardList className="size-4 text-sky-400" aria-hidden="true" />
+                    <h2 className="text-sm font-medium text-white uppercase tracking-wider">
+                      before you start
+                    </h2>
+                  </div>
+                  <p className="text-sm text-zinc-300">{w.prerequisites}</p>
+                </div>
+              ) : null}
+              {w.required_inputs ? (
+                <div>
+                  <div className="flex items-center gap-2 mb-1.5">
+                    <FileText className="size-4 text-sky-400" aria-hidden="true" />
+                    <h2 className="text-sm font-medium text-white uppercase tracking-wider">
+                      what you provide each run
+                    </h2>
+                  </div>
+                  <p className="text-sm text-zinc-300">{w.required_inputs}</p>
+                </div>
+              ) : null}
+            </CardContent>
+          </Card>
+        ) : null}
+
         {/* example result: the on-page aha. ALWAYS labeled an example and
-            explicitly "not run on your data" (locked honesty guardrail). Real
-            sample deliverable from the backend when present; an illustrative
-            shape derived from the outcome otherwise. */}
+            explicitly "not run on your data" (locked honesty guardrail).
+            Day 3-4: an authored (backend-supplied) example is editorial --
+            written by a human to show the deliverable's real shape -- NOT
+            claimed as a captured real run (Implexa doesn't have one to show
+            for these pages yet; see the plan's requirement #4, "an editorial
+            example is allowed when clearly labelled"). "sample deliverable"
+            was the pre-Day-3-4 label and implied an actual captured
+            artifact, which would have overclaimed. */}
         {exampleResult ? (
           <Card className="bg-zinc-950 border-zinc-900 mb-8">
             <CardContent className="p-5">
@@ -574,7 +655,7 @@ export default async function WorkflowDetailPage(props: {
                   variant="outline"
                   className="text-[9px] uppercase tracking-wider border-sky-500/30 text-sky-300/90"
                 >
-                  {exampleResult.derived ? "illustrative" : "sample deliverable"}
+                  {exampleResult.derived ? "illustrative" : "editorial example"}
                 </Badge>
               </div>
               {exampleResult.title ? (
@@ -665,8 +746,11 @@ export default async function WorkflowDetailPage(props: {
           </ul>
         </div>
 
-        {/* caveat */}
-        {w.caveat ? (
+        {/* limitations (Day 3-4: prefers the authored `limitations` field
+            over the auto-parsed `caveat` -- resolveLimitations() owns that
+            precedence, see its header). Plan page contract item 7 ("limits
+            and recovery"). */}
+        {limitations ? (
           <Card className="bg-amber-950/20 border-amber-900/40 mb-8">
             <CardContent className="p-5">
               <div className="flex items-center gap-2 mb-2">
@@ -678,7 +762,7 @@ export default async function WorkflowDetailPage(props: {
                   keep in mind
                 </h2>
               </div>
-              <p className="text-sm text-amber-100/80">{w.caveat}</p>
+              <p className="text-sm text-amber-100/80">{limitations}</p>
             </CardContent>
           </Card>
         ) : null}

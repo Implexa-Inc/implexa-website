@@ -17,6 +17,10 @@ const CARD = (overrides: Record<string, unknown> = {}) => ({
   step_count: 1, bound_step_count: 1, run_count: 0, scheduled_count: 0,
   curated: true, unproven: false, last_seen_at: null,
   publication_state: null,
+  // Day 3-4: defaults to complete so the publication_state tests below keep
+  // isolating JUST the state-transition behavior. The dedicated
+  // editorial-completeness tests further down override this.
+  editorial_complete: true,
   ...overrides,
 });
 
@@ -60,4 +64,30 @@ test('sitemap entry shape: absolute /workflows/<slug> URL and lastModified from 
 
 test('an empty catalog produces an empty sitemap slice, not a crash', () => {
   assert.deepEqual(buildWorkflowSitemapEntries([]), []);
+});
+
+// ── Day 3-4: editorial-completeness fail-closed ─────────────────────────────
+
+test('reviewed_indexable/run_proven with editorial_complete:false never enters the sitemap', () => {
+  // The exact bug class the review caught: publication_state alone used to
+  // be sufficient here. A card that reaches an indexable state without a
+  // complete authored profile must still be excluded.
+  const entries = [
+    CARD({ slug: 'complete-a', publication_state: 'reviewed_indexable', editorial_complete: true }),
+    CARD({ slug: 'incomplete-b', publication_state: 'reviewed_indexable', editorial_complete: false }),
+    CARD({ slug: 'complete-c', publication_state: 'run_proven', editorial_complete: true }),
+    CARD({ slug: 'incomplete-d', publication_state: 'run_proven', editorial_complete: false }),
+  ];
+  const out = buildWorkflowSitemapEntries(entries);
+  const slugs = out.map((e) => e.url.split('/').pop());
+  assert.deepEqual(new Set(slugs), new Set(['complete-a', 'complete-c']));
+});
+
+test('a promoted workflow enters the sitemap EXACTLY ONCE, not duplicated', () => {
+  const entries = [
+    CARD({ slug: 'once-only', publication_state: 'run_proven', editorial_complete: true }),
+  ];
+  const out = buildWorkflowSitemapEntries(entries);
+  assert.equal(out.length, 1);
+  assert.equal(out.filter((e) => e.url.endsWith('/once-only')).length, 1);
 });

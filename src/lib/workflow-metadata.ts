@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 // `node --experimental-strip-types` in tests, not only Next's bundler --
 // see workflow-metadata.test.ts.
 import { absoluteUrl } from "./site.ts";
-import { isWorkflowIndexable } from "./workflow-indexability.ts";
+import { isWorkflowPageIndexable } from "./workflow-indexability.ts";
 import { resolveQuery, hasResolvedQuery } from "./workflow-query.ts";
 import type { WorkflowDetail } from "./workflow-catalog.ts";
 
@@ -38,13 +38,17 @@ export function buildWorkflowMetadata(
   // colon, which is valid sentence case for a continuation clause.
   //
   // Day 2 item 5 (2026-07-30): noindex unless the PERSISTED publication_state
-  // says otherwise -- isWorkflowIndexable, same predicate
-  // workflow-sitemap.ts's buildWorkflowSitemapEntries() filters on. Before
-  // this, all workflow pages were implicitly indexable (no robots field was
-  // ever set here). `follow` is deliberate, same reasoning as the
-  // skills-surface fix (#72): the page stays live, usable, and internally
-  // linked; this withdraws an index claim, not the page itself.
-  const indexable = isWorkflowIndexable(w.publication_state);
+  // says otherwise, same combined predicate workflow-sitemap.ts's
+  // buildWorkflowSitemapEntries() filters on. Before this, all workflow pages
+  // were implicitly indexable (no robots field was ever set here). `follow`
+  // is deliberate, same reasoning as the skills-surface fix (#72): the page
+  // stays live, usable, and internally linked; this withdraws an index
+  // claim, not the page itself.
+  //
+  // Day 3-4 (2026-07-30): isWorkflowPageIndexable ALSO requires
+  // editorial_complete -- publication_state alone is no longer sufficient,
+  // see workflow-indexability.ts's header for why.
+  const indexable = isWorkflowPageIndexable(w);
   return {
     title,
     description: desc,

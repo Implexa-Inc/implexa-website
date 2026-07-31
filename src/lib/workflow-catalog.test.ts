@@ -72,3 +72,33 @@ test('a non-string publication_state (malformed response) normalizes to null, no
   );
   assert.equal(out[0].publication_state, null);
 });
+
+// ── Day 3-4: editorial_complete pass-through (backend#0142) ────────────────
+
+test('editorial_complete: true round-trips through listWorkflows() unchanged', async () => {
+  const out = await withFetch(
+    { ok: true, count: 1, workflows: [WORKFLOW_ROW({ editorial_complete: true })] },
+    () => listWorkflows(),
+  );
+  assert.equal(out[0].editorial_complete, true);
+});
+
+test('editorial_complete missing (pre-#0142 backend) normalizes to false, not undefined', () =>
+  withFetch(
+    { ok: true, count: 1, workflows: [WORKFLOW_ROW()] },
+    async () => {
+      const out = await listWorkflows();
+      assert.equal(out[0].editorial_complete, false);
+    },
+  ));
+
+test('editorial_complete: a truthy non-boolean (malformed response) normalizes to false, not passed through', async () => {
+  // Fail-closed on anything but the literal boolean true -- see
+  // workflow-catalog.ts's mapping comment for why this matters more than the
+  // usual "normalize malformed to null" pattern: this field gates indexation.
+  const out = await withFetch(
+    { ok: true, count: 1, workflows: [WORKFLOW_ROW({ editorial_complete: 'true' })] },
+    () => listWorkflows(),
+  );
+  assert.equal(out[0].editorial_complete, false);
+});

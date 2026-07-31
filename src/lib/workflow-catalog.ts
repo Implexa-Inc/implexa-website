@@ -44,6 +44,12 @@ export type WorkflowCard = {
   // lib/workflow-query.ts. Keeping the raw field here keeps the seam clean:
   // when the backend ships, resolveQuery() prefers this with zero page changes.
   query: string | null;
+  // Day 3-4 (backend#0142): the indexability evaluator's verdict --
+  // hasCompleteEditorialProfile() computed backend-side from the same row.
+  // isWorkflowPageIndexable() (lib/workflow-indexability.ts) ANDs this with
+  // publication_state; the card carries only the boolean, never the full
+  // editorial text (the catalog fetch is up to 500 rows).
+  editorial_complete: boolean;
 };
 
 export type WorkflowCapability = {
@@ -160,6 +166,20 @@ export type WorkflowDetail = {
   query: string | null; // the high-intent thought this agent answers
   improvement: WorkflowImprovement | null; // dated "improved this week" delta
   example_result: WorkflowExampleResult | null; // a real example deliverable
+  // ── Day 3-4 editorial profile (backend#0141 + #0142) ───────────────────────
+  // Each null until an editor authors it. limitations is preferred over the
+  // auto-parsed `caveat` above when both are present (resolveLimitations() in
+  // workflow-query.ts owns that precedence -- the page never picks directly).
+  editorial_summary: string | null;
+  limitations: string | null;
+  audience: string | null;
+  prerequisites: string | null;
+  required_inputs: string | null;
+  last_reviewed_at: string | null;
+  // The indexability evaluator's verdict for THIS row -- see WorkflowCard's
+  // matching field for why isWorkflowPageIndexable() requires both this and
+  // publication_state.
+  editorial_complete: boolean;
 };
 
 // Parse the SSE-wrapped MCP response. The backend wraps responses as
@@ -237,6 +257,10 @@ export async function listWorkflows(): Promise<WorkflowCard[]> {
     publication_state: typeof w.publication_state === "string" ? w.publication_state : null,
     // backend slot; null until the query read path lands (see workflow-query.ts)
     query: typeof w.query === "string" && w.query ? w.query : null,
+    // Day 3-4 (backend#0142): fail closed on anything but the literal
+    // boolean true -- a missing field (pre-#0142 backend) or a malformed
+    // response must not accidentally read as "complete".
+    editorial_complete: w.editorial_complete === true,
   }));
 }
 
@@ -296,6 +320,13 @@ async function _getWorkflow(
       body?: string;
       format?: string;
     } | null;
+    editorial_summary?: string | null;
+    limitations?: string | null;
+    audience?: string | null;
+    prerequisites?: string | null;
+    required_inputs?: string | null;
+    last_reviewed_at?: string | null;
+    editorial_complete?: boolean;
   };
   const num = (v: unknown) => (typeof v === "number" && v >= 0 ? v : 0);
   return {
@@ -404,5 +435,26 @@ async function _getWorkflow(
             format: raw.example_result.format === "markdown" ? "markdown" : "text",
           }
         : null,
+    editorial_summary:
+      typeof raw.editorial_summary === "string" && raw.editorial_summary
+        ? raw.editorial_summary
+        : null,
+    limitations:
+      typeof raw.limitations === "string" && raw.limitations ? raw.limitations : null,
+    audience: typeof raw.audience === "string" && raw.audience ? raw.audience : null,
+    prerequisites:
+      typeof raw.prerequisites === "string" && raw.prerequisites
+        ? raw.prerequisites
+        : null,
+    required_inputs:
+      typeof raw.required_inputs === "string" && raw.required_inputs
+        ? raw.required_inputs
+        : null,
+    last_reviewed_at:
+      typeof raw.last_reviewed_at === "string" && raw.last_reviewed_at
+        ? raw.last_reviewed_at
+        : null,
+    // Day 3-4: fail closed on anything but the literal boolean true.
+    editorial_complete: raw.editorial_complete === true,
   };
 }

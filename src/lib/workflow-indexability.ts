@@ -39,3 +39,28 @@ const INDEXABLE_STATES: ReadonlySet<string> = new Set<WorkflowPublicationState>(
 export function isWorkflowIndexable(publicationState: string | null | undefined): boolean {
   return typeof publicationState === 'string' && INDEXABLE_STATES.has(publicationState);
 }
+
+// isWorkflowPageIndexable — the Day 3-4 combined gate (AGENT_SEO_AEO_EXECUTION_
+// PLAN_2026-07-30). publication_state alone is a human's ATTESTATION that a
+// page satisfies the contract, written via a raw DB column nothing stops from
+// being set incorrectly (direct SQL, a bad backfill, a future admin-tool
+// bug). editorial_complete is the backend's "indexability evaluator" result
+// (hasCompleteEditorialProfile() in skill-search.service.js, computed
+// identically for a card and its own detail page from the same row -- see
+// that function's header) -- an automated safety net requiring the actually-
+// authored content (search_query, editorial_summary, limitations,
+// example_result) to be present, not just the state flag.
+//
+// THIS is the function workflow-sitemap.ts and workflow-metadata.ts must
+// both call -- never isWorkflowIndexable() directly on its own for page-level
+// decisions -- so a row that somehow has an indexable state but an
+// incomplete profile fails closed at BOTH call sites identically, rather
+// than the sitemap and the page's own robots meta disagreeing.
+export type WorkflowPageIndexabilityInput = {
+  publication_state?: string | null;
+  editorial_complete?: boolean | null;
+};
+
+export function isWorkflowPageIndexable(w: WorkflowPageIndexabilityInput): boolean {
+  return isWorkflowIndexable(w?.publication_state) && w?.editorial_complete === true;
+}

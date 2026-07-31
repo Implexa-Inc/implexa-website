@@ -14,7 +14,10 @@
 //
 // Source: schema.org + Google Search Central guidelines as of 2026-05.
 
-import { SITE_URL, SITE_NAME, SITE_DESCRIPTION, TWITTER_HANDLE } from "./site";
+// ".ts" extension (not just "./site") so this file resolves under plain
+// `node --experimental-strip-types` in tests, not only Next's bundler --
+// see jsonld.test.ts.
+import { SITE_URL, SITE_NAME, SITE_DESCRIPTION, TWITTER_HANDLE } from "./site.ts";
 
 // ── ID anchors used across schemas so cross-references resolve ─────────────
 const ORG_ID = `${SITE_URL}/#organization`;
@@ -368,6 +371,11 @@ export type HowToInput = {
   steps: HowToStepInput[];
   tools?: HowToToolInput[]; // MCP tools, runtimes, etc.
   supplies?: string[];      // wrapped modules, deps — for future module pages
+  // Day 3-4 (AGENT_SEO_AEO_EXECUTION_PLAN_2026-07-30): the authored audience
+  // sentence, when present -- ONLY emitted when the page also renders it
+  // visibly (page.tsx's "who this is for" section), so structured data never
+  // describes content the visitor can't see.
+  audience?: string;
 };
 
 /**
@@ -424,6 +432,9 @@ export function howToSchema(input: HowToInput): JsonLdNode | null {
       "@type": "HowToSupply",
       name: s,
     }));
+  }
+  if (input.audience) {
+    node.audience = { "@type": "Audience", audienceType: input.audience };
   }
   return node;
 }
