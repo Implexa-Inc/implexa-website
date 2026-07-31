@@ -81,3 +81,20 @@ test('isWorkflowPageIndexable: missing/malformed editorial_complete fails closed
     false,
   );
 });
+
+test('isWorkflowPageIndexable: a rich target_queries-shaped field on the input cannot substitute for editorial_complete', () => {
+  // 2026-07-30 dead-route cleanup (implexa-backend, separate PR): the
+  // backend's getAgentPage() -- the only code that ever surfaced
+  // target_queries publicly -- is removed. The website never received
+  // target_queries at all (WorkflowCard/WorkflowDetail have no such field),
+  // but this pins the property explicitly: isWorkflowPageIndexable only ever
+  // reads publication_state and editorial_complete, so an extra field that
+  // merely LOOKS like editorial content (a rich array of candidate queries)
+  // must not accidentally make an incomplete profile pass.
+  const withExtraField = {
+    publication_state: 'reviewed_indexable',
+    editorial_complete: false,
+    target_queries: ['How do I grow my Instagram', 'Instagram growth agent'],
+  };
+  assert.equal(isWorkflowPageIndexable(withExtraField), false);
+});
