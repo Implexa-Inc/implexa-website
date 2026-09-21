@@ -1,12 +1,12 @@
 ---
-title: "how to create a claude skill (step-by-step)"
+title: "How to create a Claude Skill: 8 steps, about 10 minutes"
 slug: "how-to-create-a-claude-skill"
-description: "a 7-step walkthrough for creating your first Claude Skill, from install through recording, interview, activation, and sharing with your team."
+description: "How to create a Claude Skill in 8 steps: install the plugin, demonstrate a real workflow, answer the interview, then activate and share it with your team."
 publishedAt: "2026-05-18"
 tags: ["claude-skills", "SKILL.md", "tutorial", "implexa"]
 ---
 
-# how to create a claude skill (step-by-step)
+# How to create a Claude Skill: 8 steps, about 10 minutes
 
 this tutorial walks you through creating a working Claude Skill end to end: install, demonstrate, answer the interview, activate, run, and share. about 10 minutes of actual work.
 
