@@ -1,16 +1,16 @@
 ---
-title: "How to edit videos using agents in Codex and Claude Code"
-slug: "edit-videos-with-agents-codex-claude-code"
-description: "A step-by-step way to turn a raw talking-head recording into a finished YouTube video with Codex or Claude Code, ffmpeg, faster-whisper and Remotion."
+title: "How to edit YouTube and Instagram videos with AI agents in Codex and Claude Code"
+slug: "edit-youtube-instagram-videos-codex-claude-code"
+description: "Turn a raw presenter recording into a long-form YouTube explainer and an Instagram Reel with AI agents in Codex or Claude Code, using ffmpeg, faster-whisper and Remotion."
 publishedAt: "2026-10-23"
-tags: ["codex", "claude-code", "remotion", "video", "ai-agents"]
+tags: ["codex", "claude-code", "remotion", "youtube", "instagram", "video", "ai-agents"]
 ---
 
 The first time we let an agent edit one of our recordings, one evening in June, it took an 11 minute 51 second talking-head video and handed back 9 minutes 15 seconds. It removed 156.6 seconds in 26 cuts.
 
 Fourteen of those cuts were long pauses, the kind any silence remover finds. The other twelve were things you'd expect a person to catch. One sentence was recorded three times in a row while the speaker hunted for the right phrasing. A word came out wrong and was said again. There was a false start, and a second self-introduction a minute after the first. A silence detector sees none of that, because there's no silence in any of it. The agent caught them because it was reading the transcript.
 
-That's the core idea of this post. Most of editing a talking-head video is judgement about words, and Codex and Claude Code are good at judgement about words. Rendering is the easy part; ffmpeg and Remotion have handled it for years. What follows is the pipeline we've settled on, with the commands, file formats and rules you need to build it yourself. It works the same in Codex and in Claude Code, and you can have the first stage running in an afternoon. At the end, we go through how we run the same three stages as unattended agents: how each agent is built from steps, how skills get attached to them, and the launch settings that make them run reliably in both tools.
+That's the core idea of this post. Most of editing a talking-head video is judgement about words, and Codex and Claude Code are good at judgement about words. Rendering is the easy part; ffmpeg and Remotion have handled it for years. What follows is the pipeline we've settled on for long-form explainer videos with a presenter, with the commands, file formats and rules you need to build it yourself. The same edit then becomes an Instagram Reel with a few changes, covered at the end of stage 3. It works the same in Codex and in Claude Code, and you can have the first stage running in an afternoon. At the end, we go through how we run the same three stages as unattended agents: how each agent is built from steps, how skills get attached to them, and the launch settings that make them run reliably in both tools.
 
 ## The shape: three stages, three checkpoints
 
@@ -207,6 +207,35 @@ ffprobe -v error -show_entries format=duration:stream=codec_type,width,height,r_
 ```
 
 The duration should match the clean cut's, there should be one video and one audio stream, and the resolution and frame rate should be what you intended. Then watch the master once at full speed. A file can pass every automated check and still have a caption that flickers or a scene that cuts on the wrong word.
+
+### The Instagram version
+
+A Reel reuses almost all of this. The clean cut and the beat map stay the same, and only the composition changes shape. Register a second composition in `Root.tsx`, at 1080 by 1920, that points at the same component:
+
+```tsx
+<Composition id="Reel" component={Edit} durationInFrames={30 * 60} fps={30} width={1080} height={1920} />
+```
+
+Your recording is landscape, so the presenter has to be cropped to fill the tall frame. Give the base video layer `objectFit: "cover"`:
+
+```jsx
+<OffthreadVideo src={staticFile("clean.mp4")}
+  style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+```
+
+That crops evenly from both sides, so check that the speaker stays in shot. If they sit off-centre in the recording, ask the agent to set `objectPosition` to follow them.
+
+Three things change in the plan, so give the agent these rules when you ask for the Reel:
+
+- **Pick a stretch, don't shrink the talk.** Choose the strongest run of beats from the beat map and set the composition's length to match, instead of speeding up the whole video.
+- **Keep text clear of Instagram's own interface.** The app draws the caption and account name along the bottom of the frame and the like, comment and share buttons down the right edge, so titles and callouts belong in the upper and central part of the frame.
+- **Burn in captions.** You already have a timestamp for every word from stage 1, so captions cost almost nothing to add, and on a phone they carry the video when the sound is off.
+
+Render it with the same command and the new composition id:
+
+```bash
+npx remotion render src/index.ts Reel out/reel.mp4
+```
 
 ## How we run the same pipeline as agents
 
