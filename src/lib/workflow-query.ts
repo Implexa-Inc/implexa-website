@@ -58,6 +58,16 @@ export const QUERY_MAP: Record<string, string> = {
   "instagram-growth-pack": "How do I grow my Instagram",
   "linkedin-comment-drafter": "How do I stay active on LinkedIn without living in it",
   "youtube-to-blog": "How do I turn my videos into blog posts that rank",
+  // video production. These agents' descriptions are internal contract text
+  // ("planning-only portable presenter-overlay project author: canonical
+  // transcript, typed custody, ..."), so the derived H1 was unreadable and,
+  // for the placer, ungrammatical ("How do I an execution-ready ...").
+  "visual-treatment-planner-runway-remotion":
+    "How do I plan a YouTube video from a presenter recording",
+  "visual-evidence-remotion-compositor":
+    "How do I render a finished YouTube video with Remotion",
+  "cinematic-b-roll-placer-prompt-writer":
+    "How do I plan where B-roll goes in my video",
 };
 
 // ── CLUSTERS: curated internal-linking groups (Day 3-4/10) ──────────────────
