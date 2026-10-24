@@ -168,10 +168,15 @@ async function main() {
   // "one sentence repeated ~60x" incident through (it cleared 400 words), so
   // three cheap diversity checks back it up. Thresholds sit well below what
   // real prose hits, so legit posts pass and degenerate drafts do not.
+  // Code-fence delimiters are excluded like headings: every code block ends in
+  // an identical bare fence that can't carry a language tag, so a tutorial with
+  // four or more code blocks used to fail here despite having no repeated prose.
+  // Lines inside code blocks still count.
+  const FENCE = /^(`{3,}|~{3,})[\w+-]*$/;
   const contentLines = body
     .split("\n")
     .map((l) => l.trim())
-    .filter((l) => l.length > 0 && !l.startsWith("#") && l !== "---");
+    .filter((l) => l.length > 0 && !l.startsWith("#") && l !== "---" && !FENCE.test(l));
   const lineCounts = new Map();
   for (const l of contentLines) lineCounts.set(l, (lineCounts.get(l) || 0) + 1);
   const maxLineRepeat = contentLines.length ? Math.max(...lineCounts.values()) : 0;
