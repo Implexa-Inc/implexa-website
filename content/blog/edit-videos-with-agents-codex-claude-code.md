@@ -10,7 +10,7 @@ The first time we let an agent edit one of our recordings, one evening in June, 
 
 Fourteen of those cuts were long pauses, the kind any silence remover finds. The other twelve were things you'd expect a person to catch. One sentence was recorded three times in a row while the speaker hunted for the right phrasing. A word came out wrong and was said again. There was a false start, and a second self-introduction a minute after the first. A silence detector sees none of that, because there's no silence in any of it. The agent caught them because it was reading the transcript.
 
-That's the core idea of this post. Most of editing a talking-head video is judgement about words, and Codex and Claude Code are good at judgement about words. Rendering is the easy part; ffmpeg and Remotion have handled it for years. What follows is the pipeline we've settled on, with the commands, file formats and rules you need to build it yourself. It works the same in Codex and in Claude Code, and you can have the first stage running in an afternoon.
+That's the core idea of this post. Most of editing a talking-head video is judgement about words, and Codex and Claude Code are good at judgement about words. Rendering is the easy part; ffmpeg and Remotion have handled it for years. What follows is the pipeline we've settled on, with the commands, file formats and rules you need to build it yourself. It works the same in Codex and in Claude Code, and you can have the first stage running in an afternoon. At the end, we go through how we run the same three stages as unattended agents: how each agent is built from steps, how skills get attached to them, and the launch settings that make them run reliably in both tools.
 
 ## The shape: three stages, three checkpoints
 
@@ -207,6 +207,94 @@ ffprobe -v error -show_entries format=duration:stream=codec_type,width,height,r_
 ```
 
 The duration should match the clean cut's, there should be one video and one audio stream, and the resolution and frame rate should be what you intended. Then watch the master once at full speed. A file can pass every automated check and still have a caption that flickers or a scene that cuts on the wrong word.
+
+## How we run the same pipeline as agents
+
+Everything above works as three sessions you drive by hand. Over the last few months we've turned each stage into an agent that runs unattended between the checkpoints, in either Codex or Claude Code. The details are worth sharing even if you only ever run this by hand, because most of them exist to fix a specific way an unattended run went wrong.
+
+### An agent is a list of typed steps
+
+Each agent is an ordered list of steps, and every step has one of three types:
+
+- a **tool** step runs something concrete, like ffprobe or a dependency check;
+- a **skill** step does creative or technical work, guided by a skill's written instructions;
+- a **decision** step is a judgement or a gate: validate this, review that, stop here unless something is true.
+
+The clean cut has 10 steps, the planner 13 and the compositor 8. Here is the planner, with the skill attached to each skill step and the only files that step is allowed to write:
+
+```text
+#   type      skill                    writes only
+1   tool      -                        presenter-source.json
+2   tool      -                        a preflight receipt, outside the project
+3   skill     -                        transcript.json, .srt, .txt, transcript-validation.json
+4   decision  -                        timing-contract.json
+5   skill     -                        narrative-beats.json, creative-direction.json
+6   decision  -                        asset, shot, style-lock, density and evidence manifests
+7   skill     higgsfield-generate      generated-video-requests.json (8 requests, not sent)
+8   skill     remotion-best-practices  compositor-scenes.json, animation-plan.json
+9   skill     remotion-best-practices  the Remotion source, validate.py, the QA contract
+10  decision  -                        a receipt checking the app's preparation step
+11  skill     remotion-best-practices  README, manifests, then the 34-file project ZIP
+12  decision  -                        an adversarial review of the ZIP
+13  decision  -                        a verified, byte-identical copy of the ZIP
+```
+
+The "writes only" column is the single most useful rule we've found for long agent runs. Each step's instructions name the exact files it may create, and say that it must never delete, rename or clear anything else in the project. Long runs drift without it: a later step can regenerate an earlier step's file, and the plan no longer matches the transcript it was built on.
+
+### How a skill gets attached to a step
+
+When we build an agent, each step is matched against a catalog of tens of thousands of public skills. For every step we take the five closest matches, rank them by whether they've actually delivered in real runs, and have a small model check the best one: can this skill produce what this step needs to output? If it's only a partial fit, the skill's instructions get rewritten for that exact step at build time. If nothing fits, the step is left unbound and the model handles it from its own instructions, which is the case for most planner steps.
+
+Two details in the planner are worth copying. Step 7 uses the `higgsfield-generate` skill purely so the eight requests come out in the provider's exact format, while its instructions forbid calling the provider at all. And the Remotion steps all use `remotion-best-practices`, the same skill you installed in setup.
+
+When the agent runs, the engine calls a tool that returns each step with its skill's text attached, so the skill arrives with the step that needs it instead of all at once. In our repeatable runs, each skill's text is also pinned by a hash. If the skill changes after the run starts, that step is marked unresolved instead of silently running the new version.
+
+### The same agent in Codex and in Claude Code
+
+The desktop app launches each engine headless. Stripped of the run-specific parts, the two commands look like this:
+
+```bash
+codex exec --json --skip-git-repo-check -c 'approval_policy="never"' --sandbox <per-run> -C . "<prompt>"
+```
+
+```shell
+claude -p "<prompt>" --output-format stream-json --verbose --permission-mode dontAsk \
+  --allowedTools <per-run list> --max-turns 120 --no-session-persistence
+```
+
+The agent definition, the steps and the skills are identical for both. The flags are where we learned the most:
+
+- **Make silence impossible.** Claude Code's plain `json` output buffers the whole session and prints it once at the end. A healthy long run therefore printed nothing at all until it finished, and our watchdog kept killing working runs as hung. `stream-json` emits events as the session works, the same live signal `codex exec --json` already gives.
+- **Never wait for a human who isn't there.** `approval_policy="never"` makes Codex fail a disallowed action instead of prompting for it. Under Codex's default sandbox, every call to our own tools was also held for an approval no one could give, so each run is launched with an explicit sandbox chosen for that run.
+- **Codex refuses to start outside a git repository** unless you pass `--skip-git-repo-check`. The agents' working folder is a plain folder, so every Codex run needs it.
+
+### Steps can't skip or redo each other
+
+Every planner step starts with the same rule. It may begin only after the previous step's "done" report has been accepted. When it finishes, it reports done along with a SHA-256 checksum of what it wrote, and waits for an acknowledgement before moving on. That gives us a record of where every run stopped, and it means a confused model can't jump ahead or rewrite a step that's already finished.
+
+### The model never installs or compiles anything
+
+The planner writes Remotion source code, but it is never allowed to run `npm`, `tsc` or Remotion itself. The app owns that. At step 9 it installs pinned dependencies into a folder the agent may not touch, typechecks the project, and confirms that the composition exists at 1920×1080 with the right frame rate and length. It then hands the agent a receipt. Step 10 reads the receipt itself, because an exit code of zero with no evidence behind it proves nothing.
+
+Step 10 also re-checks the creative rules arithmetically. Is at least 65% of the talk supported on screen, including in the case where all eight generated shots fail? Is there a meaningful visual change every 4 to 8 seconds? Then step 12 reviews the whole bundle adversarially. It rejects generic opaque title cards, duplicated tiles, letters revealed halfway, and layouts that shift between frames. It also writes a rule into the downstream quality contract: the final video must be watched end to end at normal speed, and every transition must be inspected frame by frame. A contact sheet of stills can't show you flicker.
+
+The planner finishes with `render_ready` set to false on purpose. Its job ends at a verified plan.
+
+### The compositor writes a scene document
+
+The compositor's eight steps are all decision steps, with no skills attached. Everything creative was settled by the planner, and what's left is assembly, checking and approval.
+
+Instead of writing React for each video, it writes a single scene document: a JSON file, validated against a fixed schema, that lists every scene, element, font and timing. The app's own renderer, which is versioned, turns that document into video. That makes the output repeatable and much easier to repair. Fixing a caption is a one-line change to the document, and the preview and the final master are rendered from the same file. Two more rules live at this stage: the presenter's audio stays at its original level, and any audio in the generated clips is muted.
+
+From there:
+
+- **Preview.** The app renders a preview from the document. Automated timing checks run across every generated shot's window, and a separate judge model sees only the rendered frames and the criteria fixed in the plan, nothing else.
+- **Approval.** The run then holds until the owner approves the preview. The compositor can't approve its own work.
+- **Master.** The master is rendered by the same app-owned renderer. At this stage the compositor isn't allowed to write any code, install a renderer, or buy anything. An asset that already generated successfully is reused, never paid for twice.
+- **Quality check.** It checks that the master decodes, the duration and resolution are right, and the presenter's audio is continuous, then reviews it at full speed.
+- **Delivery.** It delivers the master alongside an editable project with a hash for every file in it.
+
+If you're building this yourself, you don't need the scene schema or the separate judge on day one. The rules carry over directly, though: one stage per session, a fixed list of files each step may write, no installs or renders by the model, checks that read the evidence itself, and an approval before anything costs money.
 
 ## Where you stay in the loop
 
