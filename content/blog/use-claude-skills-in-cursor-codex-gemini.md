@@ -66,4 +66,4 @@ The file format does not tell you. That is what ranking is for: Implexa scores s
 
 ## The takeaway
 
-Your skills are more portable than they feel. The format is open, the directories overlap, and one file genuinely runs everywhere. The copy-paste tax is self-inflicted. Stop syncing folders by hand, point your agents at one ranked source, and spend the saved time on the part that matters: writing skills worth running.
+Your skills are more portable than they feel. The format is open, the directories overlap, and one file genuinely runs everywhere. The copy-paste tax is self-inflicted. Stop syncing folders by hand, point your agents at one ranked source, and spend the saved time on the part that matters: writing skills worth running. For a worked example, our [guide to editing videos with agents in Codex and Claude Code](/blog/edit-youtube-instagram-videos-codex-claude-code) installs Remotion's skills once and runs the same pipeline in both.

@@ -10,7 +10,11 @@ export type FaqItem = { question: string; answer: string };
 function stripMd(s: string): string {
   return s
     .replace(/\[([^\]]+)\]\([^)]*\)/g, "$1") // [text](url) -> text
-    .replace(/[*_`]/g, "")
+    .replace(/[*`]/g, "")
+    // Underscores only as emphasis markers (_word_, __word__). Intra-word
+    // underscores are identifiers people search for verbatim
+    // (metadata_errors, approval_policy) and must survive into the schema.
+    .replace(/(^|[^\w])_+(?=\S)|(?<=\S)_+(?=[^\w]|$)/g, "$1")
     .replace(/\s+/g, " ")
     .trim();
 }

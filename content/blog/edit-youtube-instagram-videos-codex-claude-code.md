@@ -1,7 +1,7 @@
 ---
 title: "How to edit YouTube and Instagram videos with AI agents in Codex and Claude Code"
 slug: "edit-youtube-instagram-videos-codex-claude-code"
-description: "Turn a raw presenter recording into a long-form YouTube explainer and an Instagram Reel with AI agents in Codex or Claude Code, using ffmpeg, faster-whisper and Remotion."
+description: "Turn a raw presenter recording into a YouTube explainer and an Instagram Reel with AI agents in Codex or Claude Code, using ffmpeg, Whisper and Remotion."
 publishedAt: "2026-10-23"
 tags: ["codex", "claude-code", "remotion", "youtube", "instagram", "video", "ai-agents"]
 ---
@@ -11,6 +11,18 @@ The first time we let an agent edit one of our recordings, one evening in June, 
 Fourteen of those cuts were long pauses, the kind any silence remover finds. The other twelve were things you'd expect a person to catch. One sentence was recorded three times in a row while the speaker hunted for the right phrasing. A word came out wrong and was said again. There was a false start, and a second self-introduction a minute after the first. A silence detector sees none of that, because there's no silence in any of it. The agent caught them because it was reading the transcript.
 
 That's the core idea of this post. Most of editing a talking-head video is judgement about words, and Codex and Claude Code are good at judgement about words. Rendering is the easy part; ffmpeg and Remotion have handled it for years. What follows is the pipeline we've settled on for long-form explainer videos with a presenter, with the commands, file formats and rules you need to build it yourself. The same edit then becomes an Instagram Reel with a few changes, covered at the end of stage 3. It works the same in Codex and in Claude Code, and you can have the first stage running in an afternoon. At the end, we go through how we run the same three stages as unattended agents: how each agent is built from steps, how skills get attached to them, and the launch settings that make them run reliably in both tools.
+
+## The short version
+
+To edit a talking-head video with AI agents in Codex or Claude Code:
+
+1. Transcribe the recording with word-level timestamps using faster-whisper.
+2. Have the agent write a cut list of fillers, retakes and dead air. Approve it, then render the kept segments with ffmpeg.
+3. Have the agent plan what appears on screen at every moment, as files: a beat map, a style lock and shot specs.
+4. Render the plan with Remotion. Approve a half-resolution preview, then render the full-quality master.
+5. Reuse the same edit for an Instagram Reel by adding a vertical 1080×1920 composition.
+
+The rest of this post covers each step in detail, with commands we've run, then how we run all of it as unattended agents.
 
 ## The shape: three stages, three checkpoints
 
@@ -341,3 +353,29 @@ A few things that still catch us:
 - **Generated shots that miss.** Budget for regenerating one or two. The fallback you wrote in the plan is what keeps a failed shot from holding up the whole video.
 
 Get the clean cut working first. It needs nothing but ffmpeg, faster-whisper and an agent, and on a typical talking-head recording it removes more than you'd expect. The plan and compose stages build on its output, and you can add them when you want more than a tighter cut.
+
+## Frequently asked questions
+
+### Can Claude Code or Codex edit videos?
+
+Yes, but not by touching pixels. The agent reads a word-level transcript, decides what to cut and what to show, and writes the instructions: a cut list, ffmpeg commands and Remotion code. ffmpeg and Remotion do the actual cutting and rendering, and you approve the decisions before anything renders.
+
+### How do I remove filler words and long pauses from a video automatically?
+
+Transcribe it with faster-whisper using word timestamps, and run ffmpeg's silence detection alongside. Then ask an agent for a cut list that removes fillers, false starts and abandoned retakes, and trims any gap over 3 seconds down to about 0.6 seconds. Review the list, then render the kept segments with ffmpeg's trim and concat filters. Check fillers from the audio as well as the transcript, because the distil-large-v3 model tends to leave them out of the transcript.
+
+### Does Remotion work with Codex?
+
+Yes. `npx skills add remotion-dev/skills` installs Remotion's agent skills for both Codex and Claude Code. Codex also has an official Remotion plugin: open the ChatGPT desktop app, find Remotion in the Plugins tab, and type `$remotion` in a new project.
+
+### Can I turn a landscape YouTube recording into an Instagram Reel?
+
+Yes. Add a second Remotion composition at 1080 by 1920 that uses the same component, and set the presenter video to `objectFit: "cover"` so it fills the vertical frame. Pick the strongest stretch of the talk, keep text away from the bottom and right edge where Instagram's interface sits, and burn in captions from the word timings.
+
+### Why does pip install faster-whisper fail with "metadata_errors"?
+
+As of October 2026, `pip install faster-whisper` pulls in PyAV 16 or newer, which faster-whisper 1.2.1 can't open audio with. Every transcription then fails with `unexpected keyword argument 'metadata_errors'`. Install with `pip install faster-whisper "av<16"` instead.
+
+### How much does it cost to edit videos this way?
+
+ffmpeg, faster-whisper and Remotion are free, and the agent runs inside the Codex or Claude Code plan you already have. The only optional cost is AI-generated footage, such as Kling clips through Higgsfield, which is why the plan writes those requests for your approval before anything is sent.

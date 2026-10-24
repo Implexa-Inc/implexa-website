@@ -81,7 +81,7 @@ The second most common issue is scope confusion. A personal skill in `~/.claude/
 
 ## How Claude Code skills fit a bigger system
 
-One skill saves you a prompt. The leverage shows up once you have twenty of them and need to know which fire, which overlap, and which actually moved an outcome. That is the layer above a single `SKILL.md`, and it is where a control plane earns its keep: keeping your skills discoverable, shared at the right scope, and measured. If you want the structure that connects many skills, read [what is a skill graph](/resources/what-is-a-skill-graph).
+One skill saves you a prompt. The leverage shows up once you have twenty of them and need to know which fire, which overlap, and which actually moved an outcome. That is the layer above a single `SKILL.md`, and it is where a control plane earns its keep: keeping your skills discoverable, shared at the right scope, and measured. If you want the structure that connects many skills, read [what is a skill graph](/resources/what-is-a-skill-graph). For a concrete case, see how skills attach to each step of a [video-editing agent](/blog/edit-youtube-instagram-videos-codex-claude-code).
 
 ## FAQ
 
