@@ -10,7 +10,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { resolveLimitations, resolveRelatedWorkflows } from './workflow-query.ts';
+import { resolveLimitations, resolveQuery, resolveRelatedWorkflows } from './workflow-query.ts';
 
 test('authored limitations wins when both limitations and caveat are present', () => {
   assert.equal(
@@ -107,4 +107,41 @@ test('respects the limit parameter', () => {
   ];
   const related = resolveRelatedWorkflows(current, all, 1);
   assert.equal(related.length, 1);
+});
+
+// ── resolveQuery: video agents ───────────────────────────────────────────────
+// These agents' descriptions are internal contract text, so without a curated
+// entry the derived H1 was unreadable ("How do I planning-only portable
+// presenter-overlay project author: canonical transcript, ...") and, for the
+// placer, ungrammatical ("How do I an execution-ready ..."). The descriptions
+// below are the real ones those H1s were derived from.
+
+test('video agents get their curated query instead of a description-derived H1', () => {
+  const cases: Array<[string, string, string]> = [
+    ['visual-treatment-planner-runway-remotion',
+      'planning-only portable presenter-overlay project author: canonical transcript, typed custody',
+      'How do I plan a YouTube video from a presenter recording'],
+    ['visual-evidence-remotion-compositor',
+      'produce a verified Remotion master from typed inputs and a frozen scene_execution_contract',
+      'How do I render a finished YouTube video with Remotion'],
+    ['cinematic-b-roll-placer-prompt-writer',
+      'an execution-ready visual production bundle that routes every transcript beat',
+      'How do I plan where B-roll goes in my video'],
+  ];
+  for (const [slug, description, expected] of cases) {
+    assert.equal(
+      resolveQuery({ slug, name: slug, query: null, description }),
+      expected,
+    );
+  }
+});
+
+test('a backend-supplied query still wins over the curated map', () => {
+  assert.equal(
+    resolveQuery({
+      slug: 'visual-evidence-remotion-compositor', name: 'x',
+      query: 'Backend-owned query', description: 'ignored',
+    }),
+    'Backend-owned query',
+  );
 });
