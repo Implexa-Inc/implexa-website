@@ -3,37 +3,31 @@ import { after } from "next/server";
 import { absoluteUrl, SITE_URL } from "@/lib/site";
 import { listResources } from "@/lib/resources";
 import { listBlogPosts } from "@/lib/blog";
-import { listAllSkillsForSitemap } from "@/lib/skill-catalog";
 import { listWorkflows } from "@/lib/workflow-catalog";
 import { buildWorkflowSitemapEntries } from "@/lib/workflow-sitemap";
 import { HUBS } from "@/lib/hub-catalog";
 import { COMPARISONS } from "@/lib/comparisons";
 import { submitToIndexNow } from "@/lib/indexnow";
 
-// Dynamic sitemap for the SEO surface. Lists:
-//   - static pages (home, search, install, scores)
-//   - every cornerstone post under /resources
-//   - every active skill detail page under /s/<source>/<slug>
+// Dynamic sitemap for the SEO surface. Lists the core pages only: static pages,
+// category hubs, comparisons, resources, blog posts and published workflows.
 //
-// Next.js caches this route by default; the catalog fetch sits behind its
-// own per-call revalidate, so the sitemap itself is effectively static at
-// the edge for ~1 day per region. That's the right tradeoff because the
-// catalog churns slowly (the crawler runs nightly) and crawlers re-fetch
-// the sitemap roughly daily anyway.
+// Skill detail pages (/s/<source>/<slug>) are deliberately NOT listed. As of
+// 2026-10-31 Google indexed only the homepage, crawled about 11 URLs a day, and
+// spent under 1% of that on discovery, while 10,876 URLs sat in "crawled,
+// currently not indexed". This sitemap offered 818 skill pages against 66 core
+// pages, so it asked Google to spend almost all of a tiny crawl allowance on the
+// pages it had just rejected. The pages stay live and keep their robots rules;
+// they just aren't advertised. Add the best ones back once blog posts are indexed
+// and earning impressions. listAllSkillsForSitemap stays in skill-catalog for that.
 //
-// At 20k+ entries we're still under Google's 50k-per-sitemap limit, but the
-// limit was never the binding constraint. A 3.3MB sitemap that is ~99%
-// slow-churning catalog pages gets re-read on Google's schedule, not ours:
-// submitted 2026-05-20, re-read once on 2026-06-02, still "last read Jun 2"
-// as of 2026-07-15. Every blog post published in that 43-day gap was
-// therefore "unknown to Google" despite being listed here from day one.
+// /search is excluded because robots.txt disallows it.
 //
-// The fix is not to split this file (that would risk the 20k catalog URLs
-// Google has already discovered through it). Content that ships often lives
-// in its own small sitemap as well — see src/app/blog/sitemap.ts — because a
-// few-KB file that actually changes gets re-read far more often. Any future
-// fast-churning surface should get the same treatment rather than relying on
-// this file to carry it.
+// Next.js caches this route by default, so the sitemap is effectively static at
+// the edge for ~1 day per region. Content that ships often also lives in its own
+// small sitemap (see src/app/blog/sitemap.ts), because a few-KB file that actually
+// changes gets re-read far more often: Google read this file on 2026-06-02 and not
+// again until it was resubmitted by hand on 2026-10-31.
 
 export const revalidate = 86400; // 1 day
 
@@ -58,12 +52,6 @@ function staticPages(now: Date): MetadataRoute.Sitemap {
       lastModified: now,
       changeFrequency: "monthly",
       priority: 0.9,
-    },
-    {
-      url: absoluteUrl("/search"),
-      lastModified: now,
-      changeFrequency: "weekly",
-      priority: 0.7,
     },
     {
       url: absoluteUrl("/scores"),
@@ -143,16 +131,6 @@ async function resourcePages(): Promise<MetadataRoute.Sitemap> {
   }));
 }
 
-async function skillPages(): Promise<MetadataRoute.Sitemap> {
-  const entries = await listAllSkillsForSitemap();
-  return entries.map<SitemapEntry>((s) => ({
-    url: absoluteUrl(`/s/${s.source}/${s.slug}`),
-    lastModified: s.last_seen_at ? new Date(s.last_seen_at) : undefined,
-    changeFrequency: "monthly",
-    priority: 0.6,
-  }));
-}
-
 async function workflowPages(): Promise<MetadataRoute.Sitemap> {
   const entries = await listWorkflows();
   // Day 2 item 5 (2026-07-30): membership follows the PERSISTED
@@ -209,12 +187,9 @@ function comparePages(now: Date): MetadataRoute.Sitemap {
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const now = new Date();
-  // Parallel: independent IO, makes a real difference when the skill catalog
-  // pagination walks 11 pages.
-  const [resources, blog, skills, workflows] = await Promise.all([
+  const [resources, blog, workflows] = await Promise.all([
     resourcePages(),
     blogPages(),
-    skillPages(),
     workflowPages(),
   ]);
   const entries = [
@@ -223,7 +198,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...comparePages(now),
     ...resources,
     ...blog,
-    ...skills,
     ...workflows,
   ];
 
