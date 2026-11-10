@@ -49,6 +49,7 @@ import {
   resolveLimitations,
   resolveRelatedWorkflows,
   isProven,
+  readableSummary,
 } from "@/lib/workflow-query";
 
 const DASHBOARD_URL = "https://app.implexa.ai";
@@ -163,9 +164,9 @@ function buildAgentFaqs(
   if (query && /\?$|^(how|what|when|why|where|can|do|should)\b/i.test(query)) {
     faqs.unshift({
       question: query.endsWith("?") ? query : `${query}?`,
-      answer: `The ${name} agent. ${
-        w.primary_outcome || w.job || w.description || ""
-      }`.trim(),
+      answer: `The ${name} agent. ${readableSummary(
+        w.primary_outcome || w.job || w.description || "",
+      )}`.trim(),
     });
   }
 
