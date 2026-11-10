@@ -10,7 +10,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { resolveLimitations, resolveQuery, resolveRelatedWorkflows } from './workflow-query.ts';
+import { conciseJob, hasResolvedQuery, readableSummary, resolveLimitations, resolveQuery, resolveRelatedWorkflows } from './workflow-query.ts';
 
 test('authored limitations wins when both limitations and caveat are present', () => {
   assert.equal(
@@ -144,4 +144,54 @@ test('a backend-supplied query still wins over the curated map', () => {
     }),
     'Backend-owned query',
   );
+});
+
+// ── resolveQuery: derived questions from internal job text ───────────────────
+// The inputs are real agent descriptions behind live H1s on 2026-11-10, when
+// 164 of 176 agent pages had an H1 longer than 14 words and 49 started with
+// "How do I each ...".
+
+test('a leading cadence clause and trailing explanation are dropped', () => {
+  assert.equal(
+    resolveQuery({
+      slug: 'unmapped-a', name: 'Content ideas', query: null,
+      description: 'each week, generate content ideas grounded in the real questions and pains your audience posts publicly, so you never stare at a blank calendar',
+    }),
+    'How do I generate content ideas grounded in the real questions and pains your audience posts publicly',
+  );
+  assert.equal(
+    resolveQuery({
+      slug: 'unmapped-b', name: 'Content refresh', query: null,
+      description: 'each month, audit existing published content and plan what to update, repurpose, or retire, so old work keeps earning',
+    }),
+    'How do I audit existing published content and plan what to update, repurpose, or retire',
+  );
+});
+
+test('parentheticals and follow-on steps are removed', () => {
+  assert.equal(
+    conciseJob('turn a raw talking-head video (e.g. a HeyGen avatar clip) into a polished vertical reel, then post it to Instagram'),
+    'turn a raw talking-head video into a polished vertical reel',
+  );
+});
+
+test('text still too long after trimming falls back to the agent name', () => {
+  const w = {
+    slug: 'unmapped-c', name: 'Boardroom brief', query: null,
+    description: 'read the latest Implexa Boardroom Debate output and turn it into a prioritized action plan split across website, dashboard, and marketing inputs',
+  };
+  assert.equal(resolveQuery(w), 'Boardroom brief');
+  assert.equal(hasResolvedQuery(w), false);
+});
+
+test('chain wording and noun phrases never become a question', () => {
+  assert.equal(conciseJob('run these agents in order, each feeding the next'), '');
+  assert.equal(conciseJob('an execution-ready visual production bundle'), '');
+});
+
+test('readableSummary keeps the first sentence and caps long text', () => {
+  assert.equal(readableSummary('Drafts the brief. Then emails it.'), 'Drafts the brief.');
+  const long = Array.from({ length: 60 }, (_, i) => `w${i}`).join(' ');
+  const out = readableSummary(long, 10);
+  assert.equal(out, 'w0 w1 w2 w3 w4 w5 w6 w7 w8 w9…');
 });

@@ -12,6 +12,7 @@ import {
 } from "@/lib/site";
 import { jsonLdGraph, organizationSchema, websiteSchema } from "@/lib/jsonld";
 import { MouseGridSpotlight } from "@/components/mouse-grid-spotlight";
+import { SignupAttribution } from "@/components/signup-attribution";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -101,6 +102,8 @@ export default function RootLayout({
         <MouseGridSpotlight />
         {children}
         <Analytics />
+        {/* Carries the visit's first page and source onto sign-up links. */}
+        <SignupAttribution />
         {/* Speed Insights: real-user core web vitals (LCP, INP, CLS) reported
             from actual page visits. Feeds the Vercel dashboard's Speed tab
             and matters for SEO since Google ranks on real-user CWV, not lab

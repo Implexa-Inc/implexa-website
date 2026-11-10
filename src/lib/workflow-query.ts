@@ -177,6 +177,53 @@ type QueryInput = {
 
 const QUESTION_RE = /^(how|what|why|when|where|which|can|should|is|do|does)\b/i;
 
+// Longest derived question we will show. Job/description fields are written as
+// internal contracts ("each week, scan a CRM export for stale, incomplete, or
+// duplicate records and draft the exact cleanup actions, so pipeline data
+// stays trustworthy"), and 164 of 176 live H1s ran past this length before the
+// trim below. Anything still longer after trimming falls back to the name.
+export const MAX_QUERY_WORDS = 14;
+
+// Leading cadence or source clauses read as broken English after "How do I"
+// ("How do I each week, generate ..."). The cadence is shown elsewhere on the
+// page, so the clause is dropped rather than moved.
+const LEADING_CLAUSE_RE =
+  /^(?:(?:each|every)\s+[a-z]+(?:\s+[a-z]+)?|daily|weekly|monthly|hourly|from\s+[^,]{1,60}),\s*/i;
+
+// The main clause ends at the first explanation, example, or follow-on step.
+const CLAUSE_BREAK_RE =
+  /\s*(?::|;|\.\s|\s[—–-]\s|,?\s+so\s+(?:that\s+)?|,\s+then\s+|,\s+(?:such as|without|where|which|for|built to|grounded in|an?)\s|\s+instead of\s)/i;
+
+// Reduce an internal job sentence to its main clause. Returns "" when even the
+// main clause is too long to read as a search query.
+export function conciseJob(phrase: string): string {
+  let p = phrase.trim().replace(/[.?!]+$/, "");
+  p = p.replace(/\s*\([^)]*\)/g, "");
+  p = p.replace(LEADING_CLAUSE_RE, "");
+  p = p.split(CLAUSE_BREAK_RE)[0].trim().replace(/[,.]+$/, "");
+  if (!p) return "";
+  if (p.split(/\s+/).length > MAX_QUERY_WORDS) return "";
+  // Chain descriptions ("run these agents in order, each feeding the next")
+  // only make sense next to the chain's step list, and every chain shares the
+  // same wording, so they would give many pages one identical H1.
+  if (/\bthese agents\b/i.test(p)) return "";
+  // A noun phrase ("an execution-ready visual production bundle ...") cannot
+  // follow "How do I".
+  if (/^(?:a|an|the)\s/i.test(p)) return "";
+  return p;
+}
+
+// First sentence of a descriptive field, capped for use as a visible FAQ
+// answer. Long internal contracts are cut at a word boundary with an ellipsis.
+export function readableSummary(text: string, maxWords = 40): string {
+  const t = text.trim().replace(/\s+/g, " ");
+  if (!t) return "";
+  const first = t.match(/^.*?[.!?](?=\s|$)/)?.[0] ?? t;
+  const words = first.split(" ");
+  if (words.length <= maxWords) return first;
+  return `${words.slice(0, maxWords).join(" ").replace(/[,;:]+$/, "")}…`;
+}
+
 // Turn a job phrase into a question H1 when it is not already one. Kept
 // deliberately small: a verb-led job ("Draft a daily content pack") reads
 // well as "How do I draft a daily content pack"; anything already phrased as a
@@ -184,7 +231,7 @@ const QUESTION_RE = /^(how|what|why|when|where|which|can|should|is|do|does)\b/i;
 // case: the leading word is capitalized and the authored proper nouns inside
 // the phrase are preserved.
 function questionize(phrase: string): string {
-  const p = phrase.trim().replace(/[.?!]+$/, "");
+  const p = conciseJob(phrase);
   if (!p) return "";
   if (QUESTION_RE.test(p)) return p.charAt(0).toUpperCase() + p.slice(1);
   const body = p.charAt(0).toLowerCase() + p.slice(1);
