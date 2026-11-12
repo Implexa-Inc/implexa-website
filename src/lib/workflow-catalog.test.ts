@@ -22,7 +22,7 @@ import assert from 'node:assert/strict';
 process.env.IMPLEXA_PUBLIC_SEARCH_TOKEN = 'test-token';
 process.env.IMPLEXA_API_URL = 'https://backend.example.test';
 
-const { listWorkflows } = await import('./workflow-catalog.ts');
+const { listWorkflows, getWorkflow } = await import('./workflow-catalog.ts');
 
 function sseEnvelope(payload: unknown): string {
   return `event: message\ndata: ${JSON.stringify({ result: { content: [{ text: JSON.stringify(payload) }] } })}\n\n`;
@@ -101,4 +101,16 @@ test('editorial_complete: a truthy non-boolean (malformed response) normalizes t
     () => listWorkflows(),
   );
   assert.equal(out[0].editorial_complete, false);
+});
+
+test('public detail requests an anonymous publication view even when the server token owns the agent',async()=>{
+  const original=globalThis.fetch;let sent:Record<string,unknown>|undefined;
+  globalThis.fetch=(async(_url:unknown,options:RequestInit)=>{
+    sent=JSON.parse(String(options.body));
+    return new Response(sseEnvelope({ok:false,error:'workflow not found'}),{status:200});
+  }) as typeof fetch;
+  try {
+    assert.equal(await getWorkflow('private-test-agent','generated'),null);
+    assert.deepEqual((sent as {params:{name:string;arguments:unknown}}).params,{name:'get_workflow',arguments:{slug:'private-test-agent',source:'generated',publicOnly:true}});
+  } finally {globalThis.fetch=original;}
 });

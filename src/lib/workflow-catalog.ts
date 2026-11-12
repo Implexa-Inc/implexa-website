@@ -281,7 +281,7 @@ async function _getWorkflow(
   type Resp = { ok: boolean; workflow?: WorkflowDetail; error?: string };
   const resp = await callMcpTool<Resp>(
     "get_workflow",
-    { slug, source },
+    { slug, source, publicOnly: true },
     600,
   );
   if (!resp?.ok || !resp.workflow) return null;
